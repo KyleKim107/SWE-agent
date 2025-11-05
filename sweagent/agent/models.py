@@ -708,11 +708,27 @@ class LiteLLMModel(AbstractModel):
         if self.tools.use_function_calling:
             extra_args["tools"] = self.tools.tools
         # We need to always set max_tokens for anthropic models
-        completion_kwargs = self.config.completion_kwargs
+        completion_kwargs = self.config.completion_kwargs.copy()
         if self.lm_provider == "anthropic":
             completion_kwargs["max_tokens"] = self.model_max_output_tokens
+        
+        # Check if streaming is enabled
+        use_streaming = completion_kwargs.get("stream", False)
+        
+        # [DEBUG] Log request details
+        self.logger.info(f"🔍 [DEBUG] Making API request to model: {self.config.name}")
+        self.logger.info(f"🔍 [DEBUG] API base: {self.config.api_base}")
+        self.logger.info(f"🔍 [DEBUG] Messages count: {len(messages)}")
+        self.logger.info(f"🔍 [DEBUG] Temperature: {self.config.temperature if temperature is None else temperature}")
+        self.logger.info(f"🔍 [DEBUG] Top-p: {self.config.top_p}")
+        self.logger.info(f"🔍 [DEBUG] completion_kwargs: {completion_kwargs}")
+        self.logger.info(f"🔍 [DEBUG] extra_args: {extra_args}")
+        self.logger.info(f"🔍 [DEBUG] n: {n}")
+        self.logger.info(f"🔍 [DEBUG] use_streaming: {use_streaming}")
+        
         try:
-            response: litellm.types.utils.ModelResponse = litellm.completion(  # type: ignore
+            self.logger.info("🔍 [DEBUG] Calling litellm.completion...")
+            response = litellm.completion(  # type: ignore
                 model=self.config.name,
                 messages=messages,
                 temperature=self.config.temperature if temperature is None else temperature,
@@ -724,6 +740,163 @@ class LiteLLMModel(AbstractModel):
                 **extra_args,
                 n=n,
             )
+            
+            # [DEBUG] Log response details
+            self.logger.info(f"🔍 [DEBUG] Response type: {type(response)}")
+            
+            # Handle streaming response (CustomStreamWrapper)
+            if use_streaming and hasattr(response, '__iter__'):
+                self.logger.info("🔍 [DEBUG] Processing streaming response...")
+                
+                # Collect streaming chunks
+                full_responses = ["" for _ in range(n if n is not None else 1)]
+                tool_calls_list = [[] for _ in range(n if n is not None else 1)]
+                thinking_blocks_list = [[] for _ in range(n if n is not None else 1)]
+                
+                try:
+                    for chunk in response:
+                        if hasattr(chunk, 'choices') and len(chunk.choices) > 0:
+                            for idx, choice in enumerate(chunk.choices):
+                                if idx >= len(full_responses):
+                                    continue
+                                    
+                                delta = choice.delta
+                                
+                                # Collect content
+                                if hasattr(delta, 'content') and delta.content:
+                                    full_responses[idx] += delta.content
+                                
+                                # Collect tool calls
+                                if hasattr(delta, 'tool_calls') and delta.tool_calls:
+                                    tool_calls_list[idx].extend(delta.tool_calls)
+                                
+                                # Collect thinking blocks
+                                if hasattr(delta, 'thinking_blocks') and delta.thinking_blocks:
+                                    thinking_blocks_list[idx].extend(delta.thinking_blocks)
+                    
+                    self.logger.info(f"🔍 [DEBUG] Streaming complete. Collected {len(full_responses)} response(s)")
+                    
+                except Exception as stream_error:
+                    self.logger.error(f"❌ [ERROR] Error processing stream: {stream_error}")
+                    raise
+                
+                # Build outputs from collected streaming data
+                outputs = []
+                output_tokens = 0
+                
+                for idx in range(len(full_responses)):
+                    content = full_responses[idx]
+                    output_tokens += litellm.utils.token_counter(
+                        text=content,
+                        model=self.custom_tokenizer["identifier"] if self.custom_tokenizer is not None else self.config.name,
+                        custom_tokenizer=self.custom_tokenizer,
+                    )
+                    
+                    output_dict = {"message": content}
+                    
+                    # [DEBUG] Log the actual LLM output
+                    self.logger.info("📤 [LLM OUTPUT] ==== START ====")
+                    self.logger.info(f"{content}")
+                    self.logger.info("📤 [LLM OUTPUT] ==== END ====")
+                    
+                    if self.tools.use_function_calling and tool_calls_list[idx]:
+                        output_dict["tool_calls"] = [call.to_dict() if hasattr(call, 'to_dict') else call for call in tool_calls_list[idx]]
+                    
+                    if thinking_blocks_list[idx]:
+                        output_dict["thinking_blocks"] = thinking_blocks_list[idx]
+                    
+                    outputs.append(output_dict)
+                
+            else:
+                # Non-streaming response (standard ModelResponse)
+                self.logger.info("🔍 [DEBUG] Processing non-streaming response...")
+                
+                # Check if response is a string (which would cause the error)
+                if isinstance(response, str):
+                    self.logger.error(f"❌ [ERROR] API returned a STRING instead of ModelResponse object!")
+                    self.logger.error(f"❌ [ERROR] String content (first 500 chars): {response[:500]}")
+                    raise TypeError(f"TAMU API returned a string instead of ModelResponse: {response[:200]}")
+                
+                if not hasattr(response, 'choices'):
+                    self.logger.error(f"❌ [ERROR] Response object has no 'choices' attribute")
+                    self.logger.error(f"❌ [ERROR] Response attributes: {dir(response)}")
+                    raise AttributeError(f"Response object has no 'choices' attribute. Type: {type(response)}")
+                
+                choices = response.choices
+                n_choices = n if n is not None else 1
+                outputs = []
+                output_tokens = 0
+                
+                for i in range(n_choices):
+                    output = choices[i].message.content or ""
+                    output_tokens += litellm.utils.token_counter(
+                        text=output,
+                        model=self.custom_tokenizer["identifier"] if self.custom_tokenizer is not None else self.config.name,
+                        custom_tokenizer=self.custom_tokenizer,
+                    )
+                    output_dict = {"message": output}
+                    
+                    # [DEBUG] Log the actual LLM output
+                    self.logger.info("📤 [LLM OUTPUT] ==== START ====")
+                    self.logger.info(f"{output}")
+                    self.logger.info("📤 [LLM OUTPUT] ==== END ====")
+                    
+                    if self.tools.use_function_calling:
+                        if response.choices[i].message.tool_calls:  # type: ignore
+                            tool_calls = [call.to_dict() for call in response.choices[i].message.tool_calls]  # type: ignore
+                        else:
+                            tool_calls = []
+                        output_dict["tool_calls"] = tool_calls
+                    
+                    if (
+                        hasattr(response.choices[i].message, "thinking_blocks")  # type: ignore
+                        and response.choices[i].message.thinking_blocks  # type: ignore
+                    ):
+                        output_dict["thinking_blocks"] = response.choices[i].message.thinking_blocks  # type: ignore
+                    
+                    outputs.append(output_dict)
+            
+        except litellm.exceptions.InternalServerError as e:
+            # [DEBUG] Catch the specific error we're seeing
+            self.logger.error(f"❌ [ERROR] InternalServerError caught!")
+            self.logger.error(f"❌ [ERROR] Error message: {str(e)}")
+            self.logger.error(f"❌ [ERROR] Error type: {type(e)}")
+            
+            # [DEBUG] Try to get raw response content
+            if hasattr(e, 'response'):
+                self.logger.error(f"❌ [ERROR] Raw response object: {e.response}")
+                self.logger.error(f"❌ [ERROR] Response type: {type(e.response)}")
+                
+                # Try to get response body
+                try:
+                    if hasattr(e.response, 'text'):
+                        self.logger.error(f"❌ [ERROR] Response text: {e.response.text}")
+                    elif hasattr(e.response, 'content'):
+                        self.logger.error(f"❌ [ERROR] Response content: {e.response.content}")
+                    elif hasattr(e.response, 'json'):
+                        try:
+                            self.logger.error(f"❌ [ERROR] Response JSON: {e.response.json()}")
+                        except:
+                            pass
+                except Exception as inner_e:
+                    self.logger.error(f"❌ [ERROR] Could not extract response body: {inner_e}")
+            
+            # [DEBUG] Check other error attributes
+            if hasattr(e, 'body'):
+                self.logger.error(f"❌ [ERROR] Error body: {e.body}")
+            if hasattr(e, 'message'):
+                self.logger.error(f"❌ [ERROR] Error message attr: {e.message}")
+            if hasattr(e, 'status_code'):
+                self.logger.error(f"❌ [ERROR] Status code: {e.status_code}")
+            
+            raise
+        except AttributeError as e:
+            # [DEBUG] Catch 'model_dump' attribute errors
+            if "model_dump" in str(e) or "choices" in str(e):
+                self.logger.error(f"❌ [ERROR] AttributeError caught!")
+                self.logger.error(f"❌ [ERROR] Error: {str(e)}")
+                self.logger.error(f"❌ [ERROR] This likely means the response format is unexpected")
+            raise
         except litellm.exceptions.ContextWindowExceededError as e:
             raise ContextWindowExceededError from e
         except litellm.exceptions.ContentPolicyViolationError as e:
@@ -732,9 +905,30 @@ class LiteLLMModel(AbstractModel):
             if "is longer than the model's context length" in str(e):
                 raise ContextWindowExceededError from e
             raise
-        self.logger.debug(f"Response: {response}")
+        except Exception as e:
+            # [DEBUG] Catch any other exceptions
+            self.logger.error(f"❌ [ERROR] Unexpected error: {type(e).__name__}")
+            self.logger.error(f"❌ [ERROR] Error message: {str(e)}")
+            raise
+        
+        self.logger.debug(f"Response collected successfully")
+        
         try:
-            cost = litellm.cost_calculator.completion_cost(response, model=self.config.name)
+            # For streaming, we need to create a mock response object for cost calculation
+            if use_streaming:
+                # Create a mock ModelResponse for cost calculation
+                from litellm.types.utils import ModelResponse, Choices, Message
+                mock_response = ModelResponse(
+                    id="mock",
+                    choices=[],
+                    created=int(time.time()),
+                    model=self.config.name,
+                    object="chat.completion"
+                )
+                cost = 0  # Can't calculate cost accurately for streaming without full response
+                self.logger.debug("Skipping cost calculation for streaming response")
+            else:
+                cost = litellm.cost_calculator.completion_cost(response, model=self.config.name)
         except Exception as e:
             self.logger.debug(f"Error calculating cost: {e}, setting cost to 0.")
             if self.config.per_instance_cost_limit > 0 or self.config.total_cost_limit > 0:
@@ -746,30 +940,7 @@ class LiteLLMModel(AbstractModel):
                 self.logger.error(msg)
                 raise ModelConfigurationError(msg)
             cost = 0
-        choices: litellm.types.utils.Choices = response.choices  # type: ignore
-        n_choices = n if n is not None else 1
-        outputs = []
-        output_tokens = 0
-        for i in range(n_choices):
-            output = choices[i].message.content or ""
-            output_tokens += litellm.utils.token_counter(
-                text=output,
-                model=self.custom_tokenizer["identifier"] if self.custom_tokenizer is not None else self.config.name,
-                custom_tokenizer=self.custom_tokenizer,
-            )
-            output_dict = {"message": output}
-            if self.tools.use_function_calling:
-                if response.choices[i].message.tool_calls:  # type: ignore
-                    tool_calls = [call.to_dict() for call in response.choices[i].message.tool_calls]  # type: ignore
-                else:
-                    tool_calls = []
-                output_dict["tool_calls"] = tool_calls
-            if (
-                hasattr(response.choices[i].message, "thinking_blocks")  # type: ignore
-                and response.choices[i].message.thinking_blocks  # type: ignore
-            ):
-                output_dict["thinking_blocks"] = response.choices[i].message.thinking_blocks  # type: ignore
-            outputs.append(output_dict)
+        
         self._update_stats(input_tokens=input_tokens, output_tokens=output_tokens, cost=cost)
         return outputs
 

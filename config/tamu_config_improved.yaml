@@ -1,0 +1,144 @@
+# TAMU LLM Configuration for SWE-agent - IMPROVED VERSION
+# Optimized for better output format and reduced syntax errors
+
+agent:
+  model:
+    api_base: https://chat-api.tamu.ai/openai
+    api_key: "sk-1ae2201e819648ee9f2cd58b7125efeb"
+    
+    completion_kwargs:
+      stream: true
+      custom_llm_provider: openai
+    
+    name: openai/protected.gpt-5
+    
+    # CRITICAL: Lower temperature for more consistent, reliable outputs
+    temperature: 0.0  # Changed from 0.7 - produces more deterministic outputs
+    
+    per_instance_call_limit: 50
+    per_instance_cost_limit: 0
+    total_cost_limit: 0
+    
+    max_input_tokens: 256000
+    
+  templates:
+    # Enhanced system template with explicit formatting instructions
+    system_template: |-
+      You are a helpful software engineering assistant. You must ALWAYS follow this exact format in your responses:
+      
+      DISCUSSION
+      [Your reasoning and planning here]
+      
+      ```
+      [Your bash command here - keep it simple!]
+      ```
+      
+      CRITICAL RULES:
+      1. Always use EXACTLY ONE "DISCUSSION" section followed by EXACTLY ONE code block with triple backticks
+      2. Keep bash commands SIMPLE - avoid complex heredocs, nested quotes, and excessive escaping
+      3. Use separate simple commands instead of one complex command
+      4. If you need to create a Python file, use str_replace_editor create command instead of heredoc
+      5. Test your bash syntax mentally before outputting
+    
+    # Improved instance template with examples
+    instance_template: |-
+      <uploaded_files>
+      {{working_dir}}
+      </uploaded_files>
+      
+      TASK: Fix the issue described in the PR below.
+      
+      <pr_description>
+      {{problem_statement}}
+      </pr_description>
+      
+      INSTRUCTIONS:
+      1. Find and read relevant code files
+      2. Create a SIMPLE reproduce script using str_replace_editor
+      3. Edit the source code to fix the issue
+      4. Verify the fix works
+      
+      IMPORTANT FORMAT REQUIREMENTS:
+      Your response must ALWAYS follow this format:
+      
+      DISCUSSION
+      I will [explain what you're doing]. First, I'll [step 1]. Then, I'll [step 2].
+      
+      ```
+      bash -c "cd {{working_dir}} && ls -la some/path"
+      ```
+      
+      BASH COMMAND GUIDELINES:
+      ✓ GOOD: Simple commands
+        - ls -la /path
+        - cat file.py
+        - python script.py
+        - str_replace_editor view /path/to/file.py
+      
+      ✗ BAD: Complex heredocs with nested quotes
+        - cat > file.py << 'EOF' with f-strings inside
+        - Complex multi-line commands with \" escaping
+      
+      Remember: Keep it simple! Use str_replace_editor for file creation.
+    
+    next_step_template: |-
+      OBSERVATION:
+      {{observation}}
+      
+      Continue following the DISCUSSION + command format.
+    
+    next_step_no_output_template: |-
+      Your command ran successfully and did not produce any output.
+      
+      Continue with the next step in the same format.
+  
+  tools:
+    env_variables:
+      PAGER: cat
+      MANPAGER: cat
+      LESS: -R
+      PIP_PROGRESS_BAR: 'off'
+      TQDM_DISABLE: '1'
+      GIT_PAGER: cat
+    
+    bundles:
+      - path: tools/registry
+      - path: tools/edit_anthropic
+      - path: tools/review_on_submit_m
+    
+    registry_variables:
+      USE_FILEMAP: 'true'
+      SUBMIT_REVIEW_MESSAGES:
+        - |
+          Thank you for your work on this issue.
+          
+          Please review and submit your changes.
+          
+          <diff>
+          {{diff}}
+          </diff>
+    
+    enable_bash_tool: true
+    
+    parse_function:
+      type: thought_action
+      # Custom error message with examples
+      error_message: |-
+        FORMAT ERROR! Your response must follow this EXACT format:
+        
+        DISCUSSION
+        [Your reasoning here]
+        
+        ```
+        [Your command here]
+        ```
+        
+        Example:
+        DISCUSSION
+        I'll first check the validators file to understand the current implementation.
+        
+        ```
+        str_replace_editor view /django__django/django/contrib/auth/validators.py
+        ```
+  
+  history_processors: []
