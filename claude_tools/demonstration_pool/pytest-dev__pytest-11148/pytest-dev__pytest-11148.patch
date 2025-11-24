@@ -1,0 +1,71 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 000000000..9924b429e
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,37 @@
++
++import sys
++from pathlib import Path
++from _pytest.pathlib import import_path, ImportMode
++import importlib
++
++def main():
++    root = Path("/testbed/tmp_pkg")
++    path = root / "pkg" / "mod.py"
++    m1 = import_path(str(path), mode=ImportMode.importlib, root=root)
++    alias = importlib.import_module("pkg.mod")
++    print("initial alias is m1:", alias is m1)
++    print("initial alias is sys.modules:", alias is sys.modules["pkg.mod"])
++    m2 = import_path(str(path), mode=ImportMode.importlib, root=root)
++    print("m1 is m2:", m1 is m2)
++    print("alias is sys.modules after second import:", alias is sys.modules["pkg.mod"])
++
++if __name__ == "__main__":
++    main()
++import sys
++from pathlib import Path
++from _pytest.pathlib import import_path, ImportMode
++import importlib
++
++def main():
++    root = Path('/testbed/tmp_pkg')
++    path = root / 'pkg' / 'mod.py'
++    m1 = import_path(str(path), mode=ImportMode.importlib, root=root)
++    alias = importlib.import_module('pkg.mod')
++    print('initial alias is m1:', alias is m1)
++    print('initial alias is sys.modules:', alias is sys.modules['pkg.mod'])
++    m2 = import_path(str(path), mode=ImportMode.importlib, root=root)
++    print('m1 is m2:', m1 is m2)
++    print('alias is sys.modules after second import:', alias is sys.modules['pkg.mod'])
++
++if __name__ == '__main__':
++    main()
+\ No newline at end of file
+diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py
+index e43310ef0..1a7886f48 100644
+--- a/src/_pytest/pathlib.py
++++ b/src/_pytest/pathlib.py
+@@ -534,6 +534,14 @@ def import_path(
+         if spec is None:
+             raise ImportError(f"Can't find module {module_name} at location {path}")
+         mod = importlib.util.module_from_spec(spec)
++        existing = sys.modules.get(module_name)
++        existing = sys.modules.get(module_name)
++        if existing is not None:
++            insert_missing_modules(sys.modules, module_name)
++            return existing
++        if existing is not None:
++            insert_missing_modules(sys.modules, module_name)
++            return existing
+         sys.modules[module_name] = mod
+         spec.loader.exec_module(mod)  # type: ignore[union-attr]
+         insert_missing_modules(sys.modules, module_name)
+diff --git a/tmp_pkg/pkg/mod.py b/tmp_pkg/pkg/mod.py
+new file mode 100644
+index 000000000..caaad58a5
+--- /dev/null
++++ b/tmp_pkg/pkg/mod.py
+@@ -0,0 +1 @@
++value = 0
+\ No newline at end of file

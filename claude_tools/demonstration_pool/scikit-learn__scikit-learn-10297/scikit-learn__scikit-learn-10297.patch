@@ -1,0 +1,49 @@
+diff --git a/repro_check_shape.py b/repro_check_shape.py
+new file mode 100644
+index 000000000..235d618a1
+--- /dev/null
++++ b/repro_check_shape.py
+@@ -0,0 +1 @@
++import numpy as np; from sklearn import linear_model as lm; n=50; x=np.random.randn(n,5); y=(np.random.randn(n)>0).astype(int); rr=lm.RidgeClassifierCV(alphas=np.arange(0.1,2.0,0.1), normalize=True, store_cv_values=True); rr.fit(x,y); print('cv_values_ present:', hasattr(rr,'cv_values_')); print('cv_values_ shape:', rr.cv_values_.shape if hasattr(rr,'cv_values_') else None)
+\ No newline at end of file
+diff --git a/repro_store_cv_values.py b/repro_store_cv_values.py
+new file mode 100644
+index 000000000..0cfe85e5c
+--- /dev/null
++++ b/repro_store_cv_values.py
+@@ -0,0 +1 @@
++import numpy as np; from sklearn import linear_model as lm; n=100; x=np.random.randn(n,30); y=(np.random.randn(n)>0).astype(int); print('Instantiating RidgeClassifierCV with store_cv_values=True'); rr=lm.RidgeClassifierCV(alphas=np.arange(0.1,10,0.1), normalize=True, store_cv_values=True); print('Fitting...'); rr.fit(x,y); print('Fitted. Has cv_values_:', hasattr(rr,'cv_values_')); print('Done.')
+\ No newline at end of file
+diff --git a/sklearn/linear_model/ridge.py b/sklearn/linear_model/ridge.py
+index 911c74ae3..959b3ec48 100644
+--- a/sklearn/linear_model/ridge.py
++++ b/sklearn/linear_model/ridge.py
+@@ -1333,10 +1333,10 @@ class RidgeClassifierCV(LinearClassifierMixin, _BaseRidgeCV):
+     advantage of the multi-variate response support in Ridge.
+     """
+     def __init__(self, alphas=(0.1, 1.0, 10.0), fit_intercept=True,
+-                 normalize=False, scoring=None, cv=None, class_weight=None):
++                 normalize=False, scoring=None, cv=None, class_weight=None, store_cv_values=False):
+         super(RidgeClassifierCV, self).__init__(
+             alphas=alphas, fit_intercept=fit_intercept, normalize=normalize,
+-            scoring=scoring, cv=cv)
++            scoring=scoring, cv=cv, store_cv_values=store_cv_values)
+         self.class_weight = class_weight
+ 
+     def fit(self, X, y, sample_weight=None):
+diff --git a/test_cv_split_raises.py b/test_cv_split_raises.py
+new file mode 100644
+index 000000000..0fa179a59
+--- /dev/null
++++ b/test_cv_split_raises.py
+@@ -0,0 +1 @@
++import numpy as np; from sklearn import linear_model as lm; n=30; x=np.random.randn(n,4); y=(np.random.randn(n)>0).astype(int); rr=lm.RidgeClassifierCV(alphas=np.arange(0.1,1.0,0.1), normalize=True, store_cv_values=True, cv=3); print('About to fit with cv=3 and store_cv_values=True (should raise)'); rr.fit(x,y)
+\ No newline at end of file
+diff --git a/test_no_cv_values.py b/test_no_cv_values.py
+new file mode 100644
+index 000000000..d293b3114
+--- /dev/null
++++ b/test_no_cv_values.py
+@@ -0,0 +1 @@
++import numpy as np; from sklearn import linear_model as lm; n=40; x=np.random.randn(n,6); y=(np.random.randn(n)>0).astype(int); rr=lm.RidgeClassifierCV(alphas=np.arange(0.1,2.0,0.1), normalize=True, store_cv_values=False); rr.fit(x,y); print('cv_values_ present (expect False):', hasattr(rr,'cv_values_'))
+\ No newline at end of file

@@ -1,0 +1,41 @@
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index 7649c39262..57150f96dc 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -32,7 +32,7 @@ class SQLCompiler:
+         self.select = None
+         self.annotation_col_map = None
+         self.klass_info = None
+-        self.ordering_parts = re.compile(r'(.*)\s(ASC|DESC)(.*)')
++        self.ordering_parts = re.compile(r'(.*)\s(ASC|DESC)(.*)', re.DOTALL)
+         self._meta_ordering = None
+ 
+     def setup_query(self):
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..0a107af1e4
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,21 @@
++
++from django.db.models.sql.compiler import SQLCompiler
++comp = SQLCompiler(None, None, None)
++samples = [
++    """case when status in ('accepted', 'verification')
++     then 2 else 1 end DESC""",
++    """case when status in ('accepted', 'verification')
++     then (accepted_datetime, preferred_datetime)
++     else null end ASC""",
++    """case when status not in ('accepted', 'verification')
++     then (accepted_datetime, preferred_datetime, created_at)
++     else null end DESC""",
++]
++seen = set()
++for s in samples:
++    m = comp.ordering_parts.search(s)
++    print("without_ordering:", repr(m.group(1)))
++    seen.add(m.group(1))
++print("unique without_ordering terms:", len(seen))
++assert len(seen) == 3
++print("OK")
+\ No newline at end of file

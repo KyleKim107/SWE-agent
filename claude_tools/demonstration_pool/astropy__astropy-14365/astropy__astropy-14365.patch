@@ -1,0 +1,185 @@
+diff --git a/astropy/io/ascii/qdp.py b/astropy/io/ascii/qdp.py
+index 83a4f004a..5324dc81c 100644
+--- a/astropy/io/ascii/qdp.py
++++ b/astropy/io/ascii/qdp.py
+@@ -68,7 +68,7 @@ def _line_type(line, delimiter=None):
+     _new_re = rf"NO({sep}NO)+"
+     _data_re = rf"({_decimal_re}|NO|[-+]?nan)({sep}({_decimal_re}|NO|[-+]?nan))*)"
+     _type_re = rf"^\s*((?P<command>{_command_re})|(?P<new>{_new_re})|(?P<data>{_data_re})?\s*(\!(?P<comment>.*))?\s*$"
+-    _line_type_re = re.compile(_type_re)
++    _line_type_re = re.compile(_type_re, re.IGNORECASE)
+     line = line.strip()
+     if not line:
+         return "comment"
+@@ -306,7 +306,7 @@ def _get_tables_from_qdp_file(qdp_file, input_colnames=None, delimiter=None):
+ 
+             values = []
+             for v in line.split(delimiter):
+-                if v == "NO":
++                if v.upper() == "NO":
+                     values.append(np.ma.masked)
+                 else:
+                     # Understand if number is int or float
+diff --git a/case_terr.qdp b/case_terr.qdp
+new file mode 100644
+index 000000000..6ee6eb5a0
+--- /dev/null
++++ b/case_terr.qdp
+@@ -0,0 +1,2 @@
++read terr 1
++1 0.1 0.2
+diff --git a/lower_no.qdp b/lower_no.qdp
+new file mode 100644
+index 000000000..907cbf98d
+--- /dev/null
++++ b/lower_no.qdp
+@@ -0,0 +1,2 @@
++read serr 1
++1 no
+diff --git a/lower_serr.qdp b/lower_serr.qdp
+new file mode 100644
+index 000000000..b5750561d
+--- /dev/null
++++ b/lower_serr.qdp
+@@ -0,0 +1,2 @@
++read serr 1 2
++1 0.5 1 0.5
+diff --git a/lower_terr.qdp b/lower_terr.qdp
+new file mode 100644
+index 000000000..6ee6eb5a0
+--- /dev/null
++++ b/lower_terr.qdp
+@@ -0,0 +1,2 @@
++read terr 1
++1 0.1 0.2
+diff --git a/mask.qdp b/mask.qdp
+new file mode 100644
+index 000000000..907cbf98d
+--- /dev/null
++++ b/mask.qdp
+@@ -0,0 +1,2 @@
++read serr 1
++1 no
+diff --git a/mask_lower.qdp b/mask_lower.qdp
+new file mode 100644
+index 000000000..907cbf98d
+--- /dev/null
++++ b/mask_lower.qdp
+@@ -0,0 +1,2 @@
++read serr 1
++1 no
+diff --git a/mixed.qdp b/mixed.qdp
+new file mode 100644
+index 000000000..bd1168429
+--- /dev/null
++++ b/mixed.qdp
+@@ -0,0 +1,2 @@
++ReAd SeRr 1 2
++1 0.5 1 0.5
+diff --git a/mixed_case.qdp b/mixed_case.qdp
+new file mode 100644
+index 000000000..bd1168429
+--- /dev/null
++++ b/mixed_case.qdp
+@@ -0,0 +1,2 @@
++ReAd SeRr 1 2
++1 0.5 1 0.5
+diff --git a/scripts/repro_qdp_case.py b/scripts/repro_qdp_case.py
+new file mode 100644
+index 000000000..aaea3b447
+--- /dev/null
++++ b/scripts/repro_qdp_case.py
+@@ -0,0 +1,7 @@
++from astropy.table import Table
++with open('test.qdp','w') as f:
++    f.write('read serr 1 2\n')
++    f.write('1 0.5 1 0.5\n')
++t = Table.read('test.qdp', format='ascii.qdp')
++print('Columns:', t.colnames)
++print('Row 0:', list(t[0]))
+\ No newline at end of file
+diff --git a/scripts/test_mask.py b/scripts/test_mask.py
+new file mode 100644
+index 000000000..0f0d29c42
+--- /dev/null
++++ b/scripts/test_mask.py
+@@ -0,0 +1,7 @@
++from astropy.table import Table
++with open('mask_lower.qdp','w') as f:
++    f.write('read serr 1\n')
++    f.write('1 no\n')
++t = Table.read('mask_lower.qdp', format='ascii.qdp')
++print('Columns:', t.colnames)
++print('Row 0:', list(t[0]))
+\ No newline at end of file
+diff --git a/scripts/test_terr.py b/scripts/test_terr.py
+new file mode 100644
+index 000000000..123163297
+--- /dev/null
++++ b/scripts/test_terr.py
+@@ -0,0 +1,7 @@
++from astropy.table import Table
++with open('case_terr.qdp','w') as f:
++    f.write('read terr 1\n')
++    f.write('1 0.1 0.2\n')
++t = Table.read('case_terr.qdp', format='ascii.qdp')
++print('Columns:', t.colnames)
++print('Row 0:', list(t[0]))
+\ No newline at end of file
+diff --git a/terr.qdp b/terr.qdp
+new file mode 100644
+index 000000000..6ee6eb5a0
+--- /dev/null
++++ b/terr.qdp
+@@ -0,0 +1,2 @@
++read terr 1
++1 0.1 0.2
+diff --git a/test.qdp b/test.qdp
+new file mode 100644
+index 000000000..b5750561d
+--- /dev/null
++++ b/test.qdp
+@@ -0,0 +1,2 @@
++read serr 1 2
++1 0.5 1 0.5
+diff --git a/test_lower.qdp b/test_lower.qdp
+new file mode 100644
+index 000000000..6ee6eb5a0
+--- /dev/null
++++ b/test_lower.qdp
+@@ -0,0 +1,2 @@
++read terr 1
++1 0.1 0.2
+diff --git a/test_mask.qdp b/test_mask.qdp
+new file mode 100644
+index 000000000..907cbf98d
+--- /dev/null
++++ b/test_mask.qdp
+@@ -0,0 +1,2 @@
++read serr 1
++1 no
+diff --git a/test_mask_data.qdp b/test_mask_data.qdp
+new file mode 100644
+index 000000000..907cbf98d
+--- /dev/null
++++ b/test_mask_data.qdp
+@@ -0,0 +1,2 @@
++read serr 1
++1 no
+diff --git a/test_no.qdp b/test_no.qdp
+new file mode 100644
+index 000000000..cec586337
+--- /dev/null
++++ b/test_no.qdp
+@@ -0,0 +1,3 @@
++read serr 1
++1 0.5
++no
+diff --git a/test_no2.qdp b/test_no2.qdp
+new file mode 100644
+index 000000000..190f0dd31
+--- /dev/null
++++ b/test_no2.qdp
+@@ -0,0 +1,2 @@
++read serr 1
++no no

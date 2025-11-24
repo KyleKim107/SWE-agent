@@ -1,0 +1,284 @@
+{
+  "total_demonstrations": 31,
+  "demonstrations": [
+    {
+      "instance_id": "astropy__astropy-14182",
+      "repository": "astropy",
+      "resolved": true,
+      "patch_file": "astropy__astropy-14182.patch",
+      "patch_size": 1887,
+      "trajectory_file": "astropy__astropy-14182.traj",
+      "source_directory": "astropy__astropy-14182"
+    },
+    {
+      "instance_id": "astropy__astropy-14365",
+      "repository": "astropy",
+      "resolved": true,
+      "patch_file": "astropy__astropy-14365.patch",
+      "patch_size": 4714,
+      "trajectory_file": "astropy__astropy-14365.traj",
+      "source_directory": "astropy__astropy-14365"
+    },
+    {
+      "instance_id": "astropy__astropy-14995",
+      "repository": "astropy",
+      "resolved": true,
+      "patch_file": "astropy__astropy-14995.patch",
+      "patch_size": 1942,
+      "trajectory_file": "astropy__astropy-14995.traj",
+      "source_directory": "astropy__astropy-14995"
+    },
+    {
+      "instance_id": "astropy__astropy-6938",
+      "repository": "astropy",
+      "resolved": true,
+      "patch_file": "astropy__astropy-6938.patch",
+      "patch_size": 10056,
+      "trajectory_file": "astropy__astropy-6938.traj",
+      "source_directory": "astropy__astropy-6938"
+    },
+    {
+      "instance_id": "django__django-10914",
+      "repository": "django",
+      "resolved": true,
+      "patch_file": "django__django-10914.patch",
+      "patch_size": 12022,
+      "trajectory_file": "django__django-10914.traj",
+      "source_directory": "django__django-10914"
+    },
+    {
+      "instance_id": "django__django-10924",
+      "repository": "django",
+      "resolved": true,
+      "patch_file": "django__django-10924.patch",
+      "patch_size": 2234,
+      "trajectory_file": "django__django-10924.traj",
+      "source_directory": "django__django-10924"
+    },
+    {
+      "instance_id": "django__django-11019",
+      "repository": "django",
+      "resolved": true,
+      "patch_file": "django__django-11019.patch",
+      "patch_size": 4210,
+      "trajectory_file": "django__django-11019.traj",
+      "source_directory": "django__django-11019"
+    },
+    {
+      "instance_id": "django__django-11039",
+      "repository": "django",
+      "resolved": true,
+      "patch_file": "django__django-11039.patch",
+      "patch_size": 1029,
+      "trajectory_file": "django__django-11039.traj",
+      "source_directory": "django__django-11039"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-18869",
+      "repository": "matplotlib",
+      "resolved": true,
+      "patch_file": "matplotlib__matplotlib-18869.patch",
+      "patch_size": 680,
+      "trajectory_file": "matplotlib__matplotlib-18869.traj",
+      "source_directory": "matplotlib__matplotlib-18869"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-22711",
+      "repository": "matplotlib",
+      "resolved": true,
+      "patch_file": "matplotlib__matplotlib-22711.patch",
+      "patch_size": 2431,
+      "trajectory_file": "matplotlib__matplotlib-22711.traj",
+      "source_directory": "matplotlib__matplotlib-22711"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-22835",
+      "repository": "matplotlib",
+      "resolved": true,
+      "patch_file": "matplotlib__matplotlib-22835.patch",
+      "patch_size": 4583,
+      "trajectory_file": "matplotlib__matplotlib-22835.traj",
+      "source_directory": "matplotlib__matplotlib-22835"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-23299",
+      "repository": "matplotlib",
+      "resolved": true,
+      "patch_file": "matplotlib__matplotlib-23299.patch",
+      "patch_size": 1146,
+      "trajectory_file": "matplotlib__matplotlib-23299.traj",
+      "source_directory": "matplotlib__matplotlib-23299"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-23314",
+      "repository": "matplotlib",
+      "resolved": true,
+      "patch_file": "matplotlib__matplotlib-23314.patch",
+      "patch_size": 2070,
+      "trajectory_file": "matplotlib__matplotlib-23314.traj",
+      "source_directory": "matplotlib__matplotlib-23314"
+    },
+    {
+      "instance_id": "pylint-dev__pylint-5859",
+      "repository": "pylint-dev",
+      "resolved": true,
+      "patch_file": "pylint-dev__pylint-5859.patch",
+      "patch_size": 2427,
+      "trajectory_file": "pylint-dev__pylint-5859.traj",
+      "source_directory": "pylint-dev__pylint-5859"
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6506",
+      "repository": "pylint-dev",
+      "resolved": true,
+      "patch_file": "pylint-dev__pylint-6506.patch",
+      "patch_size": 1034,
+      "trajectory_file": "pylint-dev__pylint-6506.traj",
+      "source_directory": "pylint-dev__pylint-6506"
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7080",
+      "repository": "pylint-dev",
+      "resolved": true,
+      "patch_file": "pylint-dev__pylint-7080.patch",
+      "patch_size": 4238,
+      "trajectory_file": "pylint-dev__pylint-7080.traj",
+      "source_directory": "pylint-dev__pylint-7080"
+    },
+    {
+      "instance_id": "pylint-dev__pylint-7228",
+      "repository": "pylint-dev",
+      "resolved": true,
+      "patch_file": "pylint-dev__pylint-7228.patch",
+      "patch_size": 3579,
+      "trajectory_file": "pylint-dev__pylint-7228.traj",
+      "source_directory": "pylint-dev__pylint-7228"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11143",
+      "repository": "pytest-dev",
+      "resolved": true,
+      "patch_file": "pytest-dev__pytest-11143.patch",
+      "patch_size": 245,
+      "trajectory_file": "pytest-dev__pytest-11143.traj",
+      "source_directory": "pytest-dev__pytest-11143"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-11148",
+      "repository": "pytest-dev",
+      "resolved": true,
+      "patch_file": "pytest-dev__pytest-11148.patch",
+      "patch_size": 2572,
+      "trajectory_file": "pytest-dev__pytest-11148.traj",
+      "source_directory": "pytest-dev__pytest-11148"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5103",
+      "repository": "pytest-dev",
+      "resolved": true,
+      "patch_file": "pytest-dev__pytest-5103.patch",
+      "patch_size": 5797,
+      "trajectory_file": "pytest-dev__pytest-5103.traj",
+      "source_directory": "pytest-dev__pytest-5103"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5221",
+      "repository": "pytest-dev",
+      "resolved": true,
+      "patch_file": "pytest-dev__pytest-5221.patch",
+      "patch_size": 1240,
+      "trajectory_file": "pytest-dev__pytest-5221.traj",
+      "source_directory": "pytest-dev__pytest-5221"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5227",
+      "repository": "pytest-dev",
+      "resolved": true,
+      "patch_file": "pytest-dev__pytest-5227.patch",
+      "patch_size": 1450,
+      "trajectory_file": "pytest-dev__pytest-5227.traj",
+      "source_directory": "pytest-dev__pytest-5227"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-10297",
+      "repository": "scikit-learn",
+      "resolved": true,
+      "patch_file": "scikit-learn__scikit-learn-10297.patch",
+      "patch_size": 3085,
+      "trajectory_file": "scikit-learn__scikit-learn-10297.traj",
+      "source_directory": "scikit-learn__scikit-learn-10297"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-10949",
+      "repository": "scikit-learn",
+      "resolved": true,
+      "patch_file": "scikit-learn__scikit-learn-10949.patch",
+      "patch_size": 1894,
+      "trajectory_file": "scikit-learn__scikit-learn-10949.traj",
+      "source_directory": "scikit-learn__scikit-learn-10949"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-11040",
+      "repository": "scikit-learn",
+      "resolved": true,
+      "patch_file": "scikit-learn__scikit-learn-11040.patch",
+      "patch_size": 5951,
+      "trajectory_file": "scikit-learn__scikit-learn-11040.traj",
+      "source_directory": "scikit-learn__scikit-learn-11040"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-11281",
+      "repository": "scikit-learn",
+      "resolved": true,
+      "patch_file": "scikit-learn__scikit-learn-11281.patch",
+      "patch_size": 1853,
+      "trajectory_file": "scikit-learn__scikit-learn-11281.traj",
+      "source_directory": "scikit-learn__scikit-learn-11281"
+    },
+    {
+      "instance_id": "sympy__sympy-11400",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-11400.patch",
+      "patch_size": 2589,
+      "trajectory_file": "sympy__sympy-11400.traj",
+      "source_directory": "sympy__sympy-11400"
+    },
+    {
+      "instance_id": "sympy__sympy-11870",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-11870.patch",
+      "patch_size": 2740,
+      "trajectory_file": "sympy__sympy-11870.traj",
+      "source_directory": "sympy__sympy-11870"
+    },
+    {
+      "instance_id": "sympy__sympy-11897",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-11897.patch",
+      "patch_size": 2446,
+      "trajectory_file": "sympy__sympy-11897.traj",
+      "source_directory": "sympy__sympy-11897"
+    },
+    {
+      "instance_id": "sympy__sympy-12171",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-12171.patch",
+      "patch_size": 2226,
+      "trajectory_file": "sympy__sympy-12171.traj",
+      "source_directory": "sympy__sympy-12171"
+    },
+    {
+      "instance_id": "sympy__sympy-12236",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-12236.patch",
+      "patch_size": 4753,
+      "trajectory_file": "sympy__sympy-12236.traj",
+      "source_directory": "sympy__sympy-12236"
+    }
+  ]
+}

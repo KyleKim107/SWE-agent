@@ -1,0 +1,55 @@
+diff --git a/django/forms/fields.py b/django/forms/fields.py
+index a977256525..bde82c5858 100644
+--- a/django/forms/fields.py
++++ b/django/forms/fields.py
+@@ -1078,6 +1078,7 @@ class MultiValueField(Field):
+ class FilePathField(ChoiceField):
+     def __init__(self, path, *, match=None, recursive=False, allow_files=True,
+                  allow_folders=False, **kwargs):
++        if callable(path): path = path()
+         self.path, self.match, self.recursive = path, match, recursive
+         self.allow_files, self.allow_folders = allow_files, allow_folders
+         super().__init__(choices=(), **kwargs)
+diff --git a/repro_callable_path.py b/repro_callable_path.py
+new file mode 100644
+index 0000000000..2364fcc924
+--- /dev/null
++++ b/repro_callable_path.py
+@@ -0,0 +1,30 @@
++import sys
++import os
++sys.path.insert(0, "/testbed")
++from django.forms import FilePathField as FormFPF
++from django.db.models.fields import FilePathField as ModelFPF
++from django.db.migrations.serializer import serializer_factory
++
++def get_test_path():
++    return "/testbed/tmp_fpf"
++
++print("Testing forms.FilePathField with callable path")
++try:
++    ff = FormFPF(get_test_path, allow_files=True, allow_folders=True, required=False, recursive=True)
++    print("Choices count:", len(ff.choices))
++    print("First 3 choices:", ff.choices[:3])
++except Exception as e:
++    print("Error initializing FormFPF with callable path:", type(e).__name__, e)
++
++print("Testing serializer for callable path")
++ser = serializer_factory(get_test_path)
++s, imports = ser.serialize()
++print("Serialized callable:", s)
++print("Has imports:", bool(imports))
++
++print("Testing model field deconstruct passes through callable")
++mf = ModelFPF(path=get_test_path, allow_files=True, allow_folders=True)
++name, path_mod, args, kwargs = mf.deconstruct()
++print("deconstruct kwargs path is callable:", callable(kwargs.get("path")))
++ffield = mf.formfield(required=False, recursive=True)
++print("Model form choices count:", len(ffield.choices))
+\ No newline at end of file
+diff --git a/tmp_fpf/a.txt b/tmp_fpf/a.txt
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/tmp_fpf/subdir/b.txt b/tmp_fpf/subdir/b.txt
+new file mode 100644
+index 0000000000..e69de29bb2

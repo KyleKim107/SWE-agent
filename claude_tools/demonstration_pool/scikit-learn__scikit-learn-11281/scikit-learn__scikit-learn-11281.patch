@@ -1,0 +1,49 @@
+diff --git a/repro_mm_clusterer.py b/repro_mm_clusterer.py
+new file mode 100644
+index 000000000..761548482
+--- /dev/null
++++ b/repro_mm_clusterer.py
+@@ -0,0 +1,15 @@
++
++import numpy as np
++from sklearn.mixture import GaussianMixture, BayesianGaussianMixture
++rng = np.random.RandomState(0)
++X = np.vstack([rng.randn(50, 2) + np.array([2, 0]), rng.randn(50, 2) + np.array([-2, 0])])
++gmm = GaussianMixture(n_components=2, random_state=0)
++labels = gmm.fit_predict(X)
++print('GMM labels_ exists:', hasattr(gmm, 'labels_'))
++print('GMM labels length:', len(gmm.labels_))
++print('GMM fit_predict matches predict:', np.all(labels == gmm.predict(X)))
++bgm = BayesianGaussianMixture(n_components=2, random_state=0)
++bgm.fit(X)
++print('BGM labels_ exists:', hasattr(bgm, 'labels_'))
++print('BGM labels length:', len(bgm.labels_))
++print('BGM predict length:', len(bgm.predict(X)))
+\ No newline at end of file
+diff --git a/sklearn/mixture/base.py b/sklearn/mixture/base.py
+index a9f66740f..14b0b920d 100644
+--- a/sklearn/mixture/base.py
++++ b/sklearn/mixture/base.py
+@@ -240,6 +240,11 @@ class BaseMixture(six.with_metaclass(ABCMeta, DensityMixin, BaseEstimator)):
+         self._set_parameters(best_params)
+         self.n_iter_ = best_n_iter
+ 
++        # store training labels for clusterer-compatible interface
++        try:
++            self.labels_ = self.predict(X)
++        except Exception:
++            pass
+         return self
+ 
+     def _e_step(self, X):
+@@ -360,6 +365,10 @@ class BaseMixture(six.with_metaclass(ABCMeta, DensityMixin, BaseEstimator)):
+         _, log_resp = self._estimate_log_prob_resp(X)
+         return np.exp(log_resp)
+ 
++    def fit_predict(self, X, y=None):
++        self.fit(X, y)
++        return self.labels_
++
+     def sample(self, n_samples=1):
+         """Generate random samples from the fitted Gaussian distribution.
+ 

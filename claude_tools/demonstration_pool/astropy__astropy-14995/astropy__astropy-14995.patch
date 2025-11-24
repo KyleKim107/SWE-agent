@@ -1,0 +1,51 @@
+diff --git a/reproduce_nddata_mask.py b/reproduce_nddata_mask.py
+new file mode 100644
+index 000000000..b1ac9abcf
+--- /dev/null
++++ b/reproduce_nddata_mask.py
+@@ -0,0 +1,24 @@
++
++import numpy as np
++from astropy.nddata import NDDataRef
++
++a = np.array([[0,1,0],[1,0,1],[0,1,0]])
++mask = np.array([[0,1,64],[8,0,1],[2,1,0]])
++
++nref_nomask = NDDataRef(a)
++nref_mask = NDDataRef(a, mask=mask)
++
++print('nomask * 1 ->', nref_nomask.multiply(1., handle_mask=np.bitwise_or).mask)
++print('nomask * nomask ->', nref_nomask.multiply(nref_nomask, handle_mask=np.bitwise_or).mask)
++try:
++    print('mask * 1 ->', nref_mask.multiply(1., handle_mask=np.bitwise_or).mask)
++except Exception as e:
++    print('mask * 1 raised:', type(e), e)
++try:
++    print('mask * nomask ->', nref_mask.multiply(nref_nomask, handle_mask=np.bitwise_or).mask)
++except Exception as e:
++    print('mask * nomask raised:', type(e), e)
++print('mask * mask ->', nref_mask.multiply(nref_mask, handle_mask=np.bitwise_or).mask)
++print('add mask + 1 ->', nref_mask.add(1., handle_mask=np.bitwise_or).mask)
++print('add mask + nomask ->', nref_mask.add(nref_nomask, handle_mask=np.bitwise_or).mask)
++print('add mask + mask ->', nref_mask.add(nref_mask, handle_mask=np.bitwise_or).mask)
+\ No newline at end of file
+diff --git a/test_add_nddata_mask.py b/test_add_nddata_mask.py
+new file mode 100644
+index 000000000..a66e6ed5b
+--- /dev/null
++++ b/test_add_nddata_mask.py
+@@ -0,0 +1,13 @@
++
++import numpy as np
++from astropy.nddata import NDDataRef
++
++a = np.array([[0,1,0],[1,0,1],[0,1,0]])
++mask = np.array([[0,1,64],[8,0,1],[2,1,0]])
++
++nref_nomask = NDDataRef(a)
++nref_mask = NDDataRef(a, mask=mask)
++
++print('add mask + 1 ->', nref_mask.add(1., handle_mask=np.bitwise_or).mask)
++print('add mask + nomask ->', nref_mask.add(nref_nomask, handle_mask=np.bitwise_or).mask)
++print('add mask + mask ->', nref_mask.add(nref_mask, handle_mask=np.bitwise_or).mask)
+\ No newline at end of file

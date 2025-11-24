@@ -1,0 +1,71 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..0471a3518d
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,8 @@
++
++from sympy import var, exp, log, latex
++x = var('x', positive=True)
++print('latex(exp(-x)*log(x)) =', latex(exp(-x)*log(x)))
++x, y = var('x y')
++x, y = var('x y')
++print('latex(1/(x+y)/2) =', latex(1/(x + y)/2))
++print('latex(1/(x+y)/2) =', latex(1/(x + y)/2))
+\ No newline at end of file
+diff --git a/repro_fixed.py b/repro_fixed.py
+new file mode 100644
+index 0000000000..7dc0619f28
+--- /dev/null
++++ b/repro_fixed.py
+@@ -0,0 +1,6 @@
++
++from sympy import var, exp, log, latex
++x = var('x', positive=True)
++print('latex(exp(-x)*log(x)) =', latex(exp(-x)*log(x)))
++x, y = var('x y')
++print('latex(1/(x+y)/2) =', latex(1/(x + y)/2))
+\ No newline at end of file
+diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py
+index 1edc712358..029ed71aee 100644
+--- a/sympy/printing/latex.py
++++ b/sympy/printing/latex.py
+@@ -356,9 +356,24 @@ def _print_Mul(self, expr):
+         else:
+             tex = ""
+ 
+-        from sympy.simplify import fraction
+-        numer, denom = fraction(expr, exact=True)
++        from sympy.core import Mul
++
+         separator = self._settings['mul_symbol_latex']
++        # manual numerator/denominator split (avoid distributing into sums)
++        args = expr.as_ordered_factors() if self.order not in ('old', 'none') else expr.args
++        numer_factors = []
++        denom_factors = []
++        for term in args:
++            if term.is_Rational:
++                p = term.p; q = term.q
++                if p != 1: numer_factors.append(S(p))
++                if q != 1: denom_factors.append(S(q))
++            elif term.is_Pow and term.exp.is_Integer and term.exp.is_negative and term.base.is_commutative:
++                denom_factors.append(term.base**(-term.exp))
++            else:
++                numer_factors.append(term)
++        numer = Mul(*numer_factors) if numer_factors else S.One
++        denom = Mul(*denom_factors, evaluate=False) if denom_factors else S.One
+         numbersep = self._settings['mul_symbol_latex_numbers']
+ 
+         def convert(expr):
+diff --git a/test_e.py b/test_e.py
+new file mode 100644
+index 0000000000..a18e745e7d
+--- /dev/null
++++ b/test_e.py
+@@ -0,0 +1,5 @@
++
++from sympy import symbols, E, exp, latex
++x = symbols('x')
++print('latex(E**(-x)) =', latex(E**(-x)))
++print('latex(exp(-x)) =', latex(exp(-x)))
+\ No newline at end of file
