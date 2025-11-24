@@ -1,0 +1,68 @@
+{
+  "strategy": "semantic",
+  "k": 5,
+  "total_instances": 10,
+  "results": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/astropy__astropy-12907",
+      "return_code": 0
+    },
+    {
+      "instance_id": "astropy__astropy-14182",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/astropy__astropy-14182",
+      "return_code": 0
+    },
+    {
+      "instance_id": "astropy__astropy-14365",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/astropy__astropy-14365",
+      "return_code": 0
+    },
+    {
+      "instance_id": "astropy__astropy-14995",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/astropy__astropy-14995",
+      "return_code": 0
+    },
+    {
+      "instance_id": "astropy__astropy-6938",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/astropy__astropy-6938",
+      "return_code": 0
+    },
+    {
+      "instance_id": "astropy__astropy-7746",
+      "success": false,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/astropy__astropy-7746",
+      "return_code": 0
+    },
+    {
+      "instance_id": "django__django-10914",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/django__django-10914",
+      "return_code": 0
+    },
+    {
+      "instance_id": "django__django-10924",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/django__django-10924",
+      "return_code": 0
+    },
+    {
+      "instance_id": "django__django-11001",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/django__django-11001",
+      "return_code": 0
+    },
+    {
+      "instance_id": "django__django-11019",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/semantic_k5/django__django-11019",
+      "return_code": 0
+    }
+  ],
+  "success_rate": 0.9
+}
