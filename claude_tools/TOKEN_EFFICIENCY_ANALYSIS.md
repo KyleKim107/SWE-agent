@@ -25,6 +25,22 @@ Analysis of SWE-agent token usage reveals that **93-99% of input tokens come fro
 - `demonstration_pool_compressed/` - Moderate compression (40% reduction)
 - `demonstration_pool_aggressive/` - Aggressive compression (56% reduction)
 
+### ⚠️ Demonstration Count Limitation (k=1)
+
+**토큰 효율성을 위해 데모 수를 1개로 제한합니다 (`--k 1`).**
+
+| k 값 | 예상 데모 토큰 | 비고 |
+|------|---------------|------|
+| k=5 (기존) | ~200k tokens | 기존 설정, 높은 토큰 사용량 |
+| k=2 | ~80k tokens | 중간 절충 |
+| **k=1 (권장)** | ~40k tokens | **토큰 효율성 최적화** |
+
+**k=1 선택 이유:**
+- 데모가 전체 토큰의 93-99%를 차지 → 데모 수 감소가 가장 효과적
+- 압축된 데모풀 + k=1 조합으로 **최대 80% 토큰 절감** 가능
+- 단일 고품질 데모가 다수의 저품질 데모보다 효과적일 수 있음
+- SWE-bench Lite 300개 인스턴스 실행 시 비용 대폭 절감
+
 ## Token Breakdown Analysis
 
 ### Current Distribution (11 test instances)
