@@ -1,0 +1,136 @@
+# TAMU LLM Configuration for SWE-agent - TOKEN OPTIMIZED VERSION
+# Optimized for reduced token usage while maintaining effectiveness
+#
+# Key Optimizations:
+# 1. Reduced max_observation_length: 100k -> 20k (saves ~80% on verbose outputs)
+# 2. Added history processors to manage context window
+# 3. Shorter, more focused templates
+# 4. Designed for use with 1 compressed demonstration (not 2-5 full demos)
+#
+# Expected token savings: 70-80% compared to original config
+
+agent:
+  model:
+    api_base: https://chat-api.tamu.ai/openai
+    api_key: "sk-1ae2201e819648ee9f2cd58b7125efeb"
+    
+    completion_kwargs:
+      stream: true
+      custom_llm_provider: openai
+    
+    name: openai/protected.gpt-5
+    
+    temperature: 0.0
+    
+    per_instance_call_limit: 50
+    per_instance_cost_limit: 0
+    total_cost_limit: 0
+    
+    max_input_tokens: 256000
+    
+  templates:
+    # OPTIMIZATION: Shortened system template (saves ~200 tokens)
+    system_template: |-
+      You are a software engineering assistant. Format ALL responses as:
+
+      DISCUSSION
+      [Your brief reasoning]
+
+      ```
+      [Single bash command or tool call]
+      ```
+
+      Rules: One DISCUSSION + one code block. Use str_replace_editor for file edits.
+      When done: run `submit` to finish.
+    
+    # OPTIMIZATION: Condensed instance template (saves ~300 tokens)
+    instance_template: |-
+      Repository: {{working_dir}}
+      
+      <issue>
+      {{problem_statement}}
+      </issue>
+      
+      Fix this issue. Steps:
+      1. Find relevant files
+      2. Make minimal changes
+      3. Test the fix
+      4. Run `submit`
+      
+      Format: DISCUSSION + one ```command block```
+    
+    next_step_template: |-
+      {{observation}}
+    
+    next_step_no_output_template: |-
+      (No output)
+    
+    # OPTIMIZATION: Truncate observations at 20k chars instead of 100k
+    # This is the BIGGEST token saver - prevents verbose outputs from bloating context
+    max_observation_length: 20000
+    
+    next_step_truncated_observation_template: |-
+      {{observation[:max_observation_length]}}
+      ... [{{elided_chars}} chars truncated - use head/tail/grep for specific content]
+    
+    # Demonstrations will be set dynamically by run_adaptive_evaluation_fixed.py
+    # Using put_demos_in_history=True with compressed demos
+    put_demos_in_history: true
+  
+  # OPTIMIZATION: History processors to manage context window
+  history_processors:
+    # Keep only last N observations (classic from SWE-agent paper)
+    # Older observations replaced with "[N lines omitted]"
+    - type: last_n_observations
+      n: 5
+      # Remove verbose outputs even if recent
+      always_remove_output_for_tags:
+        - remove_output
+        - verbose_listing
+    
+    # Remove duplicate file views (keeps only most recent view of each file)
+    # Saves tokens when agent views same file multiple times
+    - type: closed_window
+    
+    # Remove patterns that don't add value after initial viewing
+    # Like full diff blocks in older history items
+    - type: remove_regex
+      remove:
+        - "<diff>.*?</diff>"
+      keep_last: 2  # Keep patterns in last 2 history items
+
+  tools:
+    env_variables:
+      PAGER: cat
+      MANPAGER: cat
+      LESS: -R
+      PIP_PROGRESS_BAR: 'off'
+      TQDM_DISABLE: '1'
+      GIT_PAGER: cat
+    
+    bundles:
+      - path: tools/registry
+      - path: tools/edit_anthropic
+      - path: tools/review_on_submit_m
+    
+    registry_variables:
+      USE_FILEMAP: 'true'
+      SUBMIT_REVIEW_MESSAGES:
+        - |
+          Review your changes and submit.
+          <diff>
+          {{diff}}
+          </diff>
+    
+    enable_bash_tool: true
+    
+    parse_function:
+      type: thought_action
+      error_message: |-
+        Format: DISCUSSION + ```command```. Example:
+        DISCUSSION
+        I'll check the file.
+        ```
+        str_replace_editor view /path/to/file.py
+        ```
+

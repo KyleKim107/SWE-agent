@@ -1,0 +1,119 @@
+diff --git a/check_apart_eq.py b/check_apart_eq.py
+new file mode 100644
+index 0000000000..63e93188b5
+--- /dev/null
++++ b/check_apart_eq.py
+@@ -0,0 +1 @@
++from sympy import symbols, simplify; a = symbols('a', real=True); t = symbols('t', real=True, negative=False); bug = a * (-t + (-t + 1) * (2 * t - 1)) / (2 * t - 1); expected = a * (-t + 1/2 - 1/(2*(2*t - 1))); print(simplify(bug.apart(t) - expected))
+\ No newline at end of file
+diff --git a/repro_apart_bug.py b/repro_apart_bug.py
+new file mode 100644
+index 0000000000..844bf04b89
+--- /dev/null
++++ b/repro_apart_bug.py
+@@ -0,0 +1,10 @@
++from sympy import symbols
++from sympy import __version__
++a = symbols('a', real=True)
++t = symbols('t', real=True, negative=False)
++bug = a * (-t + (-t + 1) * (2 * t - 1)) / (2 * t - 1)
++print('sympy', __version__)
++print('expr:', bug)
++print('subs a=1 apart():', bug.subs(a,1).apart())
++print('subs a=1 apart(t):', bug.subs(a,1).apart(t))
++print('apart(t):', bug.apart(t))
+diff --git a/repro_field_div.py b/repro_field_div.py
+new file mode 100644
+index 0000000000..a98148cedb
+--- /dev/null
++++ b/repro_field_div.py
+@@ -0,0 +1,10 @@
++from sympy import symbols
++from sympy.polys import Poly
++a = symbols('a')
++t = symbols('t')
++P = Poly(2*a*t**2 - 2*a*t + a, t, domain='ZZ[a]')
++Q = Poly(2*t - 1, t, domain='ZZ[a]')
++PF = P.to_field(); QF = Q.to_field()
++qf, rf = PF.div(QF, auto=False)
++print('qf:', qf.as_expr())
++print('rf:', rf.as_expr())
+diff --git a/repro_fix_apart.py b/repro_fix_apart.py
+new file mode 100644
+index 0000000000..48ad83964c
+--- /dev/null
++++ b/repro_fix_apart.py
+@@ -0,0 +1 @@
++from sympy import symbols\nfrom sympy import __version__\na = symbols('a', real=True)\nt = symbols('t', real=True, negative=False)\nbug = a * (-t + (-t + 1) * (2 * t - 1)) / (2 * t - 1)\nprint('sympy', __version__)\nprint('expr:', bug)\nprint('subs a=1 apart():', bug.subs(a,1).apart())\nprint('subs a=1 apart(t):', bug.subs(a,1).apart(t))\nprint('apart(t):', bug.apart(t))\n
+\ No newline at end of file
+diff --git a/repro_pf_inline.py b/repro_pf_inline.py
+new file mode 100644
+index 0000000000..16eb489dff
+--- /dev/null
++++ b/repro_pf_inline.py
+@@ -0,0 +1 @@
++from sympy import symbols, __version__; a = symbols('a', real=True); t = symbols('t', real=True, negative=False); bug = a * (-t + (-t + 1) * (2 * t - 1)) / (2 * t - 1); print('sympy', __version__); print('expr:', bug); print('subs a=1 apart():', bug.subs(a,1).apart()); print('subs a=1 apart(t):', bug.subs(a,1).apart(t)); print('apart(t):', bug.apart(t))
+\ No newline at end of file
+diff --git a/repro_pf_steps.py b/repro_pf_steps.py
+new file mode 100644
+index 0000000000..d2d9604d54
+--- /dev/null
++++ b/repro_pf_steps.py
+@@ -0,0 +1,35 @@
++from sympy import symbols, factor
++from sympy.polys import Poly
++from sympy.polys.polytools import parallel_poly_from_expr
++a = symbols('a', real=True)
++t = symbols('t', real=True, negative=False)
++f = a * (-t + (-t + 1) * (2 * t - 1)) / (2 * t - 1)
++P0, Q0 = f.as_numer_denom()
++print('Initial P0:', P0)
++print('Initial Q0:', Q0)
++(P1, Q1), opt = parallel_poly_from_expr((P0, Q0), t, extension=True)
++print('Poly P1:', P1, 'domain=', P1.get_domain())
++print('Poly Q1:', Q1, 'domain=', Q1.get_domain())
++common, P2, Q2 = P1.cancel(Q1)
++print('common:', common)
++print('P2:', P2.as_expr())
++print('Q2:', Q2.as_expr())
++poly, Prem = P2.div(Q2, auto=True)
++print('quotient poly:', poly.as_expr())
++print('remainder Prem:', Prem.as_expr())
++Prem2, Q2b = Prem.rat_clear_denoms(Q2)
++print('Prem2:', Prem2.as_expr())
++print('Q2b:', Q2b.as_expr())
++partial = Prem2.as_expr()/Q2b.as_expr()
++print('partial:', partial)
++result = common*(poly.as_expr() + factor(partial))
++print('final result:', result)
++# Repeat with a=1
++f1 = f.subs(a,1)
++P0, Q0 = f1.as_numer_denom()
++(P1, Q1), opt = parallel_poly_from_expr((P0, Q0), t, extension=True)
++common, P2, Q2 = P1.cancel(Q1)
++poly, Prem = P2.div(Q2, auto=True)
++Prem2, Q2b = Prem.rat_clear_denoms(Q2)
++partial = Prem2.as_expr()/Q2b.as_expr()
++print('final result a=1:', common*(poly.as_expr() + factor(partial)))
+diff --git a/sympy/polys/partfrac.py b/sympy/polys/partfrac.py
+index 612b8f4607..01f8e5ef3a 100644
+--- a/sympy/polys/partfrac.py
++++ b/sympy/polys/partfrac.py
+@@ -127,7 +127,7 @@ def apart(f, x=None, full=False, **options):
+ 
+     common, P, Q = P.cancel(Q)
+ 
+-    poly, P = P.div(Q, auto=True)
++    PF = P.to_field(); QF = Q.to_field(); poly, P = PF.div(QF, auto=False)
+     P, Q = P.rat_clear_denoms(Q)
+ 
+     if Q.degree() <= 1:
+@@ -333,7 +333,7 @@ def apart_list(f, x=None, dummies=None, **options):
+ 
+     common, P, Q = P.cancel(Q)
+ 
+-    poly, P = P.div(Q, auto=True)
++    PF = P.to_field(); QF = Q.to_field(); poly, P = PF.div(QF, auto=False)
+     P, Q = P.rat_clear_denoms(Q)
+ 
+     polypart = poly

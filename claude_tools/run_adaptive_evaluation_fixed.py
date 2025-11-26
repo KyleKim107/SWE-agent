@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 r"""
+
+./run_semantic_evaluation.sh --all --limit 10
+
+
 Adaptive Few-Shot Evaluation for SWE-agent - FIXED VERSION
 For each test instance, select k most similar demonstrations using TF-IDF
 
@@ -335,7 +339,7 @@ def create_config_with_demonstrations(
         # If still having issues, try: (1) reduce demonstrations to 1-2, or (2) increase n to 10
         config['agent']['history_processors'].append({
             'type': 'last_n_observations',
-            'n': 4  # Keep last 5 observations (default from SWE-agent paper)
+            'n': 5  # Keep last 5 observations (default from SWE-agent paper)
         })
     
     # Configure environment for SWE-bench instance if provided

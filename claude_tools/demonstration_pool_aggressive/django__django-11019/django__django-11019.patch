@@ -1,0 +1,40 @@
+diff --git a/repro_after_fix.py b/repro_after_fix.py
+new file mode 100644
+index 0000000000..9f9f738896
+--- /dev/null
++++ b/repro_after_fix.py
+@@ -0,0 +1 @@
++import sys\nsys.path.insert(0, '/testbed')\nfrom django import forms\n\nclass ColorPicker(forms.Widget):\n    class Media:\n        js = ['color-picker.js']\n\nclass SimpleTextWidget(forms.Widget):\n    class Media:\n        js = ['text-editor.js']\n\nclass FancyTextWidget(forms.Widget):\n    class Media:\n        js = ['text-editor.js', 'text-editor-extras.js', 'color-picker.js']\n\nclass MyForm(forms.Form):\n    background_color = forms.CharField(widget=ColorPicker())\n    intro = forms.CharField(widget=SimpleTextWidget())\n    body = forms.CharField(widget=FancyTextWidget())\n\nf = MyForm()\nprint('After fix:', f.media)\n
+\ No newline at end of file
+diff --git a/repro_before_fix.py b/repro_before_fix.py
+new file mode 100644
+index 0000000000..e1a4ee5076
+--- /dev/null
++++ b/repro_before_fix.py
+@@ -0,0 +1 @@
++import sys\nsys.path.insert(0, '/testbed')\nfrom django import forms\n\nclass ColorPicker(forms.Widget):\n    class Media:\n        js = ['color-picker.js']\n\nclass SimpleTextWidget(forms.Widget):\n    class Media:\n        js = ['text-editor.js']\n\nclass FancyTextWidget(forms.Widget):\n    class Media:\n        js = ['text-editor.js', 'text-editor-extras.js', 'color-picker.js']\n\nclass MyForm(forms.Form):\n    background_color = forms.CharField(widget=ColorPicker())\n    intro = forms.CharField(widget=SimpleTextWidget())\n    body = forms.CharField(widget=FancyTextWidget())\n\nf = MyForm()\nprint('Before fix:', f.media)\n
+\ No newline at end of file
+diff --git a/repro_forms_configured.py b/repro_forms_configured.py
+new file mode 100644
+index 0000000000..2c3bfb0cdd
+--- /dev/null
++++ b/repro_forms_configured.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0, '/testbed'); import warnings; from django.conf import settings; import django; warnings.simplefilter('always'); settings.configure(USE_I18N=False, SECRET_KEY='x', STATIC_URL='/static/'); django.setup(); from django import forms; ColorPicker=type('ColorPicker',(forms.Widget,),{'Media':type('Media',(),{'js':['color-picker.js']})}); SimpleTextWidget=type('SimpleTextWidget',(forms.Widget,),{'Media':type('Media',(),{'js':['text-editor.js']})}); FancyTextWidget=type('FancyTextWidget',(forms.Widget,),{'Media':type('Media',(),{'js':['text-editor.js','text-editor-extras.js','color-picker.js']})}); MyForm=type('MyForm',(forms.Form,),{'background_color': forms.CharField(widget=ColorPicker()), 'intro': forms.CharField(widget=SimpleTextWidget()), 'body': forms.CharField(widget=FancyTextWidget())}); f=MyForm(); print('Form media js:', f.media._js); print('Form media:', f.media)
+\ No newline at end of file
+diff --git a/repro_forms_simple.py b/repro_forms_simple.py
+new file mode 100644
+index 0000000000..277b5602f2
+--- /dev/null
++++ b/repro_forms_simple.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0, '/testbed'); import warnings; warnings.simplefilter('always'); from django import forms; ColorPicker=type('ColorPicker',(forms.Widget,),{'Media':type('Media',(),{'js':['color-picker.js']})}); SimpleTextWidget=type('SimpleTextWidget',(forms.Widget,),{'Media':type('Media',(),{'js':['text-editor.js']})}); FancyTextWidget=type('FancyTextWidget',(forms.Widget,),{'Media':type('Media',(),{'js':['text-editor.js','text-editor-extras.js','color-picker.js']})}); MyForm=type('MyForm',(forms.Form,),{'background_color': forms.CharField(widget=ColorPicker()), 'intro': forms.CharField(widget=SimpleTextWidget()), 'body': forms.CharField(widget=FancyTextWidget())}); f=MyForm(); print('Form media js:', f.media._js); print('Form media:', f.media)
+\ No newline at end of file
+diff --git a/repro_media_simple.py b/repro_media_simple.py
+new file mode 100644
+index 0000000000..73a947ad57
+--- /dev/null
++++ b/repro_media_simple.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0, '/testbed'); from django.forms.widgets import Media; import warnings; warnings.simplefilter('always'); m = Media(js=['color-picker.js']) + Media(js=['text-editor.js']) + Media(js=['text-editor.js','text-editor-extras.js','color-picker.js']); print('Merged js:', m._js)
+\ No newline at end of file

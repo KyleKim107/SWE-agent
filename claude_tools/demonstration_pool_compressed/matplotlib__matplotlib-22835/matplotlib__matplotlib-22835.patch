@@ -1,0 +1,122 @@
+diff --git a/lib/matplotlib/artist.py b/lib/matplotlib/artist.py
+index 1f33b9d3ec..6ecb6423ba 100644
+--- a/lib/matplotlib/artist.py
++++ b/lib/matplotlib/artist.py
+@@ -1304,10 +1304,13 @@ class Artist:
+             normed = self.norm(data)
+             if np.isfinite(normed):
+                 # Midpoints of neighboring color intervals.
+-                neighbors = self.norm.inverse(
+-                    (int(self.norm(data) * n) + np.array([0, 1])) / n)
+-                delta = abs(neighbors - data).max()
+-                g_sig_digits = cbook._g_sig_digits(data, delta)
++                    try:
++                        neighbors = self.norm.inverse((int(self.norm(data) * n) + np.array([0, 1])) / n)
++                        delta = abs(neighbors - data).max()
++                        g_sig_digits = cbook._g_sig_digits(data, delta)
++                    except ValueError:
++                        g_sig_digits = 3
++                    
+             else:
+                 g_sig_digits = 3  # Consistent with default below.
+             return "[{:-#.{}g}]".format(data, g_sig_digits)
+@@ -1797,4 +1800,4 @@ def kwdoc(artist):
+ 
+ # We defer this to the end of them module, because it needs ArtistInspector
+ # to be defined.
+-Artist._update_set_signature_and_docstring()
++Artist._update_set_signature_and_docstring()
+\ No newline at end of file
+diff --git a/tmp/patch_artist.py b/tmp/patch_artist.py
+new file mode 100644
+index 0000000000..3739733246
+--- /dev/null
++++ b/tmp/patch_artist.py
+@@ -0,0 +1,9 @@
++
++path = "/testbed/lib/matplotlib/artist.py"
++with open(path, "r", encoding="utf-8") as f:
++    lines = f.read().splitlines()
++# Remove malformed lines 1309..1315 (1-based)
++bad_range = set(range(1308, 1315))  # 0-based indices
++new_lines = [line for idx, line in enumerate(lines) if idx not in bad_range]
++with open(path, "w", encoding="utf-8") as f:
++    f.write("\n".join(new_lines))
+\ No newline at end of file
+diff --git a/tmp/patch_artist2.py b/tmp/patch_artist2.py
+new file mode 100644
+index 0000000000..7995f76b51
+--- /dev/null
++++ b/tmp/patch_artist2.py
+@@ -0,0 +1,32 @@
++
++path = "/testbed/lib/matplotlib/artist.py"
++with open(path, "r", encoding="utf-8") as f:
++    lines = f.read().splitlines()
++idx = None
++for i, line in enumerate(lines):
++    if "Midpoints of neighboring color intervals." in line:
++        idx = i
++        break
++if idx is not None:
++    indent = lines[idx][:len(lines[idx]) - len(lines[idx].lstrip())]
++    inner = indent + "    "
++    block = [
++        inner + "try:",
++        inner + "    neighbors = self.norm.inverse((int(self.norm(data) * n) + np.array([0, 1])) / n)",
++        inner + "    delta = abs(neighbors - data).max()",
++        inner + "    g_sig_digits = cbook._g_sig_digits(data, delta)",
++        inner + "except Exception:",
++        inner + "    g_sig_digits = 3"
++    ]
++    # Remove immediate placeholder g_sig_digits within the branch if present
++    remove_idx = None
++    for j in range(idx+1, min(idx+6, len(lines))):
++        if lines[j].strip().startswith("g_sig_digits = 3"):
++            remove_idx = j
++            break
++    if remove_idx is not None:
++        del lines[remove_idx]
++    # Insert the try/except block after the comment line
++    lines[idx+1:idx+1] = block
++with open(path, "w", encoding="utf-8") as f:
++    f.write("\n".join(lines))
+\ No newline at end of file
+diff --git a/tmp/refine_patch.py b/tmp/refine_patch.py
+new file mode 100644
+index 0000000000..c536f91e9b
+--- /dev/null
++++ b/tmp/refine_patch.py
+@@ -0,0 +1,11 @@
++
++path = "/testbed/lib/matplotlib/artist.py"
++with open(path, "r", encoding="utf-8") as f:
++    lines = f.read().splitlines()
++start, end = 1295, 1320
++for i in range(start, min(end, len(lines))):
++    if lines[i].strip() == "except Exception:":
++        lines[i] = lines[i].replace("except Exception:", "except ValueError:")
++        break
++with open(path, "w", encoding="utf-8") as f:
++    f.write("\n".join(lines))
+\ No newline at end of file
+diff --git a/tmp/repro_boundarynorm_cursor.py b/tmp/repro_boundarynorm_cursor.py
+new file mode 100644
+index 0000000000..1ab26c20c9
+--- /dev/null
++++ b/tmp/repro_boundarynorm_cursor.py
+@@ -0,0 +1,13 @@
++
++import sys
++sys.path.insert(0, '/testbed/lib')
++import matplotlib as mpl
++import matplotlib.pyplot as plt
++import numpy as np
++fig, ax = plt.subplots()
++norm = mpl.colors.BoundaryNorm(np.linspace(-4, 4, 5), 256)
++X = np.random.randn(10, 10)
++im = ax.imshow(X, cmap='RdBu_r', norm=norm)
++val = float(X[0,0])
++print('Calling format_cursor_data...')
++print(im.format_cursor_data(val))
+\ No newline at end of file

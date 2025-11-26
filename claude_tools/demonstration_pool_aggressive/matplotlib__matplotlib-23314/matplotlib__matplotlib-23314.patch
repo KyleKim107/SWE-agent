@@ -1,0 +1,69 @@
+diff --git a/tmp/out.png b/tmp/out.png
+new file mode 100644
+index 0000000000..6bb5b37cfb
+Binary files /dev/null and b/tmp/out.png differ
+diff --git a/tmp/out_true.png b/tmp/out_true.png
+new file mode 100644
+index 0000000000..b12c7a6e7a
+Binary files /dev/null and b/tmp/out_true.png differ
+diff --git a/tmp/repro.py b/tmp/repro.py
+new file mode 100644
+index 0000000000..4d1742a8ac
+--- /dev/null
++++ b/tmp/repro.py
+@@ -0,0 +1,24 @@
++import sys
++sys.path.insert(0, "/testbed/lib")
++import matplotlib
++matplotlib.use("Agg")
++import matplotlib.pyplot as plt
++import numpy as np
++
++fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={"projection": "3d"})
++fig.patch.set_facecolor((0,1,0,1))
++ax1.set_facecolor("lightgray")
++ax2.set_facecolor("lightgray")
++ax1.scatter(1,1,1)
++ax2.scatter(1,1,1, c="r")
++ax1.set_visible(False)
++
++out = "/testbed/tmp/out.png"
++fig.savefig(out, dpi=100)
++img = plt.imread(out)
++H, W = img.shape[:2]
++left = img[:, :W//2, :3].mean(axis=(0,1))
++right = img[:, W//2:, :3].mean(axis=(0,1))
++print("Left mean RGB:", left)
++print("Right mean RGB:", right)
++print("Expect left ~ green [0,1,0] if invisible axes not drawn")
+diff --git a/tmp/repro_true.py b/tmp/repro_true.py
+new file mode 100644
+index 0000000000..16fa4b99b5
+--- /dev/null
++++ b/tmp/repro_true.py
+@@ -0,0 +1,25 @@
++import sys
++sys.path.insert(0, "/testbed/lib")
++import matplotlib
++matplotlib.use("Agg")
++import matplotlib.pyplot as plt
++import numpy as np
++
++fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={"projection": "3d"})
++fig.patch.set_facecolor((0,1,0,1))
++ax1.set_facecolor("lightgray")
++ax2.set_facecolor("lightgray")
++ax1.scatter(1,1,1)
++ax2.scatter(1,1,1, c="r")
++# ax1 visible by default; ensure True
++ax1.set_visible(True)
++
++out = "/testbed/tmp/out_true.png"
++fig.savefig(out, dpi=100)
++img = plt.imread(out)
++H, W = img.shape[:2]
++left = img[:, :W//2, :3].mean(axis=(0,1))
++right = img[:, W//2:, :3].mean(axis=(0,1))
++print("Left mean RGB (visible case):", left)
++print("Right mean RGB (visible case):", right)
++print("Expect left != pure green if visible axes is drawn")

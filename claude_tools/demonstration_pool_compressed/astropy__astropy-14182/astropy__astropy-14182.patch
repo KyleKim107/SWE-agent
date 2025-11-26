@@ -1,0 +1,36 @@
+diff --git a/astropy/io/ascii/rst.py b/astropy/io/ascii/rst.py
+index abdeba8ef..f956b5313 100644
+--- a/astropy/io/ascii/rst.py
++++ b/astropy/io/ascii/rst.py
+@@ -57,10 +57,12 @@ class RST(FixedWidth):
+     data_class = SimpleRSTData
+     header_class = SimpleRSTHeader
+ 
+-    def __init__(self):
+-        super().__init__(delimiter_pad=None, bookend=False)
++    def __init__(self, header_rows=None):
++        super().__init__(delimiter_pad=None, bookend=False, header_rows=header_rows)
+ 
+     def write(self, lines):
+         lines = super().write(lines)
+-        lines = [lines[1]] + lines + [lines[1]]
++        n_hdr = len(getattr(self.header, "header_rows", ["name"]))
++        border = lines[n_hdr]
++        lines = [border] + lines + [border]
+         return lines
+diff --git a/repro_rst_header_rows.py b/repro_rst_header_rows.py
+new file mode 100644
+index 000000000..344a1cfbe
+--- /dev/null
++++ b/repro_rst_header_rows.py
+@@ -0,0 +1 @@
++from astropy.table import QTable\nimport astropy.units as u\nimport sys\n\ntbl = QTable({\"wave\": [350, 950] * u.nm, \"response\": [0.7, 1.2] * u.count})\n\nprint(\"Baseline RST output:\")\ntbl.write(sys.stdout, format=\"ascii.rst\")\n\nprint(\"\\nRST output with header_rows=[name, unit]:\")\ntbl.write(sys.stdout, format=\"ascii.rst\", header_rows=[\"name\", \"unit\"])
+\ No newline at end of file
+diff --git a/repro_rst_header_rows2.py b/repro_rst_header_rows2.py
+new file mode 100644
+index 000000000..a3a1e648f
+--- /dev/null
++++ b/repro_rst_header_rows2.py
+@@ -0,0 +1 @@
++from astropy.table import QTable; import astropy.units as u; import sys; tbl = QTable({'wave':[350,950]*u.nm,'response':[0.7,1.2]*u.count}); print('Baseline RST output:'); tbl.write(sys.stdout, format='ascii.rst'); print('\nRST output with header_rows=[name, unit]:'); tbl.write(sys.stdout, format='ascii.rst', header_rows=['name','unit'])
+\ No newline at end of file

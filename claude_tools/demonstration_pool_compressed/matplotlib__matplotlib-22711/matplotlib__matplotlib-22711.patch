@@ -1,0 +1,32 @@
+diff --git a/repro_rangeslider.py b/repro_rangeslider.py
+new file mode 100644
+index 0000000000..9841293b07
+--- /dev/null
++++ b/repro_rangeslider.py
+@@ -0,0 +1 @@
++import numpy as np; import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt; from matplotlib.widgets import RangeSlider; np.random.seed(19680801); N=8; img=np.random.randn(N,N); fig,axs=plt.subplots(1,2,figsize=(6,4)); fig.subplots_adjust(bottom=0.25); im=axs[0].imshow(img); axs[1].hist(img.flatten(), bins="auto"); slider_ax=fig.add_axes([0.20,0.1,0.60,0.03]); slider=RangeSlider(slider_ax, "Threshold", float(img.min()), float(img.max()), valinit=[0.0, 0.0]); print("RangeSlider initialized val:", slider.val)
+\ No newline at end of file
+diff --git a/repro_rangeslider_nonzero.py b/repro_rangeslider_nonzero.py
+new file mode 100644
+index 0000000000..4ae471550a
+--- /dev/null
++++ b/repro_rangeslider_nonzero.py
+@@ -0,0 +1 @@
++import numpy as np; import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt; from matplotlib.widgets import RangeSlider; img=np.random.randn(8,8); fig=plt.figure(); ax=fig.add_axes([0.2,0.1,0.6,0.03]); s=RangeSlider(ax, "T", -1.0, 1.0, valinit=[-0.2, 0.3]); print("Horizontal non-zero valinit:", s.val)
+\ No newline at end of file
+diff --git a/repro_rangeslider_reset.py b/repro_rangeslider_reset.py
+new file mode 100644
+index 0000000000..e4f785614d
+--- /dev/null
++++ b/repro_rangeslider_reset.py
+@@ -0,0 +1 @@
++import numpy as np; import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt; from matplotlib.widgets import RangeSlider; fig=plt.figure(); ax=fig.add_axes([0.2,0.1,0.6,0.03]); s=RangeSlider(ax, "T", 0.0, 1.0, valinit=[0.2,0.4]); print("Initial:", s.val); s.set_val([0.3,0.5]); print("After set_val:", s.val); s.reset(); print("After reset:", s.val)
+\ No newline at end of file
+diff --git a/repro_rangeslider_vertical.py b/repro_rangeslider_vertical.py
+new file mode 100644
+index 0000000000..fd3ff89a83
+--- /dev/null
++++ b/repro_rangeslider_vertical.py
+@@ -0,0 +1 @@
++import numpy as np; import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt; from matplotlib.widgets import RangeSlider; fig=plt.figure(figsize=(4,4)); ax=fig.add_axes([0.1,0.1,0.8,0.8]); slider_ax=fig.add_axes([0.1,0.1,0.03,0.6]); s=RangeSlider(slider_ax, "T", 0.0, 1.0, valinit=[0.25, 0.75], orientation="vertical"); print("Vertical RangeSlider val:", s.val)
+\ No newline at end of file

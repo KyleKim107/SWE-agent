@@ -1,0 +1,399 @@
+diff --git a/django/conf/global_settings.py b/django/conf/global_settings.py
+index acee9887d2..bdeec80610 100644
+--- a/django/conf/global_settings.py
++++ b/django/conf/global_settings.py
+@@ -304,7 +304,7 @@ FILE_UPLOAD_TEMP_DIR = None
+ 
+ # The numeric mode to set newly-uploaded files to. The value should be a mode
+ # you'd pass directly to os.chmod; see https://docs.python.org/library/os.html#files-and-directories.
+-FILE_UPLOAD_PERMISSIONS = None
++FILE_UPLOAD_PERMISSIONS = 0o644
+ 
+ # The numeric mode to assign to newly-created directories, when uploading files.
+ # The value should be a mode as you'd pass to os.chmod;
+diff --git a/docs/ref/settings.txt b/docs/ref/settings.txt
+index 46e99af993..15008b2553 100644
+--- a/docs/ref/settings.txt
++++ b/docs/ref/settings.txt
+@@ -211,7 +211,7 @@ identifying name for a local memory cache. e.g.::
+ ``OPTIONS``
+ ~~~~~~~~~~~
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ Extra parameters to pass to the cache backend. Available parameters
+ vary depending on your cache backend.
+@@ -303,7 +303,7 @@ keep the cookies in-memory instead of on persistent storage.
+ ``CSRF_COOKIE_DOMAIN``
+ ----------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The domain to be used when setting the CSRF cookie.  This can be useful for
+ easily allowing cross-subdomain requests to be excluded from the normal cross
+@@ -630,7 +630,7 @@ default port. Not used with SQLite.
+ ``TIME_ZONE``
+ ~~~~~~~~~~~~~
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ A string representing the time zone for datetimes stored in this database
+ (assuming that it doesn't support time zones) or ``None``. This inner option of
+@@ -702,7 +702,7 @@ The following keys in the ``TEST`` dictionary are available:
+ ``CHARSET``
+ ^^^^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The character set encoding used to create the test database. The value of this
+ string is passed directly through to the database, so its format is
+@@ -718,7 +718,7 @@ Supported by the PostgreSQL_ (``postgresql``) and MySQL_ (``mysql``) backends.
+ ``COLLATION``
+ ^^^^^^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The collation order to use when creating the test database. This value is
+ passed directly to the backend, so its format is backend-specific.
+@@ -744,7 +744,7 @@ on :ref:`controlling the creation order of test databases
+ ``MIRROR``
+ ^^^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The alias of the database that this database should mirror during
+ testing.
+@@ -760,7 +760,7 @@ configurations of multiple databases. See the documentation on
+ ``NAME``
+ ^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The name of database to use when running the test suite.
+ 
+@@ -822,7 +822,7 @@ beginning of the tests and dropped at the end.
+ ``USER``
+ ^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ This is an Oracle-specific setting.
+ 
+@@ -834,7 +834,7 @@ when running tests. If not provided, Django will use ``'test_' + USER``.
+ ``PASSWORD``
+ ^^^^^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ This is an Oracle-specific setting.
+ 
+@@ -860,7 +860,7 @@ If set to ``True``, Oracle Managed Files (OMF) tablespaces will be used.
+ ``TBLSPACE``
+ ^^^^^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ This is an Oracle-specific setting.
+ 
+@@ -872,7 +872,7 @@ provided, Django will use ``'test_' + USER``.
+ ``TBLSPACE_TMP``
+ ^^^^^^^^^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ This is an Oracle-specific setting.
+ 
+@@ -884,7 +884,7 @@ not provided, Django will use ``'test_' + USER + '_temp'``.
+ ``DATAFILE``
+ ^^^^^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ This is an Oracle-specific setting.
+ 
+@@ -896,7 +896,7 @@ use ``TBLSPACE + '.dbf'``.
+ ``DATAFILE_TMP``
+ ^^^^^^^^^^^^^^^^
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ This is an Oracle-specific setting.
+ 
+@@ -1385,7 +1385,7 @@ exclusive, so only set one of those settings to ``True``.
+ ``EMAIL_SSL_CERTFILE``
+ ----------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ If :setting:`EMAIL_USE_SSL` or :setting:`EMAIL_USE_TLS` is ``True``, you can
+ optionally specify the path to a PEM-formatted certificate chain file to use
+@@ -1396,7 +1396,7 @@ for the SSL connection.
+ ``EMAIL_SSL_KEYFILE``
+ ---------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ If :setting:`EMAIL_USE_SSL` or :setting:`EMAIL_USE_TLS` is ``True``, you can
+ optionally specify the path to a PEM-formatted private key file to use for the
+@@ -1413,7 +1413,7 @@ file and private key file are handled.
+ ``EMAIL_TIMEOUT``
+ -----------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ Specifies a timeout in seconds for blocking operations like the connection
+ attempt.
+@@ -1484,13 +1484,13 @@ This value mirrors the functionality and caveats of the
+ ``FILE_UPLOAD_PERMISSIONS``
+ ---------------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The numeric mode (i.e. ``0o644``) to set newly uploaded files to. For
+ more information about what these modes mean, see the documentation for
+ :func:`os.chmod`.
+ 
+-If this isn't given or is ``None``, you'll get operating-system
++If set to ``None``, you'll get operating-system
+ dependent behavior. On most platforms, temporary files will have a mode
+ of ``0o600``, and files saved from memory will be saved using the
+ system's standard umask.
+@@ -1499,64 +1499,7 @@ For security reasons, these permissions aren't applied to the temporary files
+ that are stored in :setting:`FILE_UPLOAD_TEMP_DIR`.
+ 
+ This setting also determines the default permissions for collected static files
+-when using the :djadmin:`collectstatic` management command. See
+-:djadmin:`collectstatic` for details on overriding it.
+-
+-.. warning::
+-
+-    **Always prefix the mode with a 0.**
+-
+-    If you're not familiar with file modes, please note that the leading
+-    ``0`` is very important: it indicates an octal number, which is the
+-    way that modes must be specified. If you try to use ``644``, you'll
+-    get totally incorrect behavior.
+-
+-.. setting:: FILE_UPLOAD_TEMP_DIR
+-
+-``FILE_UPLOAD_TEMP_DIR``
+-------------------------
+-
+-Default: ``None``
+-
+-The directory to store data to (typically files larger than
+-:setting:`FILE_UPLOAD_MAX_MEMORY_SIZE`) temporarily while uploading files.
+-If ``None``, Django will use the standard temporary directory for the operating
+-system. For example, this will default to ``/tmp`` on \*nix-style operating
+-systems.
+-
+-See :doc:`/topics/files` for details.
+-
+-.. setting:: FIRST_DAY_OF_WEEK
+-
+ ``FIRST_DAY_OF_WEEK``
+----------------------
+-
+-Default: ``0`` (Sunday)
+-
+-A number representing the first day of the week. This is especially useful
+-when displaying a calendar. This value is only used when not using
+-format internationalization, or when a format cannot be found for the
+-current locale.
+-
+-The value must be an integer from 0 to 6, where 0 means Sunday, 1 means
+-Monday and so on.
+-
+-.. setting:: FIXTURE_DIRS
+-
+-``FIXTURE_DIRS``
+-----------------
+-
+-Default: ``[]`` (Empty list)
+-
+-List of directories searched for fixture files, in addition to the
+-``fixtures`` directory of each application, in search order.
+-
+-Note that these paths should use Unix-style forward slashes, even on Windows.
+-
+-See :ref:`initial-data-via-fixtures` and :ref:`topics-testing-fixtures`.
+-
+-.. setting:: FORCE_SCRIPT_NAME
+-
+ ``FORCE_SCRIPT_NAME``
+ ---------------------
+ 
+@@ -1739,7 +1682,7 @@ See :ref:`how-django-discovers-language-preference` for more details.
+ ``LANGUAGE_COOKIE_AGE``
+ -----------------------
+ 
+-Default: ``None`` (expires at browser close)
++Default: ``0o644`` (expires at browser close)
+ 
+ The age of the language cookie, in seconds.
+ 
+@@ -1748,7 +1691,7 @@ The age of the language cookie, in seconds.
+ ``LANGUAGE_COOKIE_DOMAIN``
+ --------------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The domain to use for the language cookie. Set this to a string such as
+ ``"example.com"`` for cross-domain cookies, or use ``None`` for a standard
+@@ -1954,7 +1897,7 @@ Example: ``"http://media.example.com/"``
+ ``MIDDLEWARE``
+ --------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ A list of middleware to use. See :doc:`/topics/http/middleware`.
+ 
+@@ -2186,7 +2129,7 @@ already have it.
+ ``SECURE_PROXY_SSL_HEADER``
+ ---------------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ A tuple representing a HTTP header/value combination that signifies a request
+ is secure. This controls the behavior of the request object's ``is_secure()``
+@@ -2256,7 +2199,7 @@ setting has no effect.
+ ``SECURE_SSL_HOST``
+ -------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ If a string (e.g. ``secure.example.com``), all SSL redirects will be directed
+ to this host rather than the originally-requested host
+@@ -2687,7 +2630,7 @@ enabled if a proxy which sets this header is in use.
+ ``WSGI_APPLICATION``
+ --------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The full Python path of the WSGI application object that Django's built-in
+ servers (e.g. :djadmin:`runserver`) will use. The :djadmin:`django-admin
+@@ -2796,7 +2739,7 @@ redirected for login when using the
+ ``LOGOUT_REDIRECT_URL``
+ -----------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The URL or :ref:`named URL pattern <naming-url-patterns>` where requests are
+ redirected after logout if :class:`~django.contrib.auth.views.LogoutView`
+@@ -2959,7 +2902,7 @@ The age of session cookies, in seconds.
+ ``SESSION_COOKIE_DOMAIN``
+ -------------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The domain to use for session cookies. Set this to a string such as
+ ``"example.com"`` for cross-domain cookies, or use ``None`` for a standard
+@@ -3104,7 +3047,7 @@ Whether to expire the session when the user closes their browser. See
+ ``SESSION_FILE_PATH``
+ ---------------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ If you're using file-based session storage, this sets the directory in
+ which Django will store session data. When the default value (``None``) is
+@@ -3169,7 +3112,7 @@ Settings for :mod:`django.contrib.staticfiles`.
+ ``STATIC_ROOT``
+ ---------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ The absolute path to the directory where :djadmin:`collectstatic` will collect
+ static files for deployment.
+@@ -3198,7 +3141,7 @@ usage.
+ ``STATIC_URL``
+ --------------
+ 
+-Default: ``None``
++Default: ``0o644``
+ 
+ URL to use when referring to static files located in :setting:`STATIC_ROOT`.
+ 
+diff --git a/repro_upload_perms.py b/repro_upload_perms.py
+new file mode 100644
+index 0000000000..7813314e9d
+--- /dev/null
++++ b/repro_upload_perms.py
+@@ -0,0 +1,36 @@
++import os
++import tempfile
++from django.core.files.storage import FileSystemStorage
++from django.core.files.base import ContentFile
++
++
++from django.conf import settings
++settings.configure()
++base_dir = '/testbed/tmp_uploads'
++os.makedirs(base_dir, exist_ok=True)
++
++storage = FileSystemStorage(location=base_dir)
++
++ntf = tempfile.NamedTemporaryFile(delete=False)
++ntf.write(b'temp data')
++ntf.flush()
++ntf.close()
++
++class TempContent:
++    def __init__(self, path):
++        self._path = path
++    def temporary_file_path(self):
++        return self._path
++
++from_temp = TempContent(ntf.name)
++name1 = storage._save('from_temp.txt', from_temp)
++path1 = os.path.join(base_dir, name1)
++mode1 = oct(os.stat(path1).st_mode & 0o777)
++print('from_temp mode:', mode1)
++print('file_permissions_mode:', storage.file_permissions_mode)
++
++cf = ContentFile(b'chunked data', name='from_chunks.txt')
++name2 = storage.save(None, cf)
++path2 = os.path.join(base_dir, name2)
++mode2 = oct(os.stat(path2).st_mode & 0o777)
++print('from_chunks mode:', mode2)
+diff --git a/tmp_uploads/from_chunks.txt b/tmp_uploads/from_chunks.txt
+new file mode 100644
+index 0000000000..78055de2f1
+--- /dev/null
++++ b/tmp_uploads/from_chunks.txt
+@@ -0,0 +1 @@
++chunked data
+\ No newline at end of file
+diff --git a/tmp_uploads/from_temp.txt b/tmp_uploads/from_temp.txt
+new file mode 100644
+index 0000000000..1144f833e8
+--- /dev/null
++++ b/tmp_uploads/from_temp.txt
+@@ -0,0 +1 @@
++temp data
+\ No newline at end of file

@@ -1,0 +1,123 @@
+diff --git a/repro_fix_verify.py b/repro_fix_verify.py
+new file mode 100644
+index 000000000..59732ef78
+--- /dev/null
++++ b/repro_fix_verify.py
+@@ -0,0 +1,23 @@
++
++from sklearn.neighbors import NearestNeighbors
++from sklearn.datasets import make_blobs
++
++X, y = make_blobs(random_state=0)
++
++print("kneighbors with float n_neighbors=3.0 should work")
++nn = NearestNeighbors(n_neighbors=5)
++nn.fit(X)
++d, i = nn.kneighbors(X[:5], n_neighbors=3.0)
++print("ind shape:", i.shape)
++
++print("kneighbors_graph with float n_neighbors=3.0 should work")
++A = nn.kneighbors_graph(X[:5], n_neighbors=3.0)
++print("graph shape:", A.shape)
++
++print("constructor with float should raise TypeError")
++try:
++    nn_bad = NearestNeighbors(n_neighbors=3.0)
++    nn_bad.fit(X)
++    print("ERROR: Expected TypeError but fit succeeded")
++except Exception as e:
++    print("Constructor error:", type(e).__name__, str(e))
+\ No newline at end of file
+diff --git a/repro_k_ok.py b/repro_k_ok.py
+new file mode 100644
+index 000000000..a8a4aa051
+--- /dev/null
++++ b/repro_k_ok.py
+@@ -0,0 +1 @@
++from sklearn.neighbors import NearestNeighbors; from sklearn.datasets import make_blobs; X,y=make_blobs(random_state=0); nn=NearestNeighbors(n_neighbors=5); nn.fit(X); d,i = nn.kneighbors(X[:3], n_neighbors=3.0); print(i.shape)
+\ No newline at end of file
+diff --git a/repro_kneighbors_float_works.py b/repro_kneighbors_float_works.py
+new file mode 100644
+index 000000000..aa47608b1
+--- /dev/null
++++ b/repro_kneighbors_float_works.py
+@@ -0,0 +1 @@
++from sklearn.neighbors import NearestNeighbors\nfrom sklearn.datasets import make_blobs\n\nX, y = make_blobs(random_state=0)\n\nnn = NearestNeighbors(n_neighbors=5)\nnn.fit(X)\nd, i = nn.kneighbors(X[:5], n_neighbors=3.0)\nprint("kneighbors float OK:", i.shape)\n\nA = nn.kneighbors_graph(X[:5], n_neighbors=3.0)\nprint("kneighbors_graph float OK:", A.shape)\n
+\ No newline at end of file
+diff --git a/repro_neighbors_check.py b/repro_neighbors_check.py
+new file mode 100644
+index 000000000..e69de29bb
+diff --git a/repro_neighbors_float.py b/repro_neighbors_float.py
+new file mode 100644
+index 000000000..7dfed5330
+--- /dev/null
++++ b/repro_neighbors_float.py
+@@ -0,0 +1 @@
++from sklearn.neighbors import NearestNeighbors; from sklearn.datasets import make_blobs; X, y = make_blobs(random_state=0); nn = NearestNeighbors(n_neighbors=5); nn.fit(X); d,i = nn.kneighbors(X[:5], n_neighbors=3.0); print("kneighbors with float param shape:", i.shape); nn2 = NearestNeighbors(n_neighbors=3.0); nn2.fit(X); d2,i2 = nn2.kneighbors(X[:5]); print("constructor float then kneighbors shape:", i2.shape)
+\ No newline at end of file
+diff --git a/repro_pr_sample.py b/repro_pr_sample.py
+new file mode 100644
+index 000000000..bb11494f6
+--- /dev/null
++++ b/repro_pr_sample.py
+@@ -0,0 +1 @@
++from sklearn.neighbors import NearestNeighbors; from sklearn.datasets import make_blobs; X, y = make_blobs(); nn = NearestNeighbors(n_neighbors=3.0); nn.fit(X); d,i = nn.kneighbors(X); print(i.shape)
+\ No newline at end of file
+diff --git a/sklearn/neighbors/base.py b/sklearn/neighbors/base.py
+index 3e5e729c2..3733285b9 100644
+--- a/sklearn/neighbors/base.py
++++ b/sklearn/neighbors/base.py
+@@ -108,6 +108,8 @@ class NeighborsBase(six.with_metaclass(ABCMeta, BaseEstimator)):
+                  p=2, metric_params=None, n_jobs=1):
+ 
+         self.n_neighbors = n_neighbors
++        if n_neighbors is not None and isinstance(n_neighbors, (float, np.floating)):
++            raise TypeError("n_neighbors must be an integer, got float %r" % n_neighbors)
+         self.radius = radius
+         self.algorithm = algorithm
+         self.leaf_size = leaf_size
+@@ -337,6 +339,10 @@ class KNeighborsMixin(object):
+             # Include an extra neighbor to account for the sample itself being
+             # returned, which is removed later
+             n_neighbors += 1
++        if isinstance(n_neighbors, (float, np.floating)) and not float(n_neighbors).is_integer():
++            raise TypeError("n_neighbors must be an integer, got float %r" % n_neighbors)
++        if isinstance(n_neighbors, (float, np.floating)):
++            n_neighbors = int(n_neighbors)
+ 
+         train_size = self._fit_X.shape[0]
+         if n_neighbors > train_size:
+@@ -462,6 +468,10 @@ class KNeighborsMixin(object):
+ 
+         See also
+         --------
++        if isinstance(n_neighbors, (float, np.floating)) and not float(n_neighbors).is_integer():
++            raise TypeError("n_neighbors must be an integer, got float %r" % n_neighbors)
++        if isinstance(n_neighbors, (float, np.floating)):
++            n_neighbors = int(n_neighbors)
+         NearestNeighbors.radius_neighbors_graph
+         """
+         if n_neighbors is None:
+@@ -475,17 +485,17 @@ class KNeighborsMixin(object):
+             n_samples1 = self._fit_X.shape[0]
+ 
+         n_samples2 = self._fit_X.shape[0]
+-        n_nonzero = n_samples1 * n_neighbors
+-        A_indptr = np.arange(0, n_nonzero + 1, n_neighbors)
++        n_nonzero = n_samples1 * (int(n_neighbors) if isinstance(n_neighbors, (float, np.floating)) else n_neighbors)
++        A_indptr = np.arange(0, n_nonzero + 1, int(n_neighbors) if isinstance(n_neighbors, (float, np.floating)) else n_neighbors)
+ 
+         # construct CSR matrix representation of the k-NN graph
+         if mode == 'connectivity':
+-            A_data = np.ones(n_samples1 * n_neighbors)
+-            A_ind = self.kneighbors(X, n_neighbors, return_distance=False)
++            A_data = np.ones(n_nonzero)
++            A_ind = self.kneighbors(X, int(n_neighbors) if isinstance(n_neighbors, (float, np.floating)) else n_neighbors, return_distance=False)
+ 
+         elif mode == 'distance':
+             A_data, A_ind = self.kneighbors(
+-                X, n_neighbors, return_distance=True)
++                X, int(n_neighbors) if isinstance(n_neighbors, (float, np.floating)) else n_neighbors, return_distance=True)
+             A_data = np.ravel(A_data)
+ 
+         else:

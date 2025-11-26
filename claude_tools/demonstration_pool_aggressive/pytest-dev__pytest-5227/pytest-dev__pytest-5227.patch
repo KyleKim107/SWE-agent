@@ -1,0 +1,41 @@
+diff --git a/repro_default_log_format.py b/repro_default_log_format.py
+new file mode 100644
+index 000000000..2c78bcd8a
+--- /dev/null
++++ b/repro_default_log_format.py
+@@ -0,0 +1,11 @@
++import logging
++import _pytest.logging as pl
++print(pl.DEFAULT_LOG_FORMAT)
++handler = logging.StreamHandler()
++fmt = logging.Formatter(pl.DEFAULT_LOG_FORMAT, datefmt=pl.DEFAULT_LOG_DATE_FORMAT)
++handler.setFormatter(fmt)
++root = logging.getLogger()
++root.handlers = []
++root.addHandler(handler)
++root.setLevel(logging.DEBUG)
++logging.getLogger("multipart.multipart").debug("Calling on_field_start with no data")
+\ No newline at end of file
+diff --git a/src/_pytest/logging.py b/src/_pytest/logging.py
+index 757cb2797..08670d2b2 100644
+--- a/src/_pytest/logging.py
++++ b/src/_pytest/logging.py
+@@ -15,7 +15,7 @@ from _pytest.compat import dummy_context_manager
+ from _pytest.config import create_terminal_writer
+ from _pytest.pathlib import Path
+ 
+-DEFAULT_LOG_FORMAT = "%(filename)-25s %(lineno)4d %(levelname)-8s %(message)s"
++DEFAULT_LOG_FORMAT = "%(levelname)-8s %(name)s:%(filename)s:%(lineno)d %(message)s"
+ DEFAULT_LOG_DATE_FORMAT = "%H:%M:%S"
+ 
+ 
+diff --git a/test_log_example.py b/test_log_example.py
+new file mode 100644
+index 000000000..a0da4d825
+--- /dev/null
++++ b/test_log_example.py
+@@ -0,0 +1,3 @@
++import logging
++def test_log():
++    logging.getLogger("multipart.multipart").debug("Calling on_field_start with no data")
+\ No newline at end of file

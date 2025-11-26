@@ -1,0 +1,31 @@
+diff --git a/lib/matplotlib/__init__.py b/lib/matplotlib/__init__.py
+index c268a56724..e67d2f4886 100644
+--- a/lib/matplotlib/__init__.py
++++ b/lib/matplotlib/__init__.py
+@@ -1095,7 +1095,7 @@ def rc_context(rc=None, fname=None):
+             rcParams.update(rc)
+         yield
+     finally:
+-        dict.update(rcParams, orig)  # Revert to the original rcs.
++        rcParams.update({k: orig[k] for k in orig if not (k == 'backend' and orig.get('backend') is rcsetup._auto_backend_sentinel)})  # Revert to the original rcs.
+ 
+ 
+ def use(backend, *, force=True):
+diff --git a/tmp/repro_rc_context_backend.py b/tmp/repro_rc_context_backend.py
+new file mode 100644
+index 0000000000..d89c222ea3
+--- /dev/null
++++ b/tmp/repro_rc_context_backend.py
+@@ -0,0 +1,12 @@
++import matplotlib.pyplot as plt
++from matplotlib import get_backend, rc_context
++
++with rc_context():
++    fig2 = plt.figure()
++
++before = str(id(plt._pylab_helpers.Gcf)) + " " + repr(plt._pylab_helpers.Gcf.figs)
++print("BEFORE", before)
++get_backend()
++after = str(id(plt._pylab_helpers.Gcf)) + " " + repr(plt._pylab_helpers.Gcf.figs)
++print("AFTER", after)
++assert before == after

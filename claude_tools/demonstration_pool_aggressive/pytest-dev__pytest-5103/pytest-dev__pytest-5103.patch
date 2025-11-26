@@ -1,0 +1,76 @@
+diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py
+index 2903b8995..b0a3068fa 100644
+--- a/src/_pytest/assertion/rewrite.py
++++ b/src/_pytest/assertion/rewrite.py
+@@ -840,7 +840,55 @@ class AssertionRewriter(ast.NodeVisitor):
+         self.on_failure = []
+         self.push_format_context()
+         # Rewrite assert into a bunch of statements.
++        # Special-case: unroll all(...) over comprehensions/generators for better reporting\n        _t = assert_.test\n        if (\n            isinstance(_t, ast.Call)\n            and isinstance(_t.func, ast.Name)\n            and _t.func.id == "all"\n            and len(_t.args) == 1\n            and isinstance(_t.args[0], (ast.GeneratorExp, ast.ListComp))\n            and not _t.keywords\n        ):\n            comp = _t.args[0]\n            save_statements = self.statements\n            save_on_failure = self.on_failure\n            inner_statements = []\n            self.statements = inner_statements\n            self.on_failure = []\n            # Build per-element check and rich explanation\n            self.push_format_context()\n            cond_expr, explanation = self.visit(comp.elt)\n            negation = ast.UnaryOp(ast.Not(), cond_expr)\n            body = self.on_failure\n            if assert_.msg:\n                assertmsg = self.helper("_format_assertmsg", assert_.msg)\n                explanation_str = "\n>assert " + explanation\n            else:\n                assertmsg = ast.Str("")\n                explanation_str = "assert " + explanation\n            template = ast.BinOp(assertmsg, ast.Add(), ast.Str(explanation_str))\n            msg = self.pop_format_context(template)\n            fmt = self.helper("_format_explanation", msg)\n            err_name = ast.Name("AssertionError", ast.Load())\n            exc = ast_Call(err_name, [fmt], [])\n            if sys.version_info[0] >= 3:\n                raise_ = ast.Raise(exc, None)\n            else:\n                raise_ = ast.Raise(exc, None, None)\n            block = inner_statements + [ast.If(negation, body + [raise_], [])]\n            # Wrap with any "if" filters and the for-loops of the comprehension\n            for gen in reversed(comp.generators):\n                gb = block\n                for ifcond in reversed(getattr(gen, "ifs", [])):\n                    gb = [ast.If(ifcond, gb, [])]\n                block = [ast.For(gen.target, gen.iter, gb, [])]\n            # Restore and emit the constructed block, then return early\n            self.statements = save_statements\n            self.on_failure = save_on_failure\n            self.statements.extend(block)\n            for stmt in self.statements:\n                set_location(stmt, assert_.lineno, assert_.col_offset)\n            return self.statements\n        top_condition, explanation = self.visit(assert_.test)
++        # Special-case: unroll all(...) over comprehensions/generators for better reporting
+         top_condition, explanation = self.visit(assert_.test)
++        _t = assert_.test
++        if (
++            isinstance(_t, ast.Call)
++            and isinstance(_t.func, ast.Name)
++            and _t.func.id == "all"
++            and len(_t.args) == 1
++            and isinstance(_t.args[0], (ast.GeneratorExp, ast.ListComp))
++            and not _t.keywords
++        ): 
++            comp = _t.args[0]
++            save_statements = self.statements
++            save_on_failure = self.on_failure
++            inner_statements = []
++            self.statements = inner_statements
++            self.on_failure = []
++            self.push_format_context()
++            cond_expr, explanation = self.visit(comp.elt)
++            negation = ast.UnaryOp(ast.Not(), cond_expr)
++            body = self.on_failure
++            if assert_.msg:
++                assertmsg = self.helper("_format_assertmsg", assert_.msg)
++                explanation_str = "\n>assert " + explanation
++            else:
++                assertmsg = ast.Str("")
++                explanation_str = "assert " + explanation
++            template = ast.BinOp(assertmsg, ast.Add(), ast.Str(explanation_str))
++            msg = self.pop_format_context(template)
++            fmt = self.helper("_format_explanation", msg)
++            err_name = ast.Name("AssertionError", ast.Load())
++            exc = ast_Call(err_name, [fmt], [])
++            if sys.version_info[0] >= 3:
++                raise_ = ast.Raise(exc, None)
++            else:
++                raise_ = ast.Raise(exc, None, None)
++            block = inner_statements + [ast.If(negation, body + [raise_], [])]
++            for gen in reversed(comp.generators):
++                gb = block
++                for ifcond in reversed(getattr(gen, "ifs", [])):
++                    gb = [ast.If(ifcond, gb, [])]
++                block = [ast.For(gen.target, gen.iter, gb, [])]
++            self.statements = save_statements
++            self.on_failure = save_on_failure
++            self.statements.extend(block)
++            for stmt in self.statements:
++                set_location(stmt, assert_.lineno, assert_.col_offset)
++            return self.statements
+         # If in a test module, check if directly asserting None, in order to warn [Issue #3191]
+         if self.module_path is not None:
+             self.statements.append(
+diff --git a/testing/test_all_any_report.py b/testing/test_all_any_report.py
+new file mode 100644
+index 000000000..f66faad50
+--- /dev/null
++++ b/testing/test_all_any_report.py
+@@ -0,0 +1,10 @@
++def is_even(x):
++    return x % 2 == 0
++
++def test_all_even_generator():
++    nums = list(range(1, 10, 2))
++    assert all(is_even(n) for n in nums)
++
++def test_all_even_listcomp():
++    nums = list(range(1, 10, 2))
++    assert all([is_even(n) for n in nums])

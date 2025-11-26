@@ -1,0 +1,48 @@
+diff --git a/pylint/checkers/misc.py b/pylint/checkers/misc.py
+index 69149e61a..28978365f 100644
+--- a/pylint/checkers/misc.py
++++ b/pylint/checkers/misc.py
+@@ -121,9 +121,9 @@ class EncodingChecker(BaseChecker):
+ 
+         notes = "|".join(re.escape(note) for note in self.config.notes)
+         if self.config.notes_rgx:
+-            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})\b"
++            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})(?=\W|$)"
+         else:
+-            regex_string = rf"#\s*({notes})\b"
++            regex_string = rf"#\s*({notes})(?=\W|$)"
+ 
+         self._fixme_pattern = re.compile(regex_string, re.I)
+ 
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 000000000..f08f5cf53
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++import re\nnotes = ["YES","???"]\nnotes_part = "|".join(re.escape(n) for n in notes)\nregex_b = rf"#\\s*({notes_part})\\b"\npattern_b = re.compile(regex_b, re.I)\ntexts = ["# YES: yes", "# ???: no"]\nprint("Before fix")\nfor t in texts:\n    print(t, bool(pattern_b.search(t.lower())))\nregex_fix = rf"#\\s*({notes_part})(?!\\w)"\npattern_fix = re.compile(regex_fix, re.I)\nprint("After fix")\nfor t in texts:\n    print(t, bool(pattern_fix.search(t.lower())))\n
+\ No newline at end of file
+diff --git a/repro2.py b/repro2.py
+new file mode 100644
+index 000000000..cb2867327
+--- /dev/null
++++ b/repro2.py
+@@ -0,0 +1 @@
++import re; notes=["YES","???"]; p="|".join(re.escape(n) for n in notes); r1=rf"#\s*({p})\b"; m1=re.compile(r1,re.I); t1="# YES: yes"; t2="# ???: no"; print("Before fix", r1, bool(m1.search(t1)), bool(m1.search(t2))); r2=rf"#\s*({p})(?=\W|$)"; m2=re.compile(r2,re.I); print("After fix", r2, bool(m2.search(t1)), bool(m2.search(t2)))
+\ No newline at end of file
+diff --git a/repro3.py b/repro3.py
+new file mode 100644
+index 000000000..a9d40be60
+--- /dev/null
++++ b/repro3.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0,"/testbed"); from pylint.checkers.misc import EncodingChecker; class C: pass; class D: notes=("YES","???"); notes_rgx=""; l=C(); e=EncodingChecker(l); e.config=D(); e.open(); t1="# YES: yes"; t2="# ???: no"; print(bool(e._fixme_pattern.search(t1.lower())), bool(e._fixme_pattern.search(t2.lower())))
+\ No newline at end of file
+diff --git a/test.py b/test.py
+new file mode 100644
+index 000000000..efe4d4dee
+--- /dev/null
++++ b/test.py
+@@ -0,0 +1 @@
++# YES: yes\n# ???: no\nx = 1\n
+\ No newline at end of file

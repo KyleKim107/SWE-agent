@@ -1,0 +1,28 @@
+diff --git a/pylint/config/config_initialization.py b/pylint/config/config_initialization.py
+index 24e453a73..c6e0a6f6f 100644
+--- a/pylint/config/config_initialization.py
++++ b/pylint/config/config_initialization.py
+@@ -82,7 +82,7 @@ def _config_initialization(
+     if unrecognized_options:
+         msg = ", ".join(unrecognized_options)
+         linter.add_message("unrecognized-option", line=0, args=msg)
+-        raise _UnrecognizedOptionError(options=unrecognized_options)
++        sys.exit(32)
+ 
+     # Set the current module to configuration as we don't know where
+     # the --load-plugins key is coming from
+diff --git a/tests/repro_unrecognized_option.py b/tests/repro_unrecognized_option.py
+new file mode 100644
+index 000000000..abb21c608
+--- /dev/null
++++ b/tests/repro_unrecognized_option.py
+@@ -0,0 +1,8 @@
++
++import sys
++from pylint import run_pylint
++if __name__ == "__main__":
++    try:
++        run_pylint(["-Q"])
++    except SystemExit as e:
++        print("Exited with code:", e.code)
+\ No newline at end of file
