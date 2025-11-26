@@ -1,0 +1,65 @@
+diff --git a/astropy/io/ascii/rst.py b/astropy/io/ascii/rst.py
+index abdeba8ef..62178182e 100644
+--- a/astropy/io/ascii/rst.py
++++ b/astropy/io/ascii/rst.py
+@@ -57,10 +57,17 @@ class RST(FixedWidth):
+     data_class = SimpleRSTData
+     header_class = SimpleRSTHeader
+ 
+-    def __init__(self):
+-        super().__init__(delimiter_pad=None, bookend=False)
++    def __init__(self, header_rows=None):
++        super().__init__(delimiter_pad=None, bookend=False, header_rows=header_rows)
+ 
+     def write(self, lines):
+         lines = super().write(lines)
+-        lines = [lines[1]] + lines + [lines[1]]
++        n_hdr = len(getattr(self.header, "header_rows", ["name"]))
++
++        border = lines[n_hdr]
++        border = lines[n_hdr]
++        lines = [border] + lines + [border]
+         return lines
++        lines = [border] + lines + [border]
++        border = lines[n_hdr]
++        lines = [border] + lines + [border]
+diff --git a/scripts/repro_rst_hdr.py b/scripts/repro_rst_hdr.py
+new file mode 100644
+index 000000000..9e46e7a35
+--- /dev/null
++++ b/scripts/repro_rst_hdr.py
+@@ -0,0 +1,3 @@
++from astropy.table import QTable
++import astropy.units as u
++import sys
+\ No newline at end of file
+diff --git a/scripts/repro_rst_hdr2.py b/scripts/repro_rst_hdr2.py
+new file mode 100644
+index 000000000..9e46e7a35
+--- /dev/null
++++ b/scripts/repro_rst_hdr2.py
+@@ -0,0 +1,3 @@
++from astropy.table import QTable
++import astropy.units as u
++import sys
+\ No newline at end of file
+diff --git a/scripts/repro_rst_hdr_fix.py b/scripts/repro_rst_hdr_fix.py
+new file mode 100644
+index 000000000..9e46e7a35
+--- /dev/null
++++ b/scripts/repro_rst_hdr_fix.py
+@@ -0,0 +1,3 @@
++from astropy.table import QTable
++import astropy.units as u
++import sys
+\ No newline at end of file
+diff --git a/scripts/repro_rst_hdr_ok.py b/scripts/repro_rst_hdr_ok.py
+new file mode 100644
+index 000000000..9e46e7a35
+--- /dev/null
++++ b/scripts/repro_rst_hdr_ok.py
+@@ -0,0 +1,3 @@
++from astropy.table import QTable
++import astropy.units as u
++import sys
+\ No newline at end of file

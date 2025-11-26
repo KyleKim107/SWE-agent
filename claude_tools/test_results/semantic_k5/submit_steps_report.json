@@ -1,0 +1,89 @@
+{
+  "summary": {
+    "total_instances": 11,
+    "submitted": 10,
+    "not_submitted": 1,
+    "avg_submit_step": 6.3,
+    "min_submit_step": 2,
+    "max_submit_step": 21
+  },
+  "instances": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "total_steps": 6,
+      "submit_step": 6,
+      "exit_status": "submitted",
+      "has_patch": true
+    },
+    {
+      "instance_id": "astropy__astropy-7746",
+      "total_steps": 4,
+      "submit_step": null,
+      "exit_status": "exit_format",
+      "has_patch": false
+    },
+    {
+      "instance_id": "django__django-10914",
+      "total_steps": 2,
+      "submit_step": 2,
+      "exit_status": "submitted",
+      "has_patch": true
+    },
+    {
+      "instance_id": "astropy__astropy-14182",
+      "total_steps": 21,
+      "submit_step": 21,
+      "exit_status": "submitted",
+      "has_patch": true
+    },
+    {
+      "instance_id": "django__django-10924",
+      "total_steps": 2,
+      "submit_step": 2,
+      "exit_status": "submitted",
+      "has_patch": true
+    },
+    {
+      "instance_id": "django__django-11001",
+      "total_steps": 3,
+      "submit_step": 3,
+      "exit_status": "submitted",
+      "has_patch": true
+    },
+    {
+      "instance_id": "astropy__astropy-14995",
+      "total_steps": 2,
+      "submit_step": 2,
+      "exit_status": "submitted",
+      "has_patch": true
+    },
+    {
+      "instance_id": "astropy__astropy-6938",
+      "total_steps": 10,
+      "submit_step": 10,
+      "exit_status": "submitted",
+      "has_patch": true
+    },
+    {
+      "instance_id": "django__django-11283",
+      "total_steps": 10,
+      "submit_step": 10,
+      "exit_status": "submitted",
+      "has_patch": true
+    },
+    {
+      "instance_id": "astropy__astropy-14365",
+      "total_steps": 4,
+      "submit_step": 4,
+      "exit_status": "submitted",
+      "has_patch": true
+    },
+    {
+      "instance_id": "django__django-11019",
+      "total_steps": 3,
+      "submit_step": 3,
+      "exit_status": "submitted",
+      "has_patch": true
+    }
+  ]
+}

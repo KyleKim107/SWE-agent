@@ -1,0 +1,16 @@
+diff --git a/repro_qdp_lowercase.py b/repro_qdp_lowercase.py
+new file mode 100644
+index 000000000..07557d8c3
+--- /dev/null
++++ b/repro_qdp_lowercase.py
+@@ -0,0 +1 @@
++from astropy.table import Table\nwith open("/testbed/test.qdp","w") as f:\n    f.write("read serr 1 2\n")\n    f.write("1 0.5 1 0.5\n")\nt = Table.read("/testbed/test.qdp", format="ascii.qdp")\nprint("Columns:", t.colnames)\nprint("Row 0:", list(t[0]))\n
+\ No newline at end of file
+diff --git a/scripts/repro_qdp_case2.py b/scripts/repro_qdp_case2.py
+new file mode 100644
+index 000000000..d2bf65330
+--- /dev/null
++++ b/scripts/repro_qdp_case2.py
+@@ -0,0 +1 @@
++from astropy.table import Table
+\ No newline at end of file

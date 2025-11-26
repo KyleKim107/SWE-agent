@@ -1,0 +1,34 @@
+diff --git a/repro_multi.py b/repro_multi.py
+new file mode 100644
+index 0000000000..97dd4f3e52
+--- /dev/null
++++ b/repro_multi.py
+@@ -0,0 +1,19 @@
++
++from django.db.models.sql.compiler import SQLCompiler
++samples = [
++    """case when status in ('accepted', 'verification')
++     then 2 else 1 end DESC""",
++    """case when status in ('accepted', 'verification')
++     then (accepted_datetime, preferred_datetime)
++     else null end ASC""",
++    """case when status not in ('accepted', 'verification')
++     then (accepted_datetime, preferred_datetime, created_at)
++     else null end DESC""",
++]
++comp = SQLCompiler(None, None, None)
++seen = set()
++for s in samples:
++    m = comp.ordering_parts.search(s)
++    print('without_ordering:', repr(m.group(1)))
++    seen.add(m.group(1))
++print('unique without_ordering terms:', len(seen))
+\ No newline at end of file
+diff --git a/repro_multiline_order_by.py b/repro_multiline_order_by.py
+new file mode 100644
+index 0000000000..e5f2bd4df6
+--- /dev/null
++++ b/repro_multiline_order_by.py
+@@ -0,0 +1 @@
++from django.db.models.sql.compiler import SQLCompiler\n\nsamples = [\n    "case when status in ('accepted', 'verification')\n then 2 else 1 end DESC",\n    "case when status in ('accepted', 'verification')\n then (accepted_datetime, preferred_datetime)\n else null end ASC",\n    "case when status not in ('accepted', 'verification')\n then (accepted_datetime, preferred_datetime, created_at)\n else null end DESC",\n]\ncomp = SQLCompiler(None, None, None)\nseen = set()\nfor s in samples:\n    m = comp.ordering_parts.search(s)\n    print('without_ordering:', repr(m.group(1)))\n    seen.add(m.group(1))\nprint('unique without_ordering terms:', len(seen))\n
+\ No newline at end of file

@@ -1,0 +1,85 @@
+diff --git a/repro_media_merge.py b/repro_media_merge.py
+new file mode 100644
+index 0000000000..3a7390f68b
+--- /dev/null
++++ b/repro_media_merge.py
+@@ -0,0 +1,25 @@
++import sys
++sys.path.insert(0, "/testbed")
++from django import forms
++
++class ColorPicker(forms.Widget):
++    class Media:
++        js = ["color-picker.js"]
++
++class SimpleTextWidget(forms.Widget):
++    class Media:
++        js = ["text-editor.js"]
++
++class FancyTextWidget(forms.Widget):
++    class Media:
++        js = ["text-editor.js", "text-editor-extras.js", "color-picker.js"]
++
++class MyForm(forms.Form):
++    background_color = forms.CharField(widget=ColorPicker())
++    intro = forms.CharField(widget=SimpleTextWidget())
++    body = forms.CharField(widget=FancyTextWidget())
++
++f = MyForm()
++print("Form media js:", f.media._js)
++print("Form media:")
++print(f.media)
+diff --git a/repro_media_merge_configured.py b/repro_media_merge_configured.py
+new file mode 100644
+index 0000000000..47241c726c
+--- /dev/null
++++ b/repro_media_merge_configured.py
+@@ -0,0 +1,31 @@
++import sys
++sys.path.insert(0, "/testbed")
++from django.conf import settings
++import django
++settings.configure(USE_I18N=False, SECRET_KEY="x", STATIC_URL="/static/")
++django.setup()
++from django import forms
++from django.forms.widgets import MediaOrderConflictWarning
++import warnings
++warnings.simplefilter("error", MediaOrderConflictWarning)
++
++class ColorPicker(forms.Widget):
++    class Media:
++        js = ["color-picker.js"]
++
++class SimpleTextWidget(forms.Widget):
++    class Media:
++        js = ["text-editor.js"]
++
++class FancyTextWidget(forms.Widget):
++    class Media:
++        js = ["text-editor.js", "text-editor-extras.js", "color-picker.js"]
++
++class MyForm(forms.Form):
++    background_color = forms.CharField(widget=ColorPicker())
++    intro = forms.CharField(widget=SimpleTextWidget())
++    body = forms.CharField(widget=FancyTextWidget())
++
++f = MyForm()
++print("Form media js (configured):", f.media._js)
++print("Form media rendered:\n", f.media)
+diff --git a/repro_media_only.py b/repro_media_only.py
+new file mode 100644
+index 0000000000..c5cb18de38
+--- /dev/null
++++ b/repro_media_only.py
+@@ -0,0 +1,11 @@
++import sys
++sys.path.insert(0, "/testbed")
++from django.forms.widgets import Media, MediaOrderConflictWarning
++import warnings
++warnings.simplefilter("error", MediaOrderConflictWarning)
++
++m1 = Media(js=["color-picker.js"])
++m2 = Media(js=["text-editor.js"])
++m3 = Media(js=["text-editor.js", "text-editor-extras.js", "color-picker.js"])
++merged = m1 + m2 + m3
++print("Merged js (Media-only):", merged._js)

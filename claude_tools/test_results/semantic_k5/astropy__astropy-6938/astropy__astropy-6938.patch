@@ -1,0 +1,30 @@
+diff --git a/astropy/io/fits/fitsrec.py b/astropy/io/fits/fitsrec.py
+index 574b4073b1..de5f93ebda 100644
+--- a/astropy/io/fits/fitsrec.py
++++ b/astropy/io/fits/fitsrec.py
+@@ -1261,7 +1261,7 @@ class FITS_rec(np.recarray):
+ 
+         # Replace exponent separator in floating point numbers
+         if 'D' in format:
+-            output_field.replace(encode_ascii('E'), encode_ascii('D'))
++            output_field[:] = np.char.replace(output_field, encode_ascii('E'), encode_ascii('D'))
+ 
+ 
+ def _get_recarray_field(array, key):
+diff --git a/repro_chararray_replace.py b/repro_chararray_replace.py
+new file mode 100644
+index 0000000000..38b0b17045
+--- /dev/null
++++ b/repro_chararray_replace.py
+@@ -0,0 +1,10 @@
++
++import numpy as np
++arr = np.chararray(1, itemsize=16)
++arr[:] = b'1.23E+05'
++output_field = arr.copy()
++output_field.replace(b'E', b'D')
++print('After replace (buggy):', output_field.tostring())
++output_field2 = arr.copy()
++output_field2[:] = np.char.replace(output_field2, b'E', b'D')
++print('After replace (fixed):', output_field2.tostring())
+\ No newline at end of file

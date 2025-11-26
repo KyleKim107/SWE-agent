@@ -1,0 +1,8 @@
+diff --git a/repro_fpf_callable.py b/repro_fpf_callable.py
+new file mode 100644
+index 0000000000..4dacea152e
+--- /dev/null
++++ b/repro_fpf_callable.py
+@@ -0,0 +1 @@
++import os, sys\nsys.path.insert(0, '/testbed')\nfrom django.forms import FilePathField as FormFPF\nfrom django.db.models.fields import FilePathField as ModelFPF\nfrom django.db.migrations.serializer import serializer_factory\n\ndef get_path():\n    return '/testbed/tmp_fpf'\n\nos.makedirs('/testbed/tmp_fpf/sub', exist_ok=True)\nopen('/testbed/tmp_fpf/a.txt', 'w').write('x')\nopen('/testbed/tmp_fpf/sub/b.txt', 'w').write('y')\n\nff = FormFPF(get_path, allow_files=True, allow_folders=True, required=False, recursive=True)\nprint('choices_count:', len(ff.choices))\nprint('first_choices:', ff.choices[:3])\n\nmf = ModelFPF(path=get_path, allow_files=True, allow_folders=True)\nname, path_mod, args, kwargs = mf.deconstruct()\nprint('path_callable:', callable(kwargs.get('path')))\n\nffield = mf.formfield(required=False)\nprint('model_form_choices_count:', len(ffield.choices))\n
+\ No newline at end of file

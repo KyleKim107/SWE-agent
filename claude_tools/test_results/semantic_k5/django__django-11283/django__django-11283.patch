@@ -1,0 +1,22 @@
+diff --git a/repro_proxy_perm.py b/repro_proxy_perm.py
+new file mode 100644
+index 0000000000..63c8847f3a
+--- /dev/null
++++ b/repro_proxy_perm.py
+@@ -0,0 +1,15 @@
++
++import io
++from django.conf import settings
++import django
++from django.core.management import call_command
++
++if not settings.configured:
++    settings.configure(
++        INSTALLED_APPS=["django.contrib.auth", "django.contrib.contenttypes"],
++        DATABASES={"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}},
++        SECRET_KEY="x",
++    )
++django.setup()
++out = io.StringIO()
++call_command("migrate", stdout=out, no_color=True)
+\ No newline at end of file

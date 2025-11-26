@@ -1,0 +1,21 @@
+diff --git a/django/conf/global_settings.py b/django/conf/global_settings.py
+index acee9887d2..bdeec80610 100644
+--- a/django/conf/global_settings.py
++++ b/django/conf/global_settings.py
+@@ -304,7 +304,7 @@ FILE_UPLOAD_TEMP_DIR = None
+ 
+ # The numeric mode to set newly-uploaded files to. The value should be a mode
+ # you'd pass directly to os.chmod; see https://docs.python.org/library/os.html#files-and-directories.
+-FILE_UPLOAD_PERMISSIONS = None
++FILE_UPLOAD_PERMISSIONS = 0o644
+ 
+ # The numeric mode to assign to newly-created directories, when uploading files.
+ # The value should be a mode as you'd pass to os.chmod;
+diff --git a/repro_upload_perms.py b/repro_upload_perms.py
+new file mode 100644
+index 0000000000..d0795bd56e
+--- /dev/null
++++ b/repro_upload_perms.py
+@@ -0,0 +1 @@
++import os\nimport tempfile\nfrom django.conf import settings\nfrom django.core.files.storage import FileSystemStorage\nfrom django.core.files.base import ContentFile\n\ntry:\n    settings.configure()\nexcept RuntimeError:\n    pass\n\nbase_dir = '/testbed/tmp_uploads'\nos.makedirs(base_dir, exist_ok=True)\n\nstorage = FileSystemStorage(location=base_dir)\n\nntf = tempfile.NamedTemporaryFile(delete=False)\nntf.write(b'temp data')\nntf.flush()\nntf.close()\n\nclass TempContent:\n    def __init__(self, path):\n        self._path = path\n    def temporary_file_path(self):\n        return self._path\n\nfrom_temp = TempContent(ntf.name)\nname1 = storage._save('from_temp.txt', from_temp)\npath1 = os.path.join(base_dir, name1)\nmode1 = oct(os.stat(path1).st_mode & 0o777)\nprint('from_temp mode:', mode1)\nprint('file_permissions_mode:', storage.file_permissions_mode)\n\ncf = ContentFile(b'chunked data', name='from_chunks.txt')\nname2 = storage.save(None, cf)\npath2 = os.path.join(base_dir, name2)\nmode2 = oct(os.stat(path2).st_mode & 0o777)\nprint('from_chunks mode:', mode2)\n
+\ No newline at end of file

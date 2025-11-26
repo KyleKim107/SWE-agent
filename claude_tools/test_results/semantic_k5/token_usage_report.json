@@ -1,0 +1,135 @@
+{
+  "summary": {
+    "instances_analyzed": 11,
+    "total_tokens_sent": 9457677,
+    "total_tokens_received": 38196,
+    "total_tokens": 9495873,
+    "total_api_calls": 66,
+    "total_cost": 0,
+    "avg_tokens_sent": 859788.8181818182,
+    "avg_tokens_received": 3472.3636363636365,
+    "avg_total_tokens": 863261.1818181818,
+    "avg_api_calls": 6.0,
+    "avg_cost": 0.0,
+    "min_tokens": 198640,
+    "max_tokens": 2837637,
+    "min_cost": 0,
+    "max_cost": 0
+  },
+  "instances": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "tokens_sent": 948515,
+      "tokens_received": 1528,
+      "total_tokens": 950043,
+      "api_calls": 6,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    },
+    {
+      "instance_id": "astropy__astropy-7746",
+      "tokens_sent": 439520,
+      "tokens_received": 1091,
+      "total_tokens": 440611,
+      "api_calls": 3,
+      "instance_cost": 0,
+      "exit_status": "exit_format"
+    },
+    {
+      "instance_id": "django__django-10914",
+      "tokens_sent": 197919,
+      "tokens_received": 2298,
+      "total_tokens": 200217,
+      "api_calls": 2,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    },
+    {
+      "instance_id": "astropy__astropy-14182",
+      "tokens_sent": 2824927,
+      "tokens_received": 12710,
+      "total_tokens": 2837637,
+      "api_calls": 21,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    },
+    {
+      "instance_id": "django__django-10924",
+      "tokens_sent": 197603,
+      "tokens_received": 1037,
+      "total_tokens": 198640,
+      "api_calls": 2,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    },
+    {
+      "instance_id": "django__django-11001",
+      "tokens_sent": 322022,
+      "tokens_received": 2006,
+      "total_tokens": 324028,
+      "api_calls": 3,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    },
+    {
+      "instance_id": "astropy__astropy-14995",
+      "tokens_sent": 312671,
+      "tokens_received": 1298,
+      "total_tokens": 313969,
+      "api_calls": 2,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    },
+    {
+      "instance_id": "astropy__astropy-6938",
+      "tokens_sent": 1895301,
+      "tokens_received": 4026,
+      "total_tokens": 1899327,
+      "api_calls": 10,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    },
+    {
+      "instance_id": "django__django-11283",
+      "tokens_sent": 1422933,
+      "tokens_received": 7969,
+      "total_tokens": 1430902,
+      "api_calls": 10,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    },
+    {
+      "instance_id": "astropy__astropy-14365",
+      "tokens_sent": 526604,
+      "tokens_received": 1997,
+      "total_tokens": 528601,
+      "api_calls": 4,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    },
+    {
+      "instance_id": "django__django-11019",
+      "tokens_sent": 369662,
+      "tokens_received": 2236,
+      "total_tokens": 371898,
+      "api_calls": 3,
+      "instance_cost": 0,
+      "exit_status": "submitted"
+    }
+  ],
+  "estimation": {
+    "target_instances": 300,
+    "avg_estimate": {
+      "total_tokens": 258978354.54545453,
+      "total_cost": 0.0
+    },
+    "conservative_estimate": {
+      "total_tokens": 851291100,
+      "total_cost": 0
+    },
+    "recommended_with_buffer": {
+      "total_tokens": 310774025,
+      "total_cost": 0.0
+    }
+  }
+}
