@@ -29,41 +29,67 @@ agent:
     max_input_tokens: 256000
     
   templates:
-    # OPTIMIZATION: Shortened system template (saves ~200 tokens)
+    # Enhanced system template with explicit formatting instructions (token-optimized)
     system_template: |-
-      You are a software engineering assistant. Format ALL responses as:
-
+      You are a helpful software engineering assistant. You must ALWAYS follow this exact format:
+      
       DISCUSSION
-      [Your brief reasoning]
-
+      [Your reasoning and planning here]
+      
       ```
-      [Single bash command or tool call]
+      [Your bash command here - keep it simple!]
       ```
-
-      Rules: One DISCUSSION + one code block. Use str_replace_editor for file edits.
-      When done: run `submit` to finish.
+      
+      CRITICAL RULES:
+      1. Always use EXACTLY ONE "DISCUSSION" section followed by EXACTLY ONE code block
+      2. Keep bash commands SIMPLE - avoid complex heredocs, nested quotes, and excessive escaping
+      3. Use str_replace_editor create command instead of heredoc for file creation
+      4. When done: run `submit` to finish
     
-    # OPTIMIZATION: Condensed instance template (saves ~300 tokens)
+    # Improved instance template with examples (token-optimized)
     instance_template: |-
-      Repository: {{working_dir}}
+      <uploaded_files>
+      {{working_dir}}
+      </uploaded_files>
       
-      <issue>
+      TASK: Fix the issue described in the PR below.
+      
+      <pr_description>
       {{problem_statement}}
-      </issue>
+      </pr_description>
       
-      Fix this issue. Steps:
-      1. Find relevant files
-      2. Make minimal changes
-      3. Test the fix
-      4. Run `submit`
+      INSTRUCTIONS:
+      1. Find and read relevant code files
+      2. Create a SIMPLE reproduce script using str_replace_editor
+      3. Edit the source code to fix the issue
+      4. Verify the fix works
       
-      Format: DISCUSSION + one ```command block```
+      IMPORTANT FORMAT REQUIREMENTS:
+      Your response must ALWAYS follow this format:
+      
+      DISCUSSION
+      I will [explain what you're doing]. First, I'll [step 1]. Then, I'll [step 2].
+      
+      ```
+      bash -c "cd {{working_dir}} && ls -la some/path"
+      ```
+      
+      BASH COMMAND GUIDELINES:
+      ✓ GOOD: Simple commands (ls, cat, python, str_replace_editor view)
+      ✗ BAD: Complex heredocs with nested quotes
+      
+      Remember: Keep it simple! Use str_replace_editor for file creation.
     
     next_step_template: |-
+      OBSERVATION:
       {{observation}}
+      
+      Continue following the DISCUSSION + command format.
     
     next_step_no_output_template: |-
-      (No output)
+      Your command ran successfully and did not produce any output.
+      
+      Continue with the next step in the same format.
     
     # OPTIMIZATION: Truncate observations at 20k chars instead of 100k
     # This is the BIGGEST token saver - prevents verbose outputs from bloating context
@@ -126,11 +152,22 @@ agent:
     
     parse_function:
       type: thought_action
+      # Custom error message with examples
       error_message: |-
-        Format: DISCUSSION + ```command```. Example:
+        FORMAT ERROR! Your response must follow this EXACT format:
+        
         DISCUSSION
-        I'll check the file.
+        [Your reasoning here]
+        
         ```
-        str_replace_editor view /path/to/file.py
+        [Your command here]
+        ```
+        
+        Example:
+        DISCUSSION
+        I'll first check the validators file to understand the current implementation.
+        
+        ```
+        str_replace_editor view /django__django/django/contrib/auth/validators.py
         ```
 
