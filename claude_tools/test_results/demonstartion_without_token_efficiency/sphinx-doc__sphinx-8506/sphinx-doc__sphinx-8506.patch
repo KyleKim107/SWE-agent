@@ -1,0 +1,21 @@
+diff --git a/repro_option_regex.py b/repro_option_regex.py
+new file mode 100644
+index 000000000..a8adea356
+--- /dev/null
++++ b/repro_option_regex.py
+@@ -0,0 +1 @@
++from sphinx.domains.std import option_desc_re\nimport re\nprint('Pattern:', option_desc_re.pattern)\nfor s in ['[enable=]PATTERN', '--opt args', '-o', '+opt arg', '/opt arg', 'opt']:\n    m = option_desc_re.match(s)\n    print(s, '->', bool(m), m.groups() if m else None)
+\ No newline at end of file
+diff --git a/sphinx/domains/std.py b/sphinx/domains/std.py
+index c87217c56..af69e3805 100644
+--- a/sphinx/domains/std.py
++++ b/sphinx/domains/std.py
+@@ -196,7 +196,7 @@ class Cmdoption(ObjectDescription):
+                                   '"/opt args" or "+opt args"'), potential_option,
+                                location=signode)
+                 continue
+-            optname, args = m.groups()
++            optname, args = m.groups(); args = args or ""
+             if count:
+                 signode += addnodes.desc_addname(', ', ', ')
+             signode += addnodes.desc_name(optname, optname)

@@ -1,0 +1,18 @@
+diff --git a/tmp/patch_axes_convert_dx.py b/tmp/patch_axes_convert_dx.py
+new file mode 100644
+index 0000000000..5234031f73
+--- /dev/null
++++ b/tmp/patch_axes_convert_dx.py
+@@ -0,0 +1,11 @@
++
++path = "/testbed/lib/matplotlib/axes/_axes.py"
++with open(path, "r", encoding="utf-8") as f:
++    lines = f.read().splitlines()
++targets = [2183, 2188]
++for ln in targets:
++    idx = ln - 1
++    if "except (TypeError, IndexError, KeyError):" in lines[idx]:
++        lines[idx] = lines[idx].replace("except (TypeError, IndexError, KeyError):", "except (TypeError, IndexError, KeyError, StopIteration):")
++with open(path, "w", encoding="utf-8") as f:
++    f.write("\n".join(lines))
+\ No newline at end of file

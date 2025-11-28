@@ -1,0 +1,32 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index 4648daf395..15e2dd0367 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -1077,11 +1077,18 @@ class Query(BaseExpression):
+         elif isinstance(value, (list, tuple)):
+             # The items of the iterable may be expressions and therefore need
+             # to be resolved independently.
+-            return type(value)(
++            gen = (
+                 self.resolve_lookup_value(sub_value, can_reuse, allow_joins)
+                 for sub_value in value
+             )
++
++            if isinstance(value, tuple) and type(value) is not tuple:
++                return type(value)(*gen)
++            return type(value)(gen)
++            if isinstance(value, tuple) and type(value) is not tuple:
+         return value
++                return type(value)(*gen)
++            return type(value)(gen)
+ 
+     def solve_lookup_type(self, lookup):
+         """
+diff --git a/repro_namedtuple_range.py b/repro_namedtuple_range.py
+new file mode 100644
+index 0000000000..2c3933ca7f
+--- /dev/null
++++ b/repro_namedtuple_range.py
+@@ -0,0 +1 @@
++from collections import namedtuple\nfrom django.db.models.sql.query import Query\n\nPair = namedtuple("Pair", ["near", "far"]) \np = Pair(1, 5)\n\nq = Query(None)\nres = q.resolve_lookup_value(p, can_reuse=set(), allow_joins=False)\nprint(type(res).__name__, res)
+\ No newline at end of file

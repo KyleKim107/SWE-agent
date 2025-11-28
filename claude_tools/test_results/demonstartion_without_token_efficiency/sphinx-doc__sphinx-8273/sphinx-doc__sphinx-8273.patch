@@ -1,0 +1,48 @@
+diff --git a/repro_man_build.py b/repro_man_build.py
+new file mode 100644
+index 000000000..738dead24
+--- /dev/null
++++ b/repro_man_build.py
+@@ -0,0 +1,15 @@
++
++import os
++import shutil
++from sphinx.application import Sphinx
++root = '/testbed/tests/roots/test-root'
++builddir = '/testbed/_build_man_test'
++if os.path.isdir(builddir):
++    shutil.rmtree(builddir)
++os.makedirs(builddir, exist_ok=True)
++app = Sphinx(srcdir=root, confdir=root, outdir=os.path.join(builddir, 'man'), doctreedir=os.path.join(builddir, 'doctree'), buildername='man')
++app.build()
++out_base = os.path.join(builddir, 'man')
++print('Out base:', out_base)
++for dirpath, dirnames, filenames in os.walk(out_base):
++    print(dirpath, filenames)
+\ No newline at end of file
+diff --git a/sphinx/builders/manpage.py b/sphinx/builders/manpage.py
+index 4166dece9..3ca05a6ec 100644
+--- a/sphinx/builders/manpage.py
++++ b/sphinx/builders/manpage.py
+@@ -8,7 +8,7 @@
+     :license: BSD, see LICENSE for details.
+ """
+ 
+-from os import path
++from os import path, makedirs
+ from typing import Any, Dict, List, Set, Tuple, Union
+ 
+ from docutils.frontend import OptionParser
+@@ -82,8 +82,10 @@ class ManualPageBuilder(Builder):
+ 
+             targetname = '%s.%s' % (name, section)
+             logger.info(darkgreen(targetname) + ' { ', nonl=True)
+-            destination = FileOutput(
+-                destination_path=path.join(self.outdir, targetname),
++            section_dir = path.join(self.outdir, 'man%s' % section)\n            makedirs(section_dir, exist_ok=True)\n            destination = FileOutput(
++            section_dir = path.join(self.outdir, 'man%s' % section)
++            makedirs(section_dir, exist_ok=True)
++                destination_path=path.join(section_dir, targetname),
+                 encoding='utf-8')
+ 
+             tree = self.env.get_doctree(docname)

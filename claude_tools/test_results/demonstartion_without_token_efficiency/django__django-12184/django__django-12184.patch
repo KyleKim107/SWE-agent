@@ -1,0 +1,16 @@
+diff --git a/repro_optional_param.py b/repro_optional_param.py
+new file mode 100644
+index 0000000000..2b598eef90
+--- /dev/null
++++ b/repro_optional_param.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0, "/testbed"); from django.conf import settings; import django; settings.configure(ROOT_URLCONF="repro_urls", DEBUG=True, SECRET_KEY="x"); django.setup(); from django.test import Client; c=Client(); print(c.get("/module/").status_code)
+\ No newline at end of file
+diff --git a/repro_urls.py b/repro_urls.py
+new file mode 100644
+index 0000000000..062c288a6c
+--- /dev/null
++++ b/repro_urls.py
+@@ -0,0 +1 @@
++from django.urls import re_path; from django.http import HttpResponse; def modules(request, format="html"): return HttpResponse(f"format={format}"); urlpatterns=[re_path(r"^module/(?P<format>(html|json|xml))?/?$", modules, name="modules")]
+\ No newline at end of file

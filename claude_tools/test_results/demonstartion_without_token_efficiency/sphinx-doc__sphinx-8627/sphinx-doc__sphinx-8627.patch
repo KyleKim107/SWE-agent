@@ -1,0 +1,27 @@
+diff --git a/repro_restify_struct.py b/repro_restify_struct.py
+new file mode 100644
+index 000000000..9229cc1ee
+--- /dev/null
++++ b/repro_restify_struct.py
+@@ -0,0 +1 @@
++import struct\nfrom sphinx.util.typing import restify\nprint(restify(struct.Struct))\n
+\ No newline at end of file
+diff --git a/repro_struct.py b/repro_struct.py
+new file mode 100644
+index 000000000..9229cc1ee
+--- /dev/null
++++ b/repro_struct.py
+@@ -0,0 +1 @@
++import struct\nfrom sphinx.util.typing import restify\nprint(restify(struct.Struct))\n
+\ No newline at end of file
+diff --git a/repro_struct_restify.py b/repro_struct_restify.py
+new file mode 100644
+index 000000000..e69de29bb
+diff --git a/repro_struct_stringify.py b/repro_struct_stringify.py
+new file mode 100644
+index 000000000..7593038b7
+--- /dev/null
++++ b/repro_struct_stringify.py
+@@ -0,0 +1 @@
++import struct\nfrom sphinx.util.typing import stringify\nprint(stringify(struct.Struct))\n
+\ No newline at end of file

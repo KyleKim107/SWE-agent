@@ -1,0 +1,19 @@
+diff --git a/repro_constrained_warning.py b/repro_constrained_warning.py
+new file mode 100644
+index 0000000000..3bcf4eea5e
+--- /dev/null
++++ b/repro_constrained_warning.py
+@@ -0,0 +1,12 @@
++
++import matplotlib.pyplot as plt
++import numpy as np
++a = np.linspace(0,2*np.pi,100)
++b = np.sin(a)
++c = np.cos(a)
++fig, ax = plt.subplots(1,2,figsize=(8,2), constrained_layout=False)
++ax[0].plot(a,b)
++ax[1].plot(a,c)
++print('Calling subplots_adjust...')
++plt.subplots_adjust(wspace=0)
++print('Done')
+\ No newline at end of file

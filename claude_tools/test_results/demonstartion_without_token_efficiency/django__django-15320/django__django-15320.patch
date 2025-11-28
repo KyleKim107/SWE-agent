@@ -1,0 +1,32 @@
+diff --git a/django/db/models/expressions.py b/django/db/models/expressions.py
+index 6f26dff0e0..2c7a9e264f 100644
+--- a/django/db/models/expressions.py
++++ b/django/db/models/expressions.py
+@@ -1158,6 +1158,11 @@ class Subquery(BaseExpression, Combinable):
+ 
+     def set_source_expressions(self, exprs):
+         self.query = exprs[0]
++        # Ensure inner query is treated as a subquery by the compiler
++        try:
++            self.query.subquery = True
++        except Exception:
++            pass
+ 
+     def _resolve_output_field(self):
+         return self.query.output_field
+diff --git a/repro_subquery.py b/repro_subquery.py
+new file mode 100644
+index 0000000000..40f7b90c55
+--- /dev/null
++++ b/repro_subquery.py
+@@ -0,0 +1 @@
++from django.db.models.expressions import Subquery\nfrom django.db.models.sql.query import Query\nfrom django.db import connection\n\n# Create a minimal Query on a dummy model-like table name by constructing Query directly is complex; instead use a simple SELECT via Query API is heavy.\n# We will emulate reported behavior by using a Subquery built from a Query object's compiler SQL string.\n\n# As a basic smoke test, ensure Subquery sets query.subquery True to avoid slicing issue.\nfrom django.db.models import Q\n\n# Build a Subquery from a queryset-like object requires a model; we will just print that constructor sets subquery flag.\ntry:\n    sq = Subquery([])\n    print('Subquery created; query.subquery:', getattr(sq.query, 'subquery', None))\nexcept Exception as e:\n    print('Construct Subquery from list fails as expected:', e)\n\nprint('OK')
+\ No newline at end of file
+diff --git a/repro_subquery2.py b/repro_subquery2.py
+new file mode 100644
+index 0000000000..6e69751bcb
+--- /dev/null
++++ b/repro_subquery2.py
+@@ -0,0 +1 @@
++from django.db import models, connection\nfrom django.db.models.expressions import Subquery\n\nclass Tmp(models.Model):\n    name = models.CharField(max_length=10)\n\nqs = Tmp.objects.all()\nsq = Subquery(qs)\nprint('query.subquery flag before compile:', getattr(sq.query, 'subquery', None))\ncompiler = sq.query.get_compiler('default', connection)\nprint('Query SQL:', str(sq.query))\nprint('Subquery as_sql:', sq.as_sql(compiler, connection))
+\ No newline at end of file

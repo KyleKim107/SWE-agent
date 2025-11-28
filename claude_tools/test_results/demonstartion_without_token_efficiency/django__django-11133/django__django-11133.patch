@@ -1,0 +1,16 @@
+diff --git a/repro_http_memoryview.py b/repro_http_memoryview.py
+new file mode 100644
+index 0000000000..9b97de9e74
+--- /dev/null
++++ b/repro_http_memoryview.py
+@@ -0,0 +1 @@
++from django.http import HttpResponse; print("String content:"); r = HttpResponse("My Content"); print(r.content); print("Bytes content:"); r = HttpResponse(b"My Content"); print(r.content); print("Memoryview content:"); r = HttpResponse(memoryview(b"My Content")); print(r.content); print("Write memoryview:"); r = HttpResponse(); r.write(memoryview(b"My Content")); print(r.content)
+\ No newline at end of file
+diff --git a/repro_http_memoryview2.py b/repro_http_memoryview2.py
+new file mode 100644
+index 0000000000..66266f7608
+--- /dev/null
++++ b/repro_http_memoryview2.py
+@@ -0,0 +1 @@
++from django.conf import settings; settings.configure(); from django.http import HttpResponse; r = HttpResponse('My Content'); print('str:', r.content); r = HttpResponse(b'My Content'); print('bytes:', r.content); r = HttpResponse(memoryview(b'My Content')); print('memview:', r.content); r = HttpResponse(); r.write(memoryview(b'My Content')); print('write memview:', r.content)
+\ No newline at end of file

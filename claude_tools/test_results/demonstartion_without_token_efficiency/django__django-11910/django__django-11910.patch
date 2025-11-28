@@ -1,0 +1,40 @@
+diff --git a/app1/__init__.py b/app1/__init__.py
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/app1/apps.py b/app1/apps.py
+new file mode 100644
+index 0000000000..c15bb920e8
+--- /dev/null
++++ b/app1/apps.py
+@@ -0,0 +1 @@
++from django.apps import AppConfig\nclass App1Config(AppConfig):\n    name='app1'
+\ No newline at end of file
+diff --git a/app1/models.py b/app1/models.py
+new file mode 100644
+index 0000000000..fb23d7c8c9
+--- /dev/null
++++ b/app1/models.py
+@@ -0,0 +1 @@
++from django.db import models\nclass ModelA(models.Model):\n    field_fixed = models.CharField(max_length=50, primary_key=True)\nclass ModelB(models.Model):\n    field_fk = models.ForeignKey(ModelA, blank=True, null=True, on_delete=models.CASCADE)\n
+\ No newline at end of file
+diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py
+index f6c5ae2585..0a2edf859d 100644
+--- a/django/db/models/fields/related.py
++++ b/django/db/models/fields/related.py
+@@ -863,7 +863,7 @@ class ForeignKey(ForeignObject):
+             del kwargs['db_index']
+         else:
+             kwargs['db_index'] = False
+-        if self.db_constraint is not True:
++        if self.to_field is None:\n            # Avoid serializing to_field when it points to the target model's primary key.\n            kwargs.pop('to_field', None)\n        if self.db_constraint is not True:
+             kwargs['db_constraint'] = self.db_constraint
+         # Rel needs more work.
+         to_meta = getattr(self.remote_field.model, "_meta", None)
+diff --git a/repro_fk_rename.py b/repro_fk_rename.py
+new file mode 100644
+index 0000000000..74364774a9
+--- /dev/null
++++ b/repro_fk_rename.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0, '/testbed'); from django.conf import settings; import django; settings.configure(USE_I18N=False, SECRET_KEY='x', INSTALLED_APPS=['app1'], DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3','NAME':':memory:'}}); django.setup(); print('Set up minimal settings')
+\ No newline at end of file

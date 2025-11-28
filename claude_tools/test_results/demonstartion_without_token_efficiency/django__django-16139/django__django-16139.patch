@@ -1,0 +1,28 @@
+diff --git a/django/contrib/auth/forms.py b/django/contrib/auth/forms.py
+index b3cfc6723c..f6c4b7fc2f 100644
+--- a/django/contrib/auth/forms.py
++++ b/django/contrib/auth/forms.py
+@@ -163,7 +163,7 @@ class UserChangeForm(forms.ModelForm):
+         super().__init__(*args, **kwargs)
+         password = self.fields.get("password")
+         if password:
+-            password.help_text = password.help_text.format("../password/")
++            password.help_text = password.help_text.format(f"../../{self.instance.pk}/password/")
+         user_permissions = self.fields.get("user_permissions")
+         if user_permissions:
+             user_permissions.queryset = user_permissions.queryset.select_related(
+diff --git a/repro_user_change_help.py b/repro_user_change_help.py
+new file mode 100644
+index 0000000000..76ed70c242
+--- /dev/null
++++ b/repro_user_change_help.py
+@@ -0,0 +1,8 @@
++
++from django.contrib.auth import forms
++class Dummy: pass
++inst = Dummy()
++inst.pk = '22222222-3333-4444-5555-666677778888'
++f = forms.UserChangeForm(instance=inst)
++pwd = f.fields.get('password')
++print(pwd.help_text)
+\ No newline at end of file

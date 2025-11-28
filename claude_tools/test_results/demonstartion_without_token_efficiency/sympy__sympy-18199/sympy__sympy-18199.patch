@@ -1,0 +1,19 @@
+diff --git a/reproduce_nthroot_mod.py b/reproduce_nthroot_mod.py
+new file mode 100644
+index 0000000000..9e4742eaec
+--- /dev/null
++++ b/reproduce_nthroot_mod.py
+@@ -0,0 +1,4 @@
++
++from sympy.ntheory.residue_ntheory import nthroot_mod
++print(nthroot_mod(17*17, 5, 17, all_roots=True))
++print(nthroot_mod(17*17, 5, 17))
+\ No newline at end of file
+diff --git a/verify_after.py b/verify_after.py
+new file mode 100644
+index 0000000000..5dafc7d7de
+--- /dev/null
++++ b/verify_after.py
+@@ -0,0 +1 @@
++from sympy.ntheory.residue_ntheory import nthroot_mod\nprint("all_roots:", nthroot_mod(17*17,5,17,True))\nprint("single:", nthroot_mod(17*17,5,17))\n
+\ No newline at end of file

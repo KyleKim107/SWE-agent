@@ -1,0 +1,27 @@
+diff --git a/repro_inv_trig.py b/repro_inv_trig.py
+new file mode 100644
+index 0000000000..1c738b8b11
+--- /dev/null
++++ b/repro_inv_trig.py
+@@ -0,0 +1,7 @@
++
++from sympy import symbols, asin, asec, acsc
++from sympy.printing.latex import latex
++x = symbols("x")
++print(latex(asin(x), inv_trig_style="full"))
++print(latex(acsc(x), inv_trig_style="full"))
++print(latex(asec(x), inv_trig_style="full"))
+\ No newline at end of file
+diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py
+index a3ead157c1..f3b7669e96 100644
+--- a/sympy/printing/latex.py
++++ b/sympy/printing/latex.py
+@@ -740,7 +740,7 @@ def _print_Function(self, expr, exp=None):
+                 len(args) == 1 and \
+                 not self._needs_function_brackets(expr.args[0])
+ 
+-            inv_trig_table = ["asin", "acos", "atan", "acot"]
++            inv_trig_table = ["asin", "acos", "atan", "acsc", "asec", "acot"]
+ 
+             # If the function is an inverse trig function, handle the style
+             if func in inv_trig_table:

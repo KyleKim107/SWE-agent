@@ -1,0 +1,21 @@
+diff --git a/repro_pickle_py2_to_py3.py b/repro_pickle_py2_to_py3.py
+new file mode 100644
+index 0000000000..ea7dcc858e
+--- /dev/null
++++ b/repro_pickle_py2_to_py3.py
+@@ -0,0 +1 @@
++from sympy import symbols, Float\nx = symbols('x')\n# Simulate Python2 hex long 'L' in pickled tuple for Float\nf = Float((0, '1L', 0))\nexpr = x + f\nprint('Expr:', expr)\n
+\ No newline at end of file
+diff --git a/repro_py2_pickle_sim.py b/repro_py2_pickle_sim.py
+new file mode 100644
+index 0000000000..34a7dfd556
+--- /dev/null
++++ b/repro_py2_pickle_sim.py
+@@ -0,0 +1,6 @@
++
++from sympy import symbols, Float
++x = symbols("x")
++f = Float((0, "1L", 0, 1))
++expr = x + f
++print("Expr:", expr)
+\ No newline at end of file

@@ -1,0 +1,70 @@
+diff --git a/requests/models.py b/requests/models.py
+index 0dc55568..a107abdb 100644
+--- a/requests/models.py
++++ b/requests/models.py
+@@ -12,6 +12,8 @@ import datetime
+ 
+ from io import BytesIO, UnsupportedOperation
+ from .hooks import default_hooks
++import socket
++import socket
+ from .structures import CaseInsensitiveDict
+ 
+ from .auth import HTTPBasicAuth
+@@ -23,6 +25,7 @@ from .packages.urllib3.exceptions import DecodeError
+ from .exceptions import (
+     HTTPError, RequestException, MissingSchema, InvalidURL,
+     ChunkedEncodingError, ContentDecodingError)
++from .exceptions import ConnectionError
+ from .utils import (
+     guess_filename, get_auth_from_url, requote_uri,
+     stream_decode_response_unicode, to_key_val_list, parse_header_links,
+@@ -638,13 +641,31 @@ class Response(object):
+                         yield chunk
+                 except IncompleteRead as e:
+                     raise ChunkedEncodingError(e)
++                except socket.error as e:
++                    raise ConnectionError(e)
++                except socket.error as e:
++                    raise ConnectionError(e)
+                 except DecodeError as e:
+                     raise ContentDecodingError(e)
+             except AttributeError:
+                 # Standard file-like object.
++
++                while True:
++                    try:
++                        chunk = self.raw.read(chunk_size)
++                    except socket.error as e:
++                        raise ConnectionError(e)
++                    if not chunk:
++                        break
++                    yield chunk
++
++                # Standard file-like object.
+                 while True:
+-                    chunk = self.raw.read(chunk_size)
++                        chunk = self.raw.read(chunk_size)
++                    try:
+                     if not chunk:
++                    except socket.error as e:
++                        raise ConnectionError(e)
+                         break
+                     yield chunk
+ 
+diff --git a/scripts/fix_iter_content.py b/scripts/fix_iter_content.py
+new file mode 100644
+index 00000000..e35aecee
+--- /dev/null
++++ b/scripts/fix_iter_content.py
+@@ -0,0 +1 @@
++import re\npath = "/testbed/requests/models.py"\nwith open(path, "r", encoding="utf-8") as f:\n    content = f.read()\nstart = content.find("def iter_content(")\nend = content.find("def iter_lines(", start)\nif start == -1 or end == -1:\n    raise RuntimeError("iter_content or iter_lines not found")\nnew_block = (\n    "    def iter_content(self, chunk_size=1, decode_unicode=False):\n"\n    "        \"\"\"Iterates over the response data.  When stream=True is set on the\n"\n    "        request, this avoids reading the content at once into memory for\n"\n    "        large responses.  The chunk size is the number of bytes it should\n"\n    "        read into memory.  This is not necessarily the length of each item\n"\n    "        returned as decoding can take place.\n\n"\n    "        If decode_unicode is True, content will be decoded using the best\n"\n    "        available encoding based on the response.\n\n"\n    "        \"\"\"\n"\n    "        def generate():\n"\n    "            try:\n"\n    "                # Special case for urllib3.\n"\n    "                try:\n"\n    "                    for chunk in self.raw.stream(chunk_size, decode_content=True):\n"\n    "                        yield chunk\n"\n    "                except IncompleteRead as e:\n"\n    "                    raise ChunkedEncodingError(e)\n"\n    "                except socket.error as e:\n"\n    "                    raise ConnectionError(e)\n"\n    "                except DecodeError as e:\n"\n    "                    raise ContentDecodingError(e)\n"\n    "            except AttributeError:\n"\n    "                # Standard file-like object.\n"\n    "                while True:\n"\n    "                    try:\n"\n    "                        chunk = self.raw.read(chunk_size)\n"\n    "                    except socket.error as e:\n"\n    "                        raise ConnectionError(e)\n"\n    "                    if not chunk:\n"\n    "                        break\n"\n    "                    yield chunk\n\n"\n    "            self._content_consumed = True\n\n"\n    "        reused_chunks = iter_slices(self._content, chunk_size)\n"\n    "        stream_chunks = generate()\n"\n    "        chunks = reused_chunks if self._content_consumed else stream_chunks\n"\n    "        if decode_unicode:\n"\n    "            chunks = stream_decode_response_unicode(chunks, self)\n"\n    "        return chunks\n"\n)\nfixed = content[:start] + new_block + content[end:]\n# Remove any accidental duplicate \"import socket\" lines\nfixed = fixed.replace("import socket\nimport socket\n", "import socket\n")\nwith open(path, "w", encoding="utf-8") as f:\n    f.write(fixed)\nprint("iter_content fixed")\n
+\ No newline at end of file
+diff --git a/tests/repro_socket_error.py b/tests/repro_socket_error.py
+new file mode 100644
+index 00000000..0c50e2fb
+--- /dev/null
++++ b/tests/repro_socket_error.py
+@@ -0,0 +1 @@
++import socket\nfrom requests.models import Response\nfrom requests import exceptions\nclass DummyRaw:\n    def stream(self, chunk_size=1024, decode_content=True):\n        raise socket.error(104, "Connection reset by peer")\nresp = Response()\nresp.raw = DummyRaw()\ntry:\n    for _ in resp.iter_content(128):\n        pass\nexcept Exception as e:\n    print("Error type:", type(e).__name__)\n    print(isinstance(e, exceptions.ConnectionError))\n
+\ No newline at end of file

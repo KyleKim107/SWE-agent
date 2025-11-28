@@ -1,0 +1,47 @@
+diff --git a/repro_union_fix2.py b/repro_union_fix2.py
+index 500fa3c2c6..663485c617 100644
+--- a/repro_union_fix2.py
++++ b/repro_union_fix2.py
+@@ -1 +1,39 @@
+-import sys\nsys.path.insert(0, "/testbed")\nfrom django.conf import settings\nimport django\nsettings.configure(SECRET_KEY="x", INSTALLED_APPS=["django.contrib.contenttypes","django.contrib.auth"], DATABASES={"default": {"ENGINE":"django.db.backends.sqlite3","NAME":":memory:"}})\ndjango.setup()\nfrom django import forms\nfrom django.db import models, connection\nclass Publication(models.Model):\n    pass\nclass Article(models.Model):\n    publications = models.ManyToManyField(Publication, blank=True)\nwith connection.schema_editor() as se:\n    se.create_model(Publication)\n    se.create_model(Article)\nPublication.objects.bulk_create([Publication(id=i) for i in range(1,8)])\nqs_or = Publication.objects.filter(id__lt=2) | Publication.objects.filter(id__gt=5)\nqs_union = Publication.objects.filter(id__lt=2).union(Publication.objects.filter(id__gt=5))\nclass F(forms.ModelForm):\n    publications = forms.ModelMultipleChoiceField(qs_union, required=False)\n    class Meta:\n        model = Article\n        fields = ["publications"]\nf = F(data={"publications": []})\nf.is_valid()\nprint("Cleaned (union) count:", f.cleaned_data["publications"].count())\nf2 = F(data={})\nf2.is_valid()\nprint("Cleaned (union, no key) count:", f2.cleaned_data["publications"].count())\nclass MF(forms.ModelForm):\n    publications = forms.ModelMultipleChoiceField(qs_or, required=False)\n    class Meta:\n        model = Article\n        fields = ["publications"]\nf3 = MF(data={})\nf3.is_valid()\nprint("Cleaned (OR) count:", f3.cleaned_data["publications"].count())\nprint("qs_union.none() count:", qs_union.none().count())\n
+\ No newline at end of file
++
++import sys
++sys.path.insert(0, '/testbed')
++from django.conf import settings
++import django
++settings.configure(SECRET_KEY='x', INSTALLED_APPS=['django.contrib.contenttypes','django.contrib.auth'], DATABASES={'default': {'ENGINE':'django.db.backends.sqlite3','NAME':':memory:'}})
++django.setup()
++from django import forms
++from django.db import models, connection
++class Publication(models.Model):
++    pass
++class Article(models.Model):
++    publications = models.ManyToManyField(Publication, blank=True)
++with connection.schema_editor() as se:
++    se.create_model(Publication)
++    se.create_model(Article)
++Publication.objects.bulk_create([Publication(id=i) for i in range(1,8)])
++qs_or = Publication.objects.filter(id__lt=2) | Publication.objects.filter(id__gt=5)
++qs_union = Publication.objects.filter(id__lt=2).union(Publication.objects.filter(id__gt=5))
++class F(forms.ModelForm):
++    publications = forms.ModelMultipleChoiceField(qs_union, required=False)
++    class Meta:
++        model = Article
++        fields = ['publications']
++f = F(data={'publications': []})
++f.is_valid()
++print('Cleaned (union) count:', f.cleaned_data['publications'].count())
++f2 = F(data={})
++f2.is_valid()
++print('Cleaned (union, no key) count:', f2.cleaned_data['publications'].count())
++class MF(forms.ModelForm):
++    publications = forms.ModelMultipleChoiceField(qs_or, required=False)
++    class Meta:
++        model = Article
++        fields = ['publications']
++f3 = MF(data={})
++f3.is_valid()
++print('Cleaned (OR) count:', f3.cleaned_data['publications'].count())
++print('qs_union.none() count:', qs_union.none().count())
+\ No newline at end of file

@@ -1,0 +1,16 @@
+diff --git a/scripts/repro_collect_short.py b/scripts/repro_collect_short.py
+new file mode 100644
+index 000000000..329bc91c6
+--- /dev/null
++++ b/scripts/repro_collect_short.py
+@@ -0,0 +1 @@
++import pytest; import os; open("test_sample.py","w").write("def test_a():\n    assert True\n"); print("Running --collect-only:"); pytest.main(["--collect-only"]); print("Running -C:"); pytest.main(["-C"])
+\ No newline at end of file
+diff --git a/test_sample.py b/test_sample.py
+new file mode 100644
+index 000000000..c8e955322
+--- /dev/null
++++ b/test_sample.py
+@@ -0,0 +1,2 @@
++def test_a():
++    assert True

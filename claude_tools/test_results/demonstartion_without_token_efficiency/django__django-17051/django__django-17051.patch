@@ -1,0 +1,16 @@
+diff --git a/repro_bulk_create_returning.py b/repro_bulk_create_returning.py
+new file mode 100644
+index 0000000000..f5da7e8fd8
+--- /dev/null
++++ b/repro_bulk_create_returning.py
+@@ -0,0 +1 @@
++from django.conf import settings\nsettings.configure()\nfrom django.db.models import Model, CharField\nfrom django.db import connection\n\nprint('Backend:', connection.vendor)\n# This script only inspects SQL generation paths via compiler in a minimal way.\n
+\ No newline at end of file
+diff --git a/repro_read_sql_segments.py b/repro_read_sql_segments.py
+new file mode 100644
+index 0000000000..935925db7f
+--- /dev/null
++++ b/repro_read_sql_segments.py
+@@ -0,0 +1 @@
++import inspect, sys\nfrom django.conf import settings\nsettings.configure()\nfrom django.db.models.sql.compiler import SQLInsertCompiler\nprint('Loaded compiler, adjust tests separately.')\n
+\ No newline at end of file

@@ -1,0 +1,13 @@
+diff --git a/repro_intersection_duplicates.py b/repro_intersection_duplicates.py
+index ce2bd76be7..fc0c13776b 100644
+--- a/repro_intersection_duplicates.py
++++ b/repro_intersection_duplicates.py
+@@ -1 +1,5 @@
+-from sympy import FiniteSet, Intersection, symbols\nx = symbols("x")\nprint("Without duplicates:", Intersection(FiniteSet(1), FiniteSet(x)))\nprint("With duplicates:", Intersection(FiniteSet(1), FiniteSet(1), FiniteSet(x)))\n
+\ No newline at end of file
++
++from sympy import FiniteSet, Intersection, symbols
++x = symbols("x")
++print("Without duplicates:", Intersection(FiniteSet(1), FiniteSet(x)))
++print("With duplicates:", Intersection(FiniteSet(1), FiniteSet(1), FiniteSet(x)))
+\ No newline at end of file

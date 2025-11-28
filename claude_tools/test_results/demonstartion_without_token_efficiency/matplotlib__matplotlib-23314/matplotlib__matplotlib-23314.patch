@@ -1,0 +1,12 @@
+diff --git a/tmp/out3d.png b/tmp/out3d.png
+new file mode 100644
+index 0000000000..fb225085fb
+Binary files /dev/null and b/tmp/out3d.png differ
+diff --git a/tmp/repro_3d_visible.py b/tmp/repro_3d_visible.py
+new file mode 100644
+index 0000000000..d25641e1b4
+--- /dev/null
++++ b/tmp/repro_3d_visible.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0, "/testbed/lib"); import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt; import numpy as np; import matplotlib.image as mpimg; fig,(ax1,ax2)=plt.subplots(1,2,subplot_kw={"projection":"3d"}); ax1.scatter(1,1,1); ax2.scatter(1,1,1,c="r"); ax1.set_visible(False); out="/testbed/tmp/out3d.png"; fig.patch.set_facecolor((0,1,0,1)); fig.savefig(out,dpi=100); img=mpimg.imread(out); H,W=img.shape[:2]; left=img[:, :W//2, :3].mean(axis=(0,1)); right=img[:, W//2:, :3].mean(axis=(0,1)); print("Left mean RGB:", left); print("Right mean RGB:", right)
+\ No newline at end of file

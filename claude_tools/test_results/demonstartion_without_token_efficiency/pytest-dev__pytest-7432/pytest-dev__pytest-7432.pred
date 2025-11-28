@@ -1,0 +1,1 @@
+{"model_name_or_path": "token_optimized_full", "instance_id": "pytest-dev__pytest-7432", "model_patch": "diff --git a/t_sample/test_it.py b/t_sample/test_it.py\nnew file mode 100644\nindex 000000000..bdf1217eb\n--- /dev/null\n+++ b/t_sample/test_it.py\n@@ -0,0 +1,5 @@\n+import pytest\n+\n+@pytest.mark.skip\n+def test_skip_location():\n+    assert 0\n"}

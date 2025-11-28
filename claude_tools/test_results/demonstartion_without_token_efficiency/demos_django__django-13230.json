@@ -1,0 +1,38 @@
+{
+  "strategy": "semantic",
+  "k": 2,
+  "test_instance": "django__django-13230",
+  "query": "Add support for item_comments to syndication framework\nDescription\n\t\nAdd comments argument to feed.add_item() in syndication.views so that item_comments can be defined directly without having to take ",
+  "demonstrations": [
+    {
+      "instance_id": "pylint-dev__pylint-5859",
+      "repository": "pylint-dev",
+      "resolved": true,
+      "patch_file": "pylint-dev__pylint-5859.patch",
+      "patch_size": 2427,
+      "trajectory_file": "pylint-dev__pylint-5859.traj",
+      "source_directory": "pylint-dev__pylint-5859",
+      "problem_statement": "\"--notes\" option ignores note tags that are entirely punctuation\n### Bug description\n\nIf a note tag specified with the `--notes` option is entirely punctuation, pylint won't report a fixme warning (W0511).\r\n\r\n```python\r\n# YES: yes\r\n# ???: no\r\n```\r\n\r\n`pylint test.py --notes=\"YES,???\"` will return a fixme warning (W0511) for the first line, but not the second.\n\n### Configuration\n\n```ini\nDefault\n```\n\n\n### Command used\n\n```shell\npylint test.py --notes=\"YES,???\"\n```\n\n\n### Pylint output\n\n```shell\n************* Module test\r\ntest.py:1:1: W0511: YES: yes (fixme)\n```\n\n\n### Expected behavior\n\n```\r\n************* Module test\r\ntest.py:1:1: W0511: YES: yes (fixme)\r\ntest.py:2:1: W0511: ???: no (fixme)\r\n```\n\n### Pylint version\n\n```shell\npylint 2.12.2\r\nastroid 2.9.0\r\nPython 3.10.2 (main, Feb  2 2022, 05:51:25) [Clang 13.0.0 (clang-1300.0.29.3)]\n```\n\n\n### OS / Environment\n\nmacOS 11.6.1\n\n### Additional dependencies\n\n_No response_\n",
+      "hints_text": "Did a little investigation, this is we're actually converting this option in a regular expression pattern (thereby making it awfully similar to the `notes-rgx` option). Since `?` is a special character in regex this doesn't get picked up. Using `\\?\\?\\?` in either `notes` or `notes-rgx` should work.",
+      "created_at": "2022-03-04T00:01:54Z",
+      "patch": "diff --git a/pylint/checkers/misc.py b/pylint/checkers/misc.py\n--- a/pylint/checkers/misc.py\n+++ b/pylint/checkers/misc.py\n@@ -121,9 +121,9 @@ def open(self):\n \n         notes = \"|\".join(re.escape(note) for note in self.config.notes)\n         if self.config.notes_rgx:\n-            regex_string = rf\"#\\s*({notes}|{self.config.notes_rgx})\\b\"\n+            regex_string = rf\"#\\s*({notes}|{self.config.notes_rgx})(?=(:|\\s|\\Z))\"\n         else:\n-            regex_string = rf\"#\\s*({notes})\\b\"\n+            regex_string = rf\"#\\s*({notes})(?=(:|\\s|\\Z))\"\n \n         self._fixme_pattern = re.compile(regex_string, re.I)\n \n"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-11281",
+      "repository": "scikit-learn",
+      "resolved": true,
+      "patch_file": "scikit-learn__scikit-learn-11281.patch",
+      "patch_size": 1853,
+      "trajectory_file": "scikit-learn__scikit-learn-11281.traj",
+      "source_directory": "scikit-learn__scikit-learn-11281",
+      "problem_statement": "Should mixture models have a clusterer-compatible interface\nMixture models are currently a bit different. They are basically clusterers, except they are probabilistic, and are applied to inductive problems unlike many clusterers. But they are unlike clusterers in API:\r\n* they have an `n_components` parameter, with identical purpose to `n_clusters`\r\n* they do not store the `labels_` of the training data\r\n* they do not have a `fit_predict` method\r\n\r\nAnd they are almost entirely documented separately.\r\n\r\nShould we make the MMs more like clusterers?\n",
+      "hints_text": "In my opinion, yes.\r\n\r\nI wanted to compare K-Means, GMM and HDBSCAN and was very disappointed that GMM does not have a `fit_predict` method. The HDBSCAN examples use `fit_predict`, so I was expecting GMM to have the same interface.\nI think we should add ``fit_predict`` at least. I wouldn't rename ``n_components``.\nI would like to work on this!\n@Eight1911 go for it. It is probably relatively simple but maybe not entirely trivial.\n@Eight1911 Mind if I take a look at this?\n@Eight1911 Do you mind if I jump in as well?",
+      "created_at": "2018-06-15T17:15:25Z",
+      "patch": "diff --git a/sklearn/mixture/base.py b/sklearn/mixture/base.py\n--- a/sklearn/mixture/base.py\n+++ b/sklearn/mixture/base.py\n@@ -172,7 +172,7 @@ def _initialize(self, X, resp):\n     def fit(self, X, y=None):\n         \"\"\"Estimate model parameters with the EM algorithm.\n \n-        The method fit the model `n_init` times and set the parameters with\n+        The method fits the model `n_init` times and set the parameters with\n         which the model has the largest likelihood or lower bound. Within each\n         trial, the method iterates between E-step and M-step for `max_iter`\n         times until the change of likelihood or lower bound is less than\n@@ -188,6 +188,32 @@ def fit(self, X, y=None):\n         -------\n         self\n         \"\"\"\n+        self.fit_predict(X, y)\n+        return self\n+\n+    def fit_predict(self, X, y=None):\n+        \"\"\"Estimate model parameters using X and predict the labels for X.\n+\n+        The method fits the model n_init times and sets the parameters with\n+        which the model has the largest likelihood or lower bound. Within each\n+        trial, the method iterates between E-step and M-step for `max_iter`\n+        times until the change of likelihood or lower bound is less than\n+        `tol`, otherwise, a `ConvergenceWarning` is raised. After fitting, it\n+        predicts the most probable label for the input data points.\n+\n+        .. versionadded:: 0.20\n+\n+        Parameters\n+        ----------\n+        X : array-like, shape (n_samples, n_features)\n+            List of n_features-dimensional data points. Each row\n+            corresponds to a single data point.\n+\n+        Returns\n+        -------\n+        labels : array, shape (n_samples,)\n+            Component labels.\n+        \"\"\"\n         X = _check_X(X, self.n_components, ensure_min_samples=2)\n         self._check_initial_parameters(X)\n \n@@ -240,7 +266,7 @@ def fit(self, X, y=None):\n         self._set_parameters(best_params)\n         self.n_iter_ = best_n_iter\n \n-        return self\n+        return log_resp.argmax(axis=1)\n \n     def _e_step(self, X):\n         \"\"\"E step.\n"
+    }
+  ],
+  "trajectory_files": [
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/pylint-dev__pylint-5859/pylint-dev__pylint-5859.traj",
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/scikit-learn__scikit-learn-11281/scikit-learn__scikit-learn-11281.traj"
+  ]
+}

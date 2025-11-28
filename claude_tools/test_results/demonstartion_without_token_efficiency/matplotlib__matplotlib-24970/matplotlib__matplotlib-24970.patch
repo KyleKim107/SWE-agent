@@ -1,0 +1,19 @@
+diff --git a/repro_numpy124_warn.py b/repro_numpy124_warn.py
+new file mode 100644
+index 0000000000..1467f2e7d5
+--- /dev/null
++++ b/repro_numpy124_warn.py
+@@ -0,0 +1,12 @@
++
++import sys
++sys.path.insert(0, '/testbed/lib')
++import warnings
++warnings.simplefilter('always', DeprecationWarning)
++import matplotlib.pyplot as plt
++import numpy as np
++cm = plt.get_cmap()
++arr = np.empty((0,), dtype=np.uint8)
++print('Calling colormap on empty uint8 array...')
++cm(arr)
++print('Done')
+\ No newline at end of file

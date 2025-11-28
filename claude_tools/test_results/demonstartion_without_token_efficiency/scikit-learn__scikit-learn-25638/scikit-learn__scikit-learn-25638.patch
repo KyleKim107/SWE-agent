@@ -1,0 +1,19 @@
+diff --git a/repro_nullable_unique_labels.py b/repro_nullable_unique_labels.py
+new file mode 100644
+index 000000000..c4166aa80
+--- /dev/null
++++ b/repro_nullable_unique_labels.py
+@@ -0,0 +1,12 @@
++
++import pandas as pd
++from sklearn.utils.multiclass import unique_labels
++
++for dtype in ["Int64", "Float64", "boolean"]:
++    y_true = pd.Series([1,0,0,1,0,1,1,0,1], dtype=dtype)
++    y_pred = pd.Series([0,0,1,1,0,1,1,1,1], dtype="int64")
++    try:
++        ul = unique_labels(y_true, y_pred)
++        print(dtype, "OK", ul)
++    except Exception as e:
++        print(dtype, "ERROR", type(e).__name__, str(e))
+\ No newline at end of file

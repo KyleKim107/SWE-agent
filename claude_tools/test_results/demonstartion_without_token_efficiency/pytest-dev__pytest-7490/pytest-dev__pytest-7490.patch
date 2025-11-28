@@ -1,0 +1,13 @@
+diff --git a/tmp_dyn/test_dyn_xfail.py b/tmp_dyn/test_dyn_xfail.py
+new file mode 100644
+index 000000000..08e811dd2
+--- /dev/null
++++ b/tmp_dyn/test_dyn_xfail.py
+@@ -0,0 +1,6 @@
++
++import pytest
++
++def test_dyn_xfail(request):
++    request.node.add_marker(pytest.mark.xfail(reason="xfail"))
++    assert 0
+\ No newline at end of file

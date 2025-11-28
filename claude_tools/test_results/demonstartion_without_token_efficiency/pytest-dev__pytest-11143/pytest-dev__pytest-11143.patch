@@ -1,0 +1,23 @@
+diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py
+index 157903faf..a6f6f05fa 100644
+--- a/src/_pytest/assertion/rewrite.py
++++ b/src/_pytest/assertion/rewrite.py
+@@ -675,7 +675,7 @@ class AssertionRewriter(ast.NodeVisitor):
+             if (
+                 expect_docstring
+                 and isinstance(item, ast.Expr)
+-                and isinstance(item.value, ast.Constant)
++                and isinstance(item.value, ast.Constant) and isinstance(item.value.value, str)
+             ):
+                 doc = item.value.value
+                 if self.is_rewrite_disabled(doc):
+diff --git a/tmpcase/test_num_first.py b/tmpcase/test_num_first.py
+new file mode 100644
+index 000000000..44eeb7088
+--- /dev/null
++++ b/tmpcase/test_num_first.py
+@@ -0,0 +1,4 @@
++1
++
++def test_ok():
++    assert 1 == 1

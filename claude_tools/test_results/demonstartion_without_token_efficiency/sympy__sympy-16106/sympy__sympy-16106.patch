@@ -1,0 +1,82 @@
+diff --git a/repro_indexed.py b/repro_indexed.py
+new file mode 100644
+index 0000000000..f5f5e4945e
+--- /dev/null
++++ b/repro_indexed.py
+@@ -0,0 +1,15 @@
++
++import sympy
++from sympy.abc import a, b, i, j
++from sympy import IndexedBase
++A = IndexedBase(a)
++print("content single:", sympy.printing.mathml(A[b]))
++expr = A[i] + A[i,j]
++print("content expr:", sympy.printing.mathml(expr))
++import sympy
++from sympy.abc import a, b, i, j
++from sympy import IndexedBase
++A = IndexedBase(a)
++print("content single:", sympy.printing.mathml(A[b]))
++expr = A[i] + A[i,j]
++print("content expr:", sympy.printing.mathml(expr))
+\ No newline at end of file
+diff --git a/repro_mathml_indexed.py b/repro_mathml_indexed.py
+new file mode 100644
+index 0000000000..c3e3bd07d4
+--- /dev/null
++++ b/repro_mathml_indexed.py
+@@ -0,0 +1 @@
++import sympy\nfrom sympy.abc import a, b, i, j\nfrom sympy import IndexedBase\nprint("Sympy version:", sympy.__version__)\nA = IndexedBase(a)\ntry:\n    print("Single index:", sympy.printing.mathml(A[b]))\nexcept Exception as e:\n    print("Single index ERROR:", type(e).__name__, e)\nexpr = A[i] + A[i,j]\ntry:\n    print("Expr:", sympy.printing.mathml(expr))\nexcept Exception as e:\n    print("Expr ERROR:", type(e).__name__, e)\n]
+\ No newline at end of file
+diff --git a/sympy/printing/mathml.py b/sympy/printing/mathml.py
+index 1aa0ee01a2..5b22e90278 100644
+--- a/sympy/printing/mathml.py
++++ b/sympy/printing/mathml.py
+@@ -478,6 +478,18 @@ def _print_int(self, p):
+         return dom_element
+ 
+ 
++    def _print_IndexedBase(self, e):
++        ci = self.dom.createElement("ci")
++        ci.appendChild(self.dom.createTextNode(str(e.label)))
++        return ci
++
++    def _print_Indexed(self, e):
++        x = self.dom.createElement("apply")
++        x.appendChild(self.dom.createElement("indexed"))
++        x.appendChild(self._print(e.base))
++        for ind in e.indices:
++            x.appendChild(self._print(ind))
++        return x
+ class MathMLPresentationPrinter(MathMLPrinterBase):
+     """Prints an expression to the Presentation MathML markup language.
+ 
+@@ -692,6 +704,28 @@ def _print_ImaginaryUnit(self, e):
+     def _print_GoldenRatio(self, e):
+         """We use unicode #x3c6 for Greek letter phi as defined here
+         http://www.w3.org/2003/entities/2007doc/isogrk1.html"""
++    def _print_IndexedBase(self, e):
++        mi = self.dom.createElement("mi")
++        mi.appendChild(self.dom.createTextNode(str(e.label)))
++        return mi
++
++    def _print_Indexed(self, e):
++        base_node = self._print(e.base)
++        if len(e.indices) == 1:
++            idx_node = self._print(e.indices[0])
++        else:
++            mrow = self.dom.createElement("mrow")
++            for k, ind in enumerate(e.indices):
++                mrow.appendChild(self._print(ind))
++                if k != len(e.indices) - 1:
++                    mo = self.dom.createElement("mo")
++                    mo.appendChild(self.dom.createTextNode(","))
++                    mrow.appendChild(mo)
++            idx_node = mrow
++        msub = self.dom.createElement("msub")
++        msub.appendChild(base_node)
++        msub.appendChild(idx_node)
++        return msub
+         x = self.dom.createElement('mi')
+         x.appendChild(self.dom.createTextNode(u"\N{GREEK SMALL LETTER PHI}"))
+         return x

@@ -1,0 +1,8 @@
+diff --git a/repro_translation_check.py b/repro_translation_check.py
+new file mode 100644
+index 0000000000..09210a3e71
+--- /dev/null
++++ b/repro_translation_check.py
+@@ -0,0 +1 @@
++from django.conf import settings\nfrom django.core.checks import run_checks, Tags\n\nsettings.configure(\n    USE_I18N=True,\n    LANGUAGE_CODE='de-at',\n    LANGUAGES=(('de', 'German'),),\n    INSTALLED_APPS=(),\n)\n\nerrors = run_checks(tags=[Tags.translation])\nprint('Errors before fix:', [(e.id, e.msg) for e in errors])\n
+\ No newline at end of file

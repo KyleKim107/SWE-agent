@@ -1,0 +1,45 @@
+diff --git a/repro_repr.py b/repro_repr.py
+new file mode 100644
+index 000000000..ab9d85d3a
+--- /dev/null
++++ b/repro_repr.py
+@@ -0,0 +1 @@
++from sklearn.model_selection import RepeatedKFold, RepeatedStratifiedKFold\nprint(repr(RepeatedKFold()))\nprint(repr(RepeatedStratifiedKFold()))
+\ No newline at end of file
+diff --git a/repro_repr_fix.py b/repro_repr_fix.py
+new file mode 100644
+index 000000000..9da82a49d
+--- /dev/null
++++ b/repro_repr_fix.py
+@@ -0,0 +1 @@
++from sklearn.model_selection import RepeatedKFold, RepeatedStratifiedKFold\nrkf = RepeatedKFold()\nrskf = RepeatedStratifiedKFold()\nprint(repr(rkf))\nprint(repr(rskf))\n
+\ No newline at end of file
+diff --git a/sklearn/model_selection/_split.py b/sklearn/model_selection/_split.py
+index c49a3ce6a..b95317acf 100644
+--- a/sklearn/model_selection/_split.py
++++ b/sklearn/model_selection/_split.py
+@@ -1063,7 +1063,7 @@ class LeavePGroupsOut(BaseCrossValidator):
+         return super().split(X, y, groups)
+ 
+ 
+-class _RepeatedSplits(metaclass=ABCMeta):
++class _RepeatedSplits(BaseCrossValidator):
+     """Repeated splits for an arbitrary randomized CV splitter.
+ 
+     Repeats splits for cross-validators n times with different randomization
+@@ -1216,6 +1216,7 @@ class RepeatedKFold(_RepeatedSplits):
+         super().__init__(
+             KFold, n_repeats, random_state, n_splits=n_splits)
+ 
++        self.n_splits = n_splits
+ 
+ class RepeatedStratifiedKFold(_RepeatedSplits):
+     """Repeated Stratified K-Fold cross validator.
+@@ -1268,6 +1269,7 @@ class RepeatedStratifiedKFold(_RepeatedSplits):
+     def __init__(self, n_splits=5, n_repeats=10, random_state=None):
+         super().__init__(
+             StratifiedKFold, n_repeats, random_state, n_splits=n_splits)
++        self.n_splits = n_splits
+ 
+ 
+ class BaseShuffleSplit(metaclass=ABCMeta):

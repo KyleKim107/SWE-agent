@@ -1,0 +1,29 @@
+diff --git a/django/core/management/__init__.py b/django/core/management/__init__.py
+index 1ba093e51f..e411e86348 100644
+--- a/django/core/management/__init__.py
++++ b/django/core/management/__init__.py
+@@ -344,7 +344,7 @@ class ManagementUtility:
+         # Preprocess options to extract --settings and --pythonpath.
+         # These options could affect the commands that are available, so they
+         # must be processed early.
+-        parser = CommandParser(usage='%(prog)s subcommand [options] [args]', add_help=False, allow_abbrev=False)
++        parser = CommandParser(prog=self.prog_name, usage='%(prog)s subcommand [options] [args]', add_help=False, allow_abbrev=False)
+         parser.add_argument('--settings')
+         parser.add_argument('--pythonpath')
+         parser.add_argument('args', nargs='*')  # catch-all
+diff --git a/repro_prog.py b/repro_prog.py
+new file mode 100644
+index 0000000000..3ca142ec73
+--- /dev/null
++++ b/repro_prog.py
+@@ -0,0 +1 @@
++import sys\nfrom django.core.management import ManagementUtility\n\n# Simulate bad sys.argv[0]\nsys.argv = [None, "check"]\n# Provide custom argv to ManagementUtility\nargv = ["embedded_prog", "check"]\nmu = ManagementUtility(argv=argv)\nparser = mu.fetch_command("check").create_parser(mu.prog_name, "check")\nprint("Parser prog:", parser.prog)\n\n# Use internal parser creation path that formats usage with %(prog)s\n# Directly test main parser creation\nfrom django.core.management import ManagementUtility as MU\nmu2 = MU(argv)\n# The following method builds the base parser internally\n# We mimic the code path by invoking execute() which will create the parser.\ntry:\n    mu2.execute()\nexcept SystemExit as e:\n    print("Exited (expected in this test)")\nexcept Exception as e:\n    print("Execute raised:", e)\nprint("Done")\n
+\ No newline at end of file
+diff --git a/repro_prog_usage.py b/repro_prog_usage.py
+new file mode 100644
+index 0000000000..edf0473be2
+--- /dev/null
++++ b/repro_prog_usage.py
+@@ -0,0 +1 @@
++import sys; from django.core.management import ManagementUtility; from django.core.management.base import CommandParser; sys.argv=[None]; mu=ManagementUtility(["embedded_prog"]); p=CommandParser(prog=mu.prog_name, usage="%(prog)s subcommand [options] [args]", add_help=False, allow_abbrev=False); print(p.format_usage())
+\ No newline at end of file

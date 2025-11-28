@@ -1,0 +1,48 @@
+diff --git a/repro_latex.py b/repro_latex.py
+new file mode 100644
+index 0000000000..ccedfd9bd9
+--- /dev/null
++++ b/repro_latex.py
+@@ -0,0 +1,6 @@
++
++from sympy import var, exp, log, latex
++x = var("x", positive=True)
++print(latex(exp(-x)*log(x)))
++x, y = var("x y")
++print(latex(1/(x+y)/2))
+\ No newline at end of file
+diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py
+index 1edc712358..88f2cb7063 100644
+--- a/sympy/printing/latex.py
++++ b/sympy/printing/latex.py
+@@ -357,10 +357,13 @@ def _print_Mul(self, expr):
+             tex = ""
+ 
+         from sympy.simplify import fraction
+-        numer, denom = fraction(expr, exact=True)
++        numer, denom = expr.as_numer_denom()
+         separator = self._settings['mul_symbol_latex']
+         numbersep = self._settings['mul_symbol_latex_numbers']
+ 
++        if any(getattr(a, "is_Function", False) for a in expr.args):
++            numer = expr
++            denom = S.One
+         def convert(expr):
+             if not expr.is_Mul:
+                 return str(self._print(expr))
+@@ -396,8 +399,15 @@ def convert(expr):
+             tex += convert(expr)
+         else:
+             snumer = convert(numer)
++            # parenthesize denominator with plus to avoid distribution
++            sdenom = convert(denom)
++            if "+" in sdenom:
++                sdenom = "(" + sdenom + ")"
+             sdenom = convert(denom)
+             ldenom = len(sdenom.split())
++            # parenthesize denominator with plus to avoid distribution
++            if "+" in sdenom:
++                sdenom = "(" + sdenom + ")"
+             ratio = self._settings['long_frac_ratio']
+             if self._settings['fold_short_frac'] \
+                     and ldenom <= 2 and not "^" in sdenom:

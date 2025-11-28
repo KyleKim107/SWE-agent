@@ -1,0 +1,8 @@
+diff --git a/repro_poly_order.py b/repro_poly_order.py
+new file mode 100644
+index 0000000000..9bf35a206c
+--- /dev/null
++++ b/repro_poly_order.py
+@@ -0,0 +1 @@
++from sympy import var, Poly, latex, pretty; a,b,c,x = var('a b c x'); p = Poly([a,1,b,2,c,3], x); print(p); print(pretty(p)); print(latex(p))
+\ No newline at end of file

@@ -1,0 +1,36 @@
+diff --git a/django/template/autoreload.py b/django/template/autoreload.py
+index cf1b20ba95..4f73ef013b 100644
+--- a/django/template/autoreload.py
++++ b/django/template/autoreload.py
+@@ -19,13 +19,13 @@ def get_template_directories():
+         if not isinstance(backend, DjangoTemplates):
+             continue
+ 
+-        items.update(cwd / to_path(dir) for dir in backend.engine.dirs)
++        items.update((to_path(dir) if to_path(dir).is_absolute() else (cwd / to_path(dir))) for dir in backend.engine.dirs)
+ 
+         for loader in backend.engine.template_loaders:
+             if not hasattr(loader, 'get_dirs'):
+                 continue
+             items.update(
+-                cwd / to_path(directory)
++                (to_path(directory) if to_path(directory).is_absolute() else (cwd / to_path(directory)))
+                 for directory in loader.get_dirs()
+                 if not is_django_path(directory)
+             )
+diff --git a/repro_autoreload_logic.py b/repro_autoreload_logic.py
+new file mode 100644
+index 0000000000..7a26013087
+--- /dev/null
++++ b/repro_autoreload_logic.py
+@@ -0,0 +1 @@
++from pathlib import Path\n\n# Simulate template directories including BASE_DIR\nBASE_DIR = Path('/testbed')\n\n# Simulate file changes under BASE_DIR\npy_file = Path('/testbed/app/settings.py')\nhtml_file = Path('/testbed/templates/index.html')\n\n# Simulated logic equivalent to template_changed after fix:\ndef template_changed_sim(file_path, template_dirs):\n    for template_dir in template_dirs:\n        if template_dir in file_path.parents:\n            if file_path.suffix not in {'.py', '.pyc', '.pyo'}:\n                return True\n    return False\n\nprint('Change .py under BASE_DIR suppress restart?', template_changed_sim(py_file, [BASE_DIR]))\nprint('Change .html under BASE_DIR suppress restart?', template_changed_sim(html_file, [BASE_DIR]))\n
+\ No newline at end of file
+diff --git a/repro_template_dirs.py b/repro_template_dirs.py
+new file mode 100644
+index 0000000000..b112ce87d6
+--- /dev/null
++++ b/repro_template_dirs.py
+@@ -0,0 +1 @@
++from pathlib import Path\nfrom django.template.backends.django import DjangoTemplates\nfrom django.template.engine import Engine\nfrom django.template.autoreload import get_template_directories\n\nBASE_DIR = Path('/testbed')\nengine = Engine(dirs=[str(BASE_DIR)])\nbackend = DjangoTemplates({'DIRS': [str(BASE_DIR)], 'APP_DIRS': False})\nprint('Before fix, directories:', list(get_template_directories()))\n
+\ No newline at end of file

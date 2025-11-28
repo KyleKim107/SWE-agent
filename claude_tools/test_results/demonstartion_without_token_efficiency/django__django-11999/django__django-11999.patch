@@ -1,0 +1,29 @@
+diff --git a/repro_get_display.py b/repro_get_display.py
+new file mode 100644
+index 0000000000..0ca65bae5c
+--- /dev/null
++++ b/repro_get_display.py
+@@ -0,0 +1,22 @@
++
++import sys
++sys.path.insert(0, '/testbed')
++from django.conf import settings
++settings.configure(SECRET_KEY='x', INSTALLED_APPS=['django.contrib.contenttypes'], DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}})
++import django
++django.setup()
++from django.db import models
++from django.utils.translation import gettext_lazy as _
++
++class FooBar(models.Model):
++    foo_bar = models.IntegerField(_('foo'), choices=[(1, 'foo'), (2, 'bar')])
++    def get_foo_bar_display(self):
++        return 'something'
++    def __str__(self):
++        return self.get_foo_bar_display()
++    class Meta:
++        app_label = 'myapp'
++
++obj = FooBar(foo_bar=1)
++print('Display:', obj.get_foo_bar_display())
++print('Str:', str(obj))
+\ No newline at end of file

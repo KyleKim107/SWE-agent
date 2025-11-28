@@ -1,0 +1,50 @@
+diff --git a/eq_repro2.py b/eq_repro2.py
+new file mode 100644
+index 0000000000..2aef8daf98
+--- /dev/null
++++ b/eq_repro2.py
+@@ -0,0 +1,17 @@
++
++import sympy
++class C:
++    def __repr__(self):
++        return 'x.y'
++print("Test 1: Symbol(\"x\") == C() should be False and not raise")
++try:
++    print(sympy.Symbol("x") == C())
++    print("No exception raised")
++except Exception as e:
++    print("Exception:", type(e).__name__, e)
++
++class D:
++    def __repr__(self):
++        return 'x'
++print("Test 2: Symbol(\"x\") == D() should be False (no accidental equality)")
++print(sympy.Symbol("x") == D())
+\ No newline at end of file
+diff --git a/repro_eq_eval.py b/repro_eq_eval.py
+new file mode 100644
+index 0000000000..afaa0d8695
+--- /dev/null
++++ b/repro_eq_eval.py
+@@ -0,0 +1 @@
++import sympy\nfrom sympy.core.sympify import SympifyError\nclass C:\n    def __repr__(self):\n        return "x.y"\ntry:\n    print("Comparing Symbol(\"x\") == C():")\n    print(sympy.Symbol("x") == C())\n    print("No exception raised")\nexcept Exception as e:\n    print("Exception:", type(e).__name__, e)\nclass D:\n    def __repr__(self):\n        return "x"\nprint("Comparing Symbol(\"x\") == D():", sympy.Symbol("x") == D())\n
+\ No newline at end of file
+diff --git a/sympy/core/expr.py b/sympy/core/expr.py
+index 24d89897f7..c9b3be646c 100644
+--- a/sympy/core/expr.py
++++ b/sympy/core/expr.py
+@@ -121,10 +121,11 @@ def _hashable_content(self):
+ 
+     def __eq__(self, other):
+         try:
+-            other = sympify(other)
++        # EQ_MARK
++            other = _sympify(other)
+             if not isinstance(other, Expr):
+                 return False
+-        except (SympifyError, SyntaxError):
++        except (SympifyError, TypeError):
+             return False
+         # check for pure number expr
+         if  not (self.is_Number and other.is_Number) and (

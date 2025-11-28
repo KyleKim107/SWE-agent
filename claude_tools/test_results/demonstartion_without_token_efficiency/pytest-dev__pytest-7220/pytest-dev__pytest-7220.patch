@@ -1,0 +1,30 @@
+diff --git a/repro_wrong_path.py b/repro_wrong_path.py
+new file mode 100644
+index 000000000..4fc559059
+--- /dev/null
++++ b/repro_wrong_path.py
+@@ -0,0 +1 @@
++import os, pytest, errno, shutil\n\n@pytest.fixture\ndef private_dir():\n    out_dir = 'ddd'\n    try:\n        shutil.rmtree(out_dir)\n    except OSError as ex:\n        if ex.errno != errno.ENOENT:\n            raise\n    os.mkdir(out_dir)\n    old_dir = os.getcwd()\n    os.chdir(out_dir)\n    yield out_dir\n    os.chdir(old_dir)\n\ndef test_show_wrong_path(private_dir):\n    assert False
+\ No newline at end of file
+diff --git a/src/_pytest/terminal.py b/src/_pytest/terminal.py
+index 8ecb5a16b..6554c2552 100644
+--- a/src/_pytest/terminal.py
++++ b/src/_pytest/terminal.py
+@@ -776,7 +776,7 @@ class TerminalReporter:
+ 
+     def _locationline(self, nodeid, fspath, lineno, domain):
+         def mkrel(nodeid):
+-            line = self.config.cwd_relative_nodeid(nodeid)
++            line = self.config.rootdir.bestrelpath(nodeid.split("::")[0]) + ("::" + nodeid.split("::",1)[1] if "::" in nodeid else "")
+             if domain and line.endswith(domain):
+                 line = line[: -len(domain)]
+                 values = domain.split("[")
+@@ -1116,7 +1116,7 @@ class TerminalReporter:
+ 
+ 
+ def _get_pos(config, rep):
+-    nodeid = config.cwd_relative_nodeid(rep.nodeid)
++    nodeid = config.rootdir.bestrelpath(rep.nodeid.split("::")[0]) + ("::" + rep.nodeid.split("::",1)[1] if "::" in rep.nodeid else "")
+     return nodeid
+ 
+ 

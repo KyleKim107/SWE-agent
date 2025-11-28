@@ -1,0 +1,36 @@
+diff --git a/repro_exponent.py b/repro_exponent.py
+new file mode 100644
+index 0000000000..a088c6f9e5
+--- /dev/null
++++ b/repro_exponent.py
+@@ -0,0 +1 @@
++import sympy as sp\nx=sp.Symbol("x")\nexpr1 = sp.S(1)/2*x**sp.Float(2.5)\nexpr2 = sp.S(1)*x**(sp.S(5)/2)/2\nres = expr1 - expr2\nprint("original:", res)\nprint("simplify:", sp.simplify(res))\nprint("evalf simplify:", sp.simplify(res.evalf(5)))\n
+\ No newline at end of file
+diff --git a/repro_pow_simplify.py b/repro_pow_simplify.py
+new file mode 100644
+index 0000000000..c9816028e5
+--- /dev/null
++++ b/repro_pow_simplify.py
+@@ -0,0 +1,9 @@
++
++import sympy as sp
++x = sp.Symbol("x")
++expr1 = sp.S(1)/2 * x**sp.Float(2.5)
++expr2 = sp.S(1) * x**(sp.S(5)/2) / 2
++res = expr1 - expr2
++print("orig:", res)
++print("simplify:", sp.simplify(res))
++print("evalf simplify:", sp.simplify(res.evalf(5)))
+\ No newline at end of file
+diff --git a/sympy/simplify/simplify.py b/sympy/simplify/simplify.py
+index f1609aa908..ae431ce621 100644
+--- a/sympy/simplify/simplify.py
++++ b/sympy/simplify/simplify.py
+@@ -584,6 +584,7 @@ def shorter(*choices):
+     short = shorter(short, factor_terms(short), expand_power_exp(expand_mul(short)))
+     if short.has(TrigonometricFunction, HyperbolicFunction, ExpBase):
+         short = exptrigsimp(short, simplify=False)
++    short = shorter(short, nsimplify(short, rational=True))
+ 
+     # get rid of hollow 2-arg Mul factorization
+     hollow_mul = Transform(

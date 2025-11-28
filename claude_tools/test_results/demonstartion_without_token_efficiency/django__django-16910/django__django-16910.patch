@@ -1,0 +1,44 @@
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index b28dc925ba..6511918498 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -1250,7 +1250,7 @@ class SQLCompiler:
+                 if o.field.unique and not o.many_to_many
+             ]
+             for related_field, model in related_fields:
+-                related_select_mask = select_mask.get(related_field) or {}
++                related_select_mask = select_mask.get(related_field) or select_mask.get(related_field.related_query_name(), {})
+                 if not select_related_descend(
+                     related_field,
+                     restricted,
+diff --git a/repro_only_select_related.py b/repro_only_select_related.py
+new file mode 100644
+index 0000000000..47fc93fc6f
+--- /dev/null
++++ b/repro_only_select_related.py
+@@ -0,0 +1,25 @@
++import sys
++sys.path.insert(0, "/testbed")
++from django.conf import settings
++settings.configure(INSTALLED_APPS=["django.contrib.contenttypes"], DATABASES={"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}, SECRET_KEY="x")
++import django
++django.setup()
++from django.db import models
++
++class Main(models.Model):
++    main_field_1 = models.CharField(max_length=45, blank=True)
++    main_field_2 = models.CharField(max_length=45, blank=True)
++    main_field_3 = models.CharField(max_length=45, blank=True)
++    class Meta:
++        app_label = "bugtest"
++
++class Secondary(models.Model):
++    main = models.OneToOneField(Main, primary_key=True, related_name="secondary", on_delete=models.CASCADE)
++    secondary_field_1 = models.CharField(max_length=45, blank=True)
++    secondary_field_2 = models.CharField(max_length=45, blank=True)
++    secondary_field_3 = models.CharField(max_length=45, blank=True)
++    class Meta:
++        app_label = "bugtest"
++
++qs = Main.objects.select_related("secondary").only("main_field_1", "secondary__secondary_field_1")
++print(str(qs.query))

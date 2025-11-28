@@ -1,0 +1,245 @@
+diff --git a/lib/matplotlib/offsetbox.py b/lib/matplotlib/offsetbox.py
+index 77768e7383..b29d4c01a7 100644
+--- a/lib/matplotlib/offsetbox.py
++++ b/lib/matplotlib/offsetbox.py
+@@ -1498,8 +1498,9 @@ class DraggableBase:
+         self.ref_artist = ref_artist
+         if not ref_artist.pickable():
+             ref_artist.set_picker(True)
++            ref_artist.set_picker(True)
+         self.got_artist = False
+-        self._use_blit = use_blit and self.canvas.supports_blit
++        self._use_blit = bool(use_blit and getattr(self.canvas, 'supports_blit', False))
+         self.cids = [
+             self.canvas.callbacks._connect_picklable(
+                 'pick_event', self.on_pick),
+@@ -1508,7 +1509,12 @@ class DraggableBase:
+         ]
+ 
+     # A property, not an attribute, to maintain picklability.
+-    canvas = property(lambda self: self.ref_artist.figure.canvas)
++
++    def _get_canvas(self):
++        fig = getattr(self.ref_artist, 'figure', None)
++        can = getattr(fig, 'canvas', None)
++        return can if can is not None else getattr(self, '_canvas', None)
++    canvas = property(_get_canvas)
+ 
+     def on_motion(self, evt):
+         if self._check_still_parented() and self.got_artist:
+@@ -1540,11 +1546,13 @@ class DraggableBase:
+                 "motion_notify_event", self.on_motion)
+             self.save_offset()
+ 
++            if self.canvas is not None:
++                self.canvas.mpl_disconnect(self._c1)
+     def on_release(self, event):
+         if self._check_still_parented() and self.got_artist:
+             self.finalize_offset()
+             self.got_artist = False
+-            self.canvas.mpl_disconnect(self._c1)
++
+ 
+             if self._use_blit:
+                 self.ref_artist.set_animated(False)
+@@ -1552,6 +1560,8 @@ class DraggableBase:
+     def _check_still_parented(self):
+         if self.ref_artist.figure is None:
+             self.disconnect()
++        if self.canvas is None:
++            return
+             return False
+         else:
+             return True
+diff --git a/tmp/fix_offsetbox.py b/tmp/fix_offsetbox.py
+new file mode 100644
+index 0000000000..0f58ff3b41
+--- /dev/null
++++ b/tmp/fix_offsetbox.py
+@@ -0,0 +1,44 @@
++
++path = "/testbed/lib/matplotlib/offsetbox.py"
++with open(path, "r", encoding="utf-8") as f:
++    lines = f.read().splitlines()
++# Fix __init__ pickable block and insert canvas cache
++for i, line in enumerate(lines):
++    if line.strip() == "def __init__(self, ref_artist, use_blit=False):":
++        # Find the pickable if-block
++        for j in range(i+1, min(i+15, len(lines))):
++            if lines[j].strip() == "if not ref_artist.pickable():":
++                # Ensure correct body
++                lines[j+1:j+3] = ["            ref_artist.set_picker(True)"]
++                break
++        # After got_artist initialization, cache canvas
++        for j in range(i+1, min(i+20, len(lines))):
++            if lines[j].strip() == "self.got_artist = False":
++                lines.insert(j+1, "        self._canvas = getattr(getattr(self.ref_artist, \\"figure\\", None), \\"canvas\\", None)")
++                break
++# Remove misplaced canvas disconnect before on_release
++to_delete = []
++for i, line in enumerate(lines):
++    if line.strip() == "if self.canvas is not None:" and i+1 < len(lines) and "mpl_disconnect(self._c1)" in lines[i+1]:
++        to_delete.extend([i, i+1])
++for idx in sorted(set(to_delete), reverse=True):
++    del lines[idx]
++# Add guarded disconnect inside on_release
++for i, line in enumerate(lines):
++    if line.strip() == "def on_release(self, event):":
++        # Insert after got_artist reset
++        for j in range(i+1, min(i+20, len(lines))):
++            if lines[j].strip() == "self.got_artist = False":
++                lines.insert(j+1, "            if self.canvas is not None:")
++                lines.insert(j+2, "                self.canvas.mpl_disconnect(self._c1)")
++                break
++# Fix _check_still_parented to handle None cases cleanly
++for i, line in enumerate(lines):
++    if line.strip() == "def _check_still_parented(self):":
++        # Normalize return logic over next few lines
++        for j in range(i+1, min(i+15, len(lines))):
++            if lines[j].strip().startswith("if self.ref_artist.figure is None"):
++                lines[j+1:j+5] = ["            self.disconnect()", "            return False", "        if self.canvas is None:", "            return False", "        return True"]
++                break
++with open(path, "w", encoding="utf-8") as f:
++    f.write("\n".join(lines))
+\ No newline at end of file
+diff --git a/tmp/patch_fix_offsetbox.py b/tmp/patch_fix_offsetbox.py
+new file mode 100644
+index 0000000000..2e10b40f5d
+--- /dev/null
++++ b/tmp/patch_fix_offsetbox.py
+@@ -0,0 +1,60 @@
++
++path = "/testbed/lib/matplotlib/offsetbox.py"
++with open(path, "r", encoding="utf-8") as f:
++    lines = f.read().splitlines()
++# Remove duplicate picker lines in __init__
++for i in range(len(lines)-1):
++    if lines[i].strip() == "ref_artist.set_picker(True)" and lines[i+1].strip() == "ref_artist.set_picker(True)":
++        del lines[i+1]
++        break
++# Insert canvas cache after got_artist initialization
++for i in range(len(lines)):
++    if lines[i].strip() == "self.got_artist = False":
++        ins = "        self._canvas = getattr(getattr(self.ref_artist, \"figure\", None), \"canvas\", None)"
++        if i+1 >= len(lines) or "self._canvas =" not in lines[i+1]:
++            lines.insert(i+1, ins)
++        break
++# Remove misplaced disconnect before on_release
++to_del = []
++for i in range(len(lines)-1):
++    if lines[i].strip() == "if self.canvas is not None:" and "mpl_disconnect(self._c1)" in lines[i+1]:
++        # only remove if it appears before on_release definition
++        ahead = "".join(lines[i:i+10])
++        if "def on_release" not in ahead:
++            to_del.extend([i, i+1])
++for idx in sorted(set(to_del), reverse=True):
++    del lines[idx]
++# Add guarded disconnect inside on_release after got_artist reset
++for i in range(len(lines)):
++    if lines[i].strip().startswith("def on_release"):":
++        for j in range(i+1, min(i+20, len(lines))):
++            if lines[j].strip() == "self.got_artist = False":
++                guard1 = "            if self.canvas is not None:"
++                guard2 = "                self.canvas.mpl_disconnect(self._c1)"
++                block = "".join(lines[j+1:j+3])
++                if "mpl_disconnect(self._c1)" not in block:
++                    lines.insert(j+1, guard1)
++                    lines.insert(j+2, guard2)
++                break
++        break
++# Guard cids disconnect loop
++for i in range(len(lines)):
++    if lines[i].strip() == "for cid in self.cids:":
++        if i+1 < len(lines) and lines[i+1].strip() == "self.canvas.mpl_disconnect(cid)":
++            lines[i+1:i+2] = ["            if self.canvas is not None:", "                self.canvas.mpl_disconnect(cid)"]
++        break
++# Rewrite _check_still_parented
++for i in range(len(lines)):
++    if lines[i].strip().startswith("def _check_still_parented"):":
++        # Replace next few lines with a robust implementation
++        lines[i+1:i+6] = [
++            "        if self.ref_artist.figure is None:",
++            "            self.disconnect()",
++            "            return False",
++            "        if self.canvas is None:",
++            "            return False",
++            "        return True"
++        ]
++        break
++with open(path, "w", encoding="utf-8") as f:
++    f.write("\n".join(lines))
+\ No newline at end of file
+diff --git a/tmp/patch_offsetbox_fix.py b/tmp/patch_offsetbox_fix.py
+new file mode 100644
+index 0000000000..c84c082659
+--- /dev/null
++++ b/tmp/patch_offsetbox_fix.py
+@@ -0,0 +1,47 @@
++
++path = "/testbed/lib/matplotlib/offsetbox.py"
++with open(path, "r", encoding="utf-8") as f:
++    lines = f.read().splitlines()
++# Fix __init__: ensure picker line and insert canvas cache
++for i, line in enumerate(lines):
++    if line.strip() == "if not ref_artist.pickable():":
++        # Ensure next line sets picker with correct indentation
++        if i+1 < len(lines) and "set_picker(True)" not in lines[i+1]:
++            lines[i+1] = "            ref_artist.set_picker(True)"
++        # Remove any misplaced _canvas assignment around here
++        if i+1 < len(lines) and "self._canvas" in lines[i+1]:
++            del lines[i+1]
++# Insert canvas cache after picker setup and got_artist initialization
++for i, line in enumerate(lines):
++    if line.strip() == "self.got_artist = False":
++        lines.insert(i+1, "        self._canvas = getattr(getattr(self.ref_artist, \"figure\", None), \"canvas\", None)")
++        break
++# Fix canvas property: replace broken lines with proper getter
++for i, line in enumerate(lines):
++    if line.strip().startswith("def _get_canvas(self):") or line.strip().startswith("canvas = property("):
++        # Remove existing broken block around property
++        start = i
++        end = min(start+3, len(lines))
++        del lines[start:end]
++        block = [
++            "    def _get_canvas(self):",
++            "        fig = getattr(self.ref_artist, \"figure\", None)",
++            "        can = getattr(fig, \"canvas\", None)",
++            "        return can if can is not None else getattr(self, \"_canvas\", None)",
++            "    canvas = property(_get_canvas)"
++        ]
++        lines[start:start] = block
++        break
++# Guard mpl_disconnect calls
++for i, line in enumerate(lines):
++    if line.strip() == "self.canvas.mpl_disconnect(self._c1)":
++        lines[i] = "            if self.canvas is not None:"
++        lines.insert(i+1, "                self.canvas.mpl_disconnect(self._c1)")
++        break
++for i, line in enumerate(lines):
++    if line.strip() == "self.canvas.mpl_disconnect(cid)":
++        lines[i] = "            if self.canvas is not None:"
++        lines.insert(i+1, "                self.canvas.mpl_disconnect(cid)")
++        # Continue to guard other occurrences
++with open(path, "w", encoding="utf-8") as f:
++    f.write("\n".join(lines))
+\ No newline at end of file
+diff --git a/tmp/repro_offsetbox_canvas.py b/tmp/repro_offsetbox_canvas.py
+new file mode 100644
+index 0000000000..910e9680fd
+--- /dev/null
++++ b/tmp/repro_offsetbox_canvas.py
+@@ -0,0 +1,13 @@
++
++import sys
++sys.path.insert(0, '/testbed/lib')
++import matplotlib.pyplot as plt
++from matplotlib.offsetbox import AnnotationBbox, TextArea
++fig, ax = plt.subplots()
++ann = AnnotationBbox(TextArea('test'), (0.5, 0.5), xycoords='data')
++ax.add_artist(ann)
++d = ann.draggable()
++print("Canvas present at init:", d.canvas is not None)
++ann.figure = None  # Simulate ref_artist.figure being cleared
++print("Canvas after figure cleared:", d.canvas is not None)
++d.disconnect()
+\ No newline at end of file

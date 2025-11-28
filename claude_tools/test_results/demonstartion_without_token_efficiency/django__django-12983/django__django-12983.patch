@@ -1,0 +1,24 @@
+diff --git a/django/utils/text.py b/django/utils/text.py
+index fb5f6298c4..001f4d04ba 100644
+--- a/django/utils/text.py
++++ b/django/utils/text.py
+@@ -403,7 +403,8 @@ def slugify(value, allow_unicode=False):
+     else:
+         value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+     value = re.sub(r'[^\w\s-]', '', value.lower()).strip()
+-    return re.sub(r'[-\s]+', '-', value)
++    slug = re.sub(r"[-\s]+", "-", value)
++    return slug.strip("-_")
+ 
+ 
+ def camel_case_to_spaces(value):
+diff --git a/repro_slugify.py b/repro_slugify.py
+new file mode 100644
+index 0000000000..6b2f68ff14
+--- /dev/null
++++ b/repro_slugify.py
+@@ -0,0 +1,3 @@
++from django.utils.text import slugify
++print("Output:", slugify("___This is a test ---"))
++print("Extra:", slugify("__a__"))
+\ No newline at end of file

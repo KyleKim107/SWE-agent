@@ -1,0 +1,8 @@
+diff --git a/repro_sign_rewrite.py b/repro_sign_rewrite.py
+new file mode 100644
+index 0000000000..559bd5559b
+--- /dev/null
++++ b/repro_sign_rewrite.py
+@@ -0,0 +1 @@
++import sympy as sp\nfrom sympy import sign, Abs\nx = sp.symbols("x")\nprint("sign(x).rewrite(Abs):", sign(x).rewrite(Abs))\nprint("sign(0).rewrite(Abs):", sign(0).rewrite(Abs))\ny = sp.symbols("y", nonzero=True)\nprint("sign(y).rewrite(Abs):", sign(y).rewrite(Abs))\n
+\ No newline at end of file

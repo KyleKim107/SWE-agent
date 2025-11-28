@@ -1,0 +1,69 @@
+diff --git a/seaborn/_oldcore.py b/seaborn/_oldcore.py
+index c9218c1f..9b037b9a 100644
+--- a/seaborn/_oldcore.py
++++ b/seaborn/_oldcore.py
+@@ -1,4 +1,5 @@
+ import warnings
++import contextlib
+ import itertools
+ from copy import copy
+ from functools import partial
+@@ -1093,7 +1094,15 @@ class VectorPlotter:
+                 parts = []
+                 grouped = self.plot_data[var].groupby(self.converters[var], sort=False)
+                 for converter, orig in grouped:
+-                    with pd.option_context('mode.use_inf_as_null', True):
++                    with pd.option_context('mode.use_inf_as_na', True):
++        try:
++            ctx = pd.option_context('mode.use_inf_as_na', True)
++        except Exception:
++            class _DummyCtx:
++                def __enter__(self): return None
++                def __exit__(self, exc_type, exc, tb): return False
++            ctx = _DummyCtx()
++        with ctx:
+                         orig = orig.dropna()
+                         if var in self.var_levels:
+                             # TODO this should happen in some centralized location
+diff --git a/seaborn/axisgrid.py b/seaborn/axisgrid.py
+index 8526f44b..c5b9b892 100644
+--- a/seaborn/axisgrid.py
++++ b/seaborn/axisgrid.py
+@@ -1278,7 +1278,15 @@ class PairGrid(Grid):
+             # (and was originally written exclusively that way) but now can delegate
+             # to the axes-level functions, while always handling legend creation.
+             # See GH2307
+-            hue_names = hue_order = categorical_order(data[hue], hue_order)
++
++            if hue_order is not None:
++                valid = pd.Series(data[hue]).isin(hue_order)
++                self.data = data = data.loc[valid]
++                present = pd.unique(data[hue])
++                hue_names = [lvl for lvl in hue_order if lvl in set(present)]
++                hue_order = hue_names
++            else:
++                hue_names = hue_order = categorical_order(data[hue], hue_order)
+             if dropna:
+                 # Filter NA from the list of unique hue names
+                 hue_names = list(filter(pd.notnull, hue_names))
+diff --git a/tmp/repro_pairplot.py b/tmp/repro_pairplot.py
+new file mode 100644
+index 00000000..2b175925
+--- /dev/null
++++ b/tmp/repro_pairplot.py
+@@ -0,0 +1,14 @@
++
++import sys
++sys.path.insert(0, '/testbed')
++import seaborn as sns
++import matplotlib
++matplotlib.use('Agg')
++import matplotlib.pyplot as plt
++iris = sns.load_dataset('iris')
++print('species unique:', iris['species'].unique())
++print('Trying pairplot with subset hue_order...')
++
++g = sns.pairplot(iris, hue='species', hue_order=['setosa','versicolor'], diag_kind='hist')
++print('Pairplot created OK')
++plt.close()
+\ No newline at end of file

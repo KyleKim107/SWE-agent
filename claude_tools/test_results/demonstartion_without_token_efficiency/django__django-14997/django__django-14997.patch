@@ -1,0 +1,29 @@
+diff --git a/django/db/backends/sqlite3/schema.py b/django/db/backends/sqlite3/schema.py
+index f0c81c123b..2d0099fc11 100644
+--- a/django/db/backends/sqlite3/schema.py
++++ b/django/db/backends/sqlite3/schema.py
+@@ -39,6 +39,16 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
+     def quote_value(self, value):
+         # The backend "mostly works" without this function and there are use
+         # cases for compiling Python without the sqlite3 libraries (e.g.
++    def _create_unique_sql(self, model, fields, name=None, condition=None, deferrable=None, include=None, opclasses=None, expressions=None):
++        stmt = super()._create_unique_sql(model, fields, name=name, condition=condition, deferrable=deferrable, include=include, opclasses=opclasses, expressions=expressions)
++        if not stmt or not expressions:
++            return stmt
++        import re
++        sql = str(stmt)
++        sql = re.sub(r'"[^"]+"\."([^"]+)"', r'"\1"', sql)
++        sql = re.sub(r'([A-Za-z0-9_]+)\.([A-Za-z0-9_]+)', r'\2', sql)
++        from django.db.backends.ddl_references import Statement
++        return Statement(sql)
+         # security hardening).
+         try:
+             import sqlite3
+diff --git a/test_sqlite_fix.py b/test_sqlite_fix.py
+new file mode 100644
+index 0000000000..75dfa1ee5b
+--- /dev/null
++++ b/test_sqlite_fix.py
+@@ -0,0 +1 @@
++import re\nexamples = []\nexamples.append('CREATE UNIQUE INDEX "unique_name_value" ON "tag" ("tag"."name", "tag"."value")')\nexamples.append('CREATE UNIQUE INDEX unique_expr ON tag (LOWER(tag.name), UPPER(tag.value))')\nfor sql in examples:\n    s1 = re.sub(r'"[^"]+"\."([^"]+)"', r'"\1"', sql)\n    s2 = re.sub(r'([A-Za-z0-9_]+)\.([A-Za-z0-9_]+)', r'\2', s1)\n    print('Original:', sql)\n    print('Sanitized:', s2)\n    print('-'*40)\n
+\ No newline at end of file

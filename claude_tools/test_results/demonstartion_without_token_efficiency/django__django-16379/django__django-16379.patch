@@ -1,0 +1,24 @@
+diff --git a/django/core/cache/backends/filebased.py b/django/core/cache/backends/filebased.py
+index 631da49444..46dc210c7a 100644
+--- a/django/core/cache/backends/filebased.py
++++ b/django/core/cache/backends/filebased.py
+@@ -92,8 +92,11 @@ class FileBasedCache(BaseCache):
+         fname = self._key_to_file(key, version)
+         if os.path.exists(fname):
+             with open(fname, "rb") as f:
++            try:
+                 return not self._is_expired(f)
+         return False
++            except FileNotFoundError:
++                return False
+ 
+     def _cull(self):
+         """
+diff --git a/repro_filebased_has_key.py b/repro_filebased_has_key.py
+new file mode 100644
+index 0000000000..0aba17d108
+--- /dev/null
++++ b/repro_filebased_has_key.py
+@@ -0,0 +1 @@
++import os
+\ No newline at end of file

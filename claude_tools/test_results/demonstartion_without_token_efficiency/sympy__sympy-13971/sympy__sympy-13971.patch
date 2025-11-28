@@ -1,0 +1,12 @@
+diff --git a/repro_seq.py b/repro_seq.py
+new file mode 100644
+index 0000000000..3ba05b02b6
+--- /dev/null
++++ b/repro_seq.py
+@@ -0,0 +1,5 @@
++
++import sympy as sp
++k,m,n=sp.symbols('k m n', integer=True)
++expr=sp.SeqFormula(n**2,(n,0,sp.oo))
++print(sp.latex(expr))
+\ No newline at end of file

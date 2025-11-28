@@ -1,0 +1,8 @@
+diff --git a/repro_matmul.py b/repro_matmul.py
+new file mode 100644
+index 0000000000..8fcd010d15
+--- /dev/null
++++ b/repro_matmul.py
+@@ -0,0 +1 @@
++from sympy import Matrix\nA = Matrix([[1,2],[3,4]])\nB = Matrix([[2,3],[1,2]])\nprint('A@B:', A@B)\ntry:\n    print('2@B:', 2@B)\nexcept Exception as e:\n    print('2@B raised:', type(e).__name__, e)\ntry:\n    print('A@2:', A@2)\nexcept Exception as e:\n    print('A@2 raised:', type(e).__name__, e)\n
+\ No newline at end of file

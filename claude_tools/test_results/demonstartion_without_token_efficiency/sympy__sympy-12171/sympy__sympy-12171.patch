@@ -1,0 +1,41 @@
+diff --git a/repro_mathematica.py b/repro_mathematica.py
+new file mode 100644
+index 0000000000..8d7eaf9e0a
+--- /dev/null
++++ b/repro_mathematica.py
+@@ -0,0 +1,7 @@
++
++from sympy import symbols, Function, Derivative, Float
++from sympy.printing.mathematica import mathematica_code as mcode
++t = symbols("t")
++f = Function("f")
++print(mcode(Derivative(f(t), t)))
++print(mcode(Float("1.0e-4")))
+\ No newline at end of file
+diff --git a/sympy/printing/mathematica.py b/sympy/printing/mathematica.py
+index 4c2ffd81e1..f71ea6ee7e 100644
+--- a/sympy/printing/mathematica.py
++++ b/sympy/printing/mathematica.py
+@@ -62,7 +62,21 @@ def __init__(self, settings={}):
+                 self.known_functions.update(userfuncs)
+ 
+     doprint = StrPrinter.doprint
+-
++    def _print_Derivative(self, expr):
++        return "D[%s]" % (self.stringify(expr.args, ", "))
++
++    def _print_Float(self, expr):
++        s = "{:.15e}".format(float(expr))
++        # mant, exp = s.split("e"); exp_val = int(exp); mant = mant.rstrip("0").rstrip(".");\n        if "." not in mant:\n            mant += ".0";\n        if exp_val == 0:\n            return mant\n        return "%s*^%d" % (mant, exp_val)
++
++        mant, exp = s.split("e")
++        exp_val = int(exp)
++        mant = mant.rstrip("0").rstrip(".")
++        if "." not in mant:
++            mant += ".0"
++        if exp_val == 0:
++            return mant
++        return "%s*^%d" % (mant, exp_val)
+     def _print_Pow(self, expr):
+         PREC = precedence(expr)
+         return '%s^%s' % (self.parenthesize(expr.base, PREC),

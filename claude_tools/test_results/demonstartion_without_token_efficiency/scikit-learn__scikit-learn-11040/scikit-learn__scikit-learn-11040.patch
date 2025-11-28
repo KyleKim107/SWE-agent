@@ -1,0 +1,79 @@
+diff --git a/repro_neighbors_float.py b/repro_neighbors_float.py
+new file mode 100644
+index 000000000..3c6011617
+--- /dev/null
++++ b/repro_neighbors_float.py
+@@ -0,0 +1,23 @@
++
++from sklearn.neighbors import NearestNeighbors
++from sklearn.datasets import make_blobs
++
++X, y = make_blobs(random_state=0)
++
++print("Testing kneighbors with float n_neighbors=3.0")
++nn = NearestNeighbors(n_neighbors=5)
++nn.fit(X)
++d, ind = nn.kneighbors(X[:5], n_neighbors=3.0)
++print("kneighbors ind shape:", ind.shape)
++
++print("Testing kneighbors_graph with float n_neighbors=3.0")
++A = nn.kneighbors_graph(X[:5], n_neighbors=3.0)
++print("kneighbors_graph shape:", A.shape)
++
++print("Testing constructor with float n_neighbors=3.0 expecting TypeError")
++try:
++    nn_bad = NearestNeighbors(n_neighbors=3.0)
++    nn_bad.fit(X)
++    print("ERROR: Expected TypeError but fit succeeded")
++except Exception as e:
++    print("Constructor error:", type(e).__name__, str(e))
+\ No newline at end of file
+diff --git a/sklearn/neighbors/base.py b/sklearn/neighbors/base.py
+index 3e5e729c2..c6944d421 100644
+--- a/sklearn/neighbors/base.py
++++ b/sklearn/neighbors/base.py
+@@ -108,8 +108,11 @@ class NeighborsBase(six.with_metaclass(ABCMeta, BaseEstimator)):
+                  p=2, metric_params=None, n_jobs=1):
+ 
+         self.n_neighbors = n_neighbors
+-        self.radius = radius
++        if n_neighbors is not None and isinstance(n_neighbors, (float, np.floating)):
++        # radius will be set below
++            raise TypeError("n_neighbors must be an integer, got float %r" % n_neighbors)
+         self.algorithm = algorithm
++        self.radius = radius
+         self.leaf_size = leaf_size
+         self.metric = metric
+         self.metric_params = metric_params
+@@ -337,6 +340,10 @@ class KNeighborsMixin(object):
+             # Include an extra neighbor to account for the sample itself being
+             # returned, which is removed later
+             n_neighbors += 1
++        if isinstance(n_neighbors, (float, np.floating)) and not float(n_neighbors).is_integer():
++            raise TypeError("n_neighbors must be an integer, got float %r" % n_neighbors)
++        if isinstance(n_neighbors, (float, np.floating)):
++            n_neighbors = int(n_neighbors)
+ 
+         train_size = self._fit_X.shape[0]
+         if n_neighbors > train_size:
+@@ -462,8 +469,20 @@ class KNeighborsMixin(object):
+ 
+         See also
+         --------
++        if isinstance(n_neighbors, (float, np.floating)) and not float(n_neighbors).is_integer():
++            raise TypeError("n_neighbors must be an integer, got float %r" % n_neighbors)
++        if isinstance(n_neighbors, (float, np.floating)):
++            n_neighbors = int(n_neighbors)
+         NearestNeighbors.radius_neighbors_graph
++        if isinstance(n_neighbors, (float, np.floating)) and not float(n_neighbors).is_integer():
++            raise TypeError("n_neighbors must be an integer, got float %r" % n_neighbors)
++        if isinstance(n_neighbors, (float, np.floating)):
++            n_neighbors = int(n_neighbors)
+         """
++        if isinstance(n_neighbors, (float, np.floating)) and not float(n_neighbors).is_integer():
++            raise TypeError("n_neighbors must be an integer, got float %r" % n_neighbors)
++        if isinstance(n_neighbors, (float, np.floating)):
++            n_neighbors = int(n_neighbors)
+         if n_neighbors is None:
+             n_neighbors = self.n_neighbors
+ 

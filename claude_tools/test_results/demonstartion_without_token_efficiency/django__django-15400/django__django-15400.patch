@@ -1,0 +1,45 @@
+diff --git a/django/utils/functional.py b/django/utils/functional.py
+index 9e1be0fe0f..c111923601 100644
+--- a/django/utils/functional.py
++++ b/django/utils/functional.py
+@@ -432,8 +432,16 @@ class SimpleLazyObject(LazyObject):
+             return result
+         return copy.deepcopy(self._wrapped, memo)
+ 
++    def __radd__(self, other):
++        if self._wrapped is empty:
++            self._setup()
++        return other + self._wrapped
+ 
+ def partition(predicate, values):
++    def __radd__(self, other):
++        if self._wrapped is empty:
++            self._setup()
++        return other + self._wrapped
+     """
+     Split the values into two sets, based on the return value of the function
+     (True/False). e.g.:
+diff --git a/repro_radd_ok.py b/repro_radd_ok.py
+new file mode 100644
+index 0000000000..e56e64aab1
+--- /dev/null
++++ b/repro_radd_ok.py
+@@ -0,0 +1,5 @@
++
++from django.utils.functional import SimpleLazyObject
++lazy_val = SimpleLazyObject(lambda: 'bar')
++print('foo' + lazy_val)
++print(lazy_val + 'baz')
+\ No newline at end of file
+diff --git a/reproduce_radd.py b/reproduce_radd.py
+new file mode 100644
+index 0000000000..e14a5f318e
+--- /dev/null
++++ b/reproduce_radd.py
+@@ -0,0 +1,5 @@
++from django.utils.functional import SimpleLazyObject\n\nlazy_val = SimpleLazyObject(lambda: 'bar')\ntry:\n    print('foo' + lazy_val)\nexcept TypeError as e:\n    print('Before fix TypeError:', e)\n
++from django.utils.functional import SimpleLazyObject
++lazy_val = SimpleLazyObject(lambda: 'bar')
++print('foo' + lazy_val)
++print(lazy_val + 'baz')
+\ No newline at end of file

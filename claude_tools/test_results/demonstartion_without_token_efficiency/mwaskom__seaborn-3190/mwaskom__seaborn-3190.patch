@@ -1,0 +1,13 @@
+diff --git a/tmp/repro_bool_color.py b/tmp/repro_bool_color.py
+new file mode 100644
+index 00000000..e8c6ef2c
+--- /dev/null
++++ b/tmp/repro_bool_color.py
+@@ -0,0 +1,6 @@
++import sys\nsys.path.insert(0, "/testbed")\nfrom seaborn import objects as so\n# This should not error with boolean color\np = so.Plot(["a","b"],[1,2], color=[True, False]).add(so.Bar())\nprint("Plot constructed successfully")\n
++import sys
++sys.path.insert(0, "/testbed")
++from seaborn import objects as so
++p = so.Plot(["a","b"],[1,2], color=[True, False]).add(so.Bar())
++print("Constructed plot with boolean color successfully")
+\ No newline at end of file

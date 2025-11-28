@@ -1,0 +1,53 @@
+diff --git a/django/core/management/base.py b/django/core/management/base.py
+index d37d43d5c5..6f034fb338 100644
+--- a/django/core/management/base.py
++++ b/django/core/management/base.py
+@@ -102,7 +102,7 @@ def no_translations(handle_func):
+     return wrapper
+ 
+ 
+-class DjangoHelpFormatter(HelpFormatter):
++class DjangoHelpFormatter(argparse.RawTextHelpFormatter):
+     """
+     Customized formatter so that command-specific arguments appear in the
+     --help output before arguments common to all commands.
+diff --git a/repro_help.py b/repro_help.py
+new file mode 100644
+index 0000000000..20bfb412ad
+--- /dev/null
++++ b/repro_help.py
+@@ -0,0 +1 @@
++from django.core.management.base import BaseCommand\nclass Command(BaseCommand):\n    help = """\nImport a contract from tzkt.\nExample usage:\n\t./manage.py tzkt_import \"Tezos Mainnet\" KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe\n"""\n    def add_arguments(self, parser):\n        parser.add_argument("blockchain")\n        parser.add_argument("target")\ncmd = Command()\nparser = cmd.create_parser("manage.py", "tzkt_import")\nparser.print_help()n
+\ No newline at end of file
+diff --git a/repro_help_good.py b/repro_help_good.py
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/repro_help_ok.py b/repro_help_ok.py
+new file mode 100644
+index 0000000000..8b7419106f
+--- /dev/null
++++ b/repro_help_ok.py
+@@ -0,0 +1 @@
++from django.core.management.base import BaseCommand\nclass Command(BaseCommand):\n    help = 'Import a contract from tzkt.\nExample usage:\n\t./manage.py tzkt_import Tezos_Mainnet KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe'\n    def add_arguments(self, parser):\n        parser.add_argument('blockchain')\n        parser.add_argument('target')\ncmd = Command()\nparser = cmd.create_parser('manage.py', 'tzkt_import')\nparser.print_help()\n
+\ No newline at end of file
+diff --git a/repro_mgmt_help.py b/repro_mgmt_help.py
+new file mode 100644
+index 0000000000..488afbacfd
+--- /dev/null
++++ b/repro_mgmt_help.py
+@@ -0,0 +1,14 @@
++
++from django.core.management.base import BaseCommand
++class Command(BaseCommand):
++    help = """
++Import a contract from tzkt.
++Example usage:
++    ./manage.py tzkt_import Tezos_Mainnet KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe
++"""
++    def add_arguments(self, parser):
++        parser.add_argument("blockchain")
++        parser.add_argument("target")
++cmd = Command()
++parser = cmd.create_parser("manage.py", "tzkt_import")
++parser.print_help()
+\ No newline at end of file

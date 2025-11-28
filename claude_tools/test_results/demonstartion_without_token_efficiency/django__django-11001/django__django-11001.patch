@@ -1,0 +1,28 @@
+diff --git a/repro_sqlcompiler.py b/repro_sqlcompiler.py
+new file mode 100644
+index 0000000000..3f3b41e7f3
+--- /dev/null
++++ b/repro_sqlcompiler.py
+@@ -0,0 +1,21 @@
++
++from django.db.models.sql.compiler import SQLCompiler
++samples = [
++"""case when status in ('accepted', 'verification')
++ then 2 else 1 end DESC""",
++"""case when status in ('accepted', 'verification')
++ then (accepted_datetime, preferred_datetime)
++ else null end ASC""",
++"""case when status not in ('accepted', 'verification')
++ then (accepted_datetime, preferred_datetime, created_at)
++ else null end DESC""",
++]
++comp = SQLCompiler(None, None, None)
++seen = set()
++for s in samples:
++    m = comp.ordering_parts.search(s)
++    print('without_ordering:', repr(m.group(1)))
++    seen.add(m.group(1))
++print('unique without_ordering terms:', len(seen))
++assert len(seen) == 3
++print('OK')
+\ No newline at end of file

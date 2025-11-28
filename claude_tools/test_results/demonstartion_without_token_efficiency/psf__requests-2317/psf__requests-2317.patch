@@ -1,0 +1,28 @@
+diff --git a/repro_requests_method_bytes.py b/repro_requests_method_bytes.py
+new file mode 100644
+index 0000000..9d7c5f3
+--- /dev/null
++++ b/repro_requests_method_bytes.py
+@@ -0,0 +1,21 @@
++
++import requests
++from requests.sessions import Session
++s = Session()
++method = b"GET"
++
++class DummyAdapter(requests.adapters.BaseAdapter):
++    def send(self, request, **kwargs):
++        print("Prepared method:", request.method)
++        resp = requests.Response()
++        resp.status_code = 200
++        resp._content = b"ok"
++        resp.request = request
++        return resp
++    def close(self):
++        pass
++
++s.mount("http://", DummyAdapter())
++r = s.request(method, "http://example.com/")
++print("Status:", r.status_code)
++print("Body:", r.text)
+\ No newline at end of file

@@ -1,0 +1,38 @@
+{
+  "strategy": "semantic",
+  "k": 2,
+  "test_instance": "matplotlib__matplotlib-23987",
+  "query": "[Bug]: Constrained layout UserWarning even when False\n### Bug summary\r\n\r\nWhen using layout settings such as `plt.subplots_adjust` or `bbox_inches='tight`, a UserWarning is produced due to incompatibil",
+  "demonstrations": [
+    {
+      "instance_id": "matplotlib__matplotlib-23314",
+      "repository": "matplotlib",
+      "resolved": true,
+      "patch_file": "matplotlib__matplotlib-23314.patch",
+      "patch_size": 2070,
+      "trajectory_file": "matplotlib__matplotlib-23314.traj",
+      "source_directory": "matplotlib__matplotlib-23314",
+      "problem_statement": "[Bug]: set_visible() not working for 3d projection \n### Bug summary\r\n\r\nin the subplot projection=\"3d\" the set_visible function doesn't work even if the value is set to False\r\n\r\n### Code for reproduction\r\n\r\n```python\r\nimport matplotlib.pyplot as plt\r\nfrom matplotlib.gridspec import GridSpec\r\n\r\nfig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'})\r\nax1.scatter(1,1,1)\r\nax2.scatter(1,1,1, c='r')\r\nax1.set_visible(False)\r\n\r\nplt.show()\r\n# Thanks Tim for your help! \r\n```\r\n\r\n\r\n### Actual outcome\r\n\r\nthe subplot remains visible which should not happen if the value is set to False\r\n\r\n### Expected outcome\r\n\r\nthe subplot is not visible if the value is set to False\r\n\r\n### Additional information\r\n\r\n_No response_\r\n\r\n### Operating system\r\n\r\n_No response_\r\n\r\n### Matplotlib Version\r\n\r\n3.4.2\r\n\r\n### Matplotlib Backend\r\n\r\nQt5Agg\r\n\r\n### Python version\r\n\r\n3.8.10\r\n\r\n### Jupyter version\r\n\r\n_No response_\r\n\r\n### Installation\r\n\r\n_No response_\n",
+      "hints_text": "Please try to boil down the problem to a minimal example when reporting issues.\r\n\r\nI've now done that for you:\r\n```\r\nimport matplotlib.pyplot as plt\r\nfrom matplotlib.gridspec import GridSpec\r\n\r\nfig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'})\r\nax1.scatter(1,1,1)\r\nax2.scatter(1,1,1, c='r')\r\nax1.set_visible(False)\r\n\r\nplt.show()\r\n```\r\n**Output**\r\n![grafik](https://user-images.githubusercontent.com/2836374/174673179-f5b14df5-7689-49eb-995a-4c97e31c3c43.png)\r\n\r\n**Expected**\r\nThe left axes should be invisible.\r\n",
+      "created_at": "2022-06-21T02:41:34Z",
+      "patch": "diff --git a/lib/mpl_toolkits/mplot3d/axes3d.py b/lib/mpl_toolkits/mplot3d/axes3d.py\n--- a/lib/mpl_toolkits/mplot3d/axes3d.py\n+++ b/lib/mpl_toolkits/mplot3d/axes3d.py\n@@ -387,6 +387,8 @@ def apply_aspect(self, position=None):\n \n     @martist.allow_rasterization\n     def draw(self, renderer):\n+        if not self.get_visible():\n+            return\n         self._unstale_viewLim()\n \n         # draw the background patch\n"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-10949",
+      "repository": "scikit-learn",
+      "resolved": true,
+      "patch_file": "scikit-learn__scikit-learn-10949.patch",
+      "patch_size": 1894,
+      "trajectory_file": "scikit-learn__scikit-learn-10949.traj",
+      "source_directory": "scikit-learn__scikit-learn-10949",
+      "problem_statement": "warn_on_dtype with DataFrame\n#### Description\r\n\r\n``warn_on_dtype`` has no effect when input is a pandas ``DataFrame``\r\n\r\n#### Steps/Code to Reproduce\r\n```python\r\nfrom sklearn.utils.validation import check_array\r\nimport pandas as pd\r\ndf = pd.DataFrame([[1, 2, 3], [2, 3, 4]], dtype=object)\r\nchecked = check_array(df, warn_on_dtype=True)\r\n```\r\n\r\n#### Expected result: \r\n\r\n```python-traceback\r\nDataConversionWarning: Data with input dtype object was converted to float64.\r\n```\r\n\r\n#### Actual Results\r\nNo warning is thrown\r\n\r\n#### Versions\r\nLinux-4.4.0-116-generic-x86_64-with-debian-stretch-sid\r\nPython 3.6.3 |Anaconda, Inc.| (default, Nov  3 2017, 19:19:16) \r\n[GCC 7.2.0]\r\nNumPy 1.13.1\r\nSciPy 0.19.1\r\nScikit-Learn 0.20.dev0\r\nPandas 0.21.0\r\n\nwarn_on_dtype with DataFrame\n#### Description\r\n\r\n``warn_on_dtype`` has no effect when input is a pandas ``DataFrame``\r\n\r\n#### Steps/Code to Reproduce\r\n```python\r\nfrom sklearn.utils.validation import check_array\r\nimport pandas as pd\r\ndf = pd.DataFrame([[1, 2, 3], [2, 3, 4]], dtype=object)\r\nchecked = check_array(df, warn_on_dtype=True)\r\n```\r\n\r\n#### Expected result: \r\n\r\n```python-traceback\r\nDataConversionWarning: Data with input dtype object was converted to float64.\r\n```\r\n\r\n#### Actual Results\r\nNo warning is thrown\r\n\r\n#### Versions\r\nLinux-4.4.0-116-generic-x86_64-with-debian-stretch-sid\r\nPython 3.6.3 |Anaconda, Inc.| (default, Nov  3 2017, 19:19:16) \r\n[GCC 7.2.0]\r\nNumPy 1.13.1\r\nSciPy 0.19.1\r\nScikit-Learn 0.20.dev0\r\nPandas 0.21.0\r\n\n",
+      "hints_text": "\n",
+      "created_at": "2018-04-10T15:30:56Z",
+      "patch": "diff --git a/sklearn/utils/validation.py b/sklearn/utils/validation.py\n--- a/sklearn/utils/validation.py\n+++ b/sklearn/utils/validation.py\n@@ -466,6 +466,12 @@ def check_array(array, accept_sparse=False, accept_large_sparse=True,\n         # not a data type (e.g. a column named dtype in a pandas DataFrame)\n         dtype_orig = None\n \n+    # check if the object contains several dtypes (typically a pandas\n+    # DataFrame), and store them. If not, store None.\n+    dtypes_orig = None\n+    if hasattr(array, \"dtypes\") and hasattr(array, \"__array__\"):\n+        dtypes_orig = np.array(array.dtypes)\n+\n     if dtype_numeric:\n         if dtype_orig is not None and dtype_orig.kind == \"O\":\n             # if input is object, convert to float.\n@@ -581,6 +587,16 @@ def check_array(array, accept_sparse=False, accept_large_sparse=True,\n     if copy and np.may_share_memory(array, array_orig):\n         array = np.array(array, dtype=dtype, order=order)\n \n+    if (warn_on_dtype and dtypes_orig is not None and\n+            {array.dtype} != set(dtypes_orig)):\n+        # if there was at the beginning some other types than the final one\n+        # (for instance in a DataFrame that can contain several dtypes) then\n+        # some data must have been converted\n+        msg = (\"Data with input dtype %s were all converted to %s%s.\"\n+               % (', '.join(map(str, sorted(set(dtypes_orig)))), array.dtype,\n+                  context))\n+        warnings.warn(msg, DataConversionWarning, stacklevel=3)\n+\n     return array\n \n \n"
+    }
+  ],
+  "trajectory_files": [
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/matplotlib__matplotlib-23314/matplotlib__matplotlib-23314.traj",
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/scikit-learn__scikit-learn-10949/scikit-learn__scikit-learn-10949.traj"
+  ]
+}

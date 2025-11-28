@@ -1,0 +1,38 @@
+{
+  "strategy": "semantic",
+  "k": 2,
+  "test_instance": "matplotlib__matplotlib-24334",
+  "query": "[ENH]: Axes.set_xticks/Axis.set_ticks only validates kwargs if ticklabels are set, but they should\n### Problem\n\nPer the doc of `Axis.set_ticks`:\r\n```\r\n        **kwargs\r\n            `.Text` properties ",
+  "demonstrations": [
+    {
+      "instance_id": "matplotlib__matplotlib-23314",
+      "repository": "matplotlib",
+      "resolved": true,
+      "patch_file": "matplotlib__matplotlib-23314.patch",
+      "patch_size": 2070,
+      "trajectory_file": "matplotlib__matplotlib-23314.traj",
+      "source_directory": "matplotlib__matplotlib-23314",
+      "problem_statement": "[Bug]: set_visible() not working for 3d projection \n### Bug summary\r\n\r\nin the subplot projection=\"3d\" the set_visible function doesn't work even if the value is set to False\r\n\r\n### Code for reproduction\r\n\r\n```python\r\nimport matplotlib.pyplot as plt\r\nfrom matplotlib.gridspec import GridSpec\r\n\r\nfig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'})\r\nax1.scatter(1,1,1)\r\nax2.scatter(1,1,1, c='r')\r\nax1.set_visible(False)\r\n\r\nplt.show()\r\n# Thanks Tim for your help! \r\n```\r\n\r\n\r\n### Actual outcome\r\n\r\nthe subplot remains visible which should not happen if the value is set to False\r\n\r\n### Expected outcome\r\n\r\nthe subplot is not visible if the value is set to False\r\n\r\n### Additional information\r\n\r\n_No response_\r\n\r\n### Operating system\r\n\r\n_No response_\r\n\r\n### Matplotlib Version\r\n\r\n3.4.2\r\n\r\n### Matplotlib Backend\r\n\r\nQt5Agg\r\n\r\n### Python version\r\n\r\n3.8.10\r\n\r\n### Jupyter version\r\n\r\n_No response_\r\n\r\n### Installation\r\n\r\n_No response_\n",
+      "hints_text": "Please try to boil down the problem to a minimal example when reporting issues.\r\n\r\nI've now done that for you:\r\n```\r\nimport matplotlib.pyplot as plt\r\nfrom matplotlib.gridspec import GridSpec\r\n\r\nfig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'})\r\nax1.scatter(1,1,1)\r\nax2.scatter(1,1,1, c='r')\r\nax1.set_visible(False)\r\n\r\nplt.show()\r\n```\r\n**Output**\r\n![grafik](https://user-images.githubusercontent.com/2836374/174673179-f5b14df5-7689-49eb-995a-4c97e31c3c43.png)\r\n\r\n**Expected**\r\nThe left axes should be invisible.\r\n",
+      "created_at": "2022-06-21T02:41:34Z",
+      "patch": "diff --git a/lib/mpl_toolkits/mplot3d/axes3d.py b/lib/mpl_toolkits/mplot3d/axes3d.py\n--- a/lib/mpl_toolkits/mplot3d/axes3d.py\n+++ b/lib/mpl_toolkits/mplot3d/axes3d.py\n@@ -387,6 +387,8 @@ def apply_aspect(self, position=None):\n \n     @martist.allow_rasterization\n     def draw(self, renderer):\n+        if not self.get_visible():\n+            return\n         self._unstale_viewLim()\n \n         # draw the background patch\n"
+    },
+    {
+      "instance_id": "pylint-dev__pylint-5859",
+      "repository": "pylint-dev",
+      "resolved": true,
+      "patch_file": "pylint-dev__pylint-5859.patch",
+      "patch_size": 2427,
+      "trajectory_file": "pylint-dev__pylint-5859.traj",
+      "source_directory": "pylint-dev__pylint-5859",
+      "problem_statement": "\"--notes\" option ignores note tags that are entirely punctuation\n### Bug description\n\nIf a note tag specified with the `--notes` option is entirely punctuation, pylint won't report a fixme warning (W0511).\r\n\r\n```python\r\n# YES: yes\r\n# ???: no\r\n```\r\n\r\n`pylint test.py --notes=\"YES,???\"` will return a fixme warning (W0511) for the first line, but not the second.\n\n### Configuration\n\n```ini\nDefault\n```\n\n\n### Command used\n\n```shell\npylint test.py --notes=\"YES,???\"\n```\n\n\n### Pylint output\n\n```shell\n************* Module test\r\ntest.py:1:1: W0511: YES: yes (fixme)\n```\n\n\n### Expected behavior\n\n```\r\n************* Module test\r\ntest.py:1:1: W0511: YES: yes (fixme)\r\ntest.py:2:1: W0511: ???: no (fixme)\r\n```\n\n### Pylint version\n\n```shell\npylint 2.12.2\r\nastroid 2.9.0\r\nPython 3.10.2 (main, Feb  2 2022, 05:51:25) [Clang 13.0.0 (clang-1300.0.29.3)]\n```\n\n\n### OS / Environment\n\nmacOS 11.6.1\n\n### Additional dependencies\n\n_No response_\n",
+      "hints_text": "Did a little investigation, this is we're actually converting this option in a regular expression pattern (thereby making it awfully similar to the `notes-rgx` option). Since `?` is a special character in regex this doesn't get picked up. Using `\\?\\?\\?` in either `notes` or `notes-rgx` should work.",
+      "created_at": "2022-03-04T00:01:54Z",
+      "patch": "diff --git a/pylint/checkers/misc.py b/pylint/checkers/misc.py\n--- a/pylint/checkers/misc.py\n+++ b/pylint/checkers/misc.py\n@@ -121,9 +121,9 @@ def open(self):\n \n         notes = \"|\".join(re.escape(note) for note in self.config.notes)\n         if self.config.notes_rgx:\n-            regex_string = rf\"#\\s*({notes}|{self.config.notes_rgx})\\b\"\n+            regex_string = rf\"#\\s*({notes}|{self.config.notes_rgx})(?=(:|\\s|\\Z))\"\n         else:\n-            regex_string = rf\"#\\s*({notes})\\b\"\n+            regex_string = rf\"#\\s*({notes})(?=(:|\\s|\\Z))\"\n \n         self._fixme_pattern = re.compile(regex_string, re.I)\n \n"
+    }
+  ],
+  "trajectory_files": [
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/matplotlib__matplotlib-23314/matplotlib__matplotlib-23314.traj",
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/pylint-dev__pylint-5859/pylint-dev__pylint-5859.traj"
+  ]
+}

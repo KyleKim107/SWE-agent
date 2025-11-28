@@ -1,0 +1,13 @@
+diff --git a/repro_derivative_kind.py b/repro_derivative_kind.py
+new file mode 100644
+index 0000000000..c39e1dc48d
+--- /dev/null
++++ b/repro_derivative_kind.py
+@@ -0,0 +1,6 @@
++
++from sympy import Derivative, Integral, MatrixSymbol
++from sympy.abc import x
++A = MatrixSymbol("A", 2, 2)
++print("Integral kind:", Integral(A, x).kind)
++print("Derivative kind:", Derivative(A, x).kind)
+\ No newline at end of file

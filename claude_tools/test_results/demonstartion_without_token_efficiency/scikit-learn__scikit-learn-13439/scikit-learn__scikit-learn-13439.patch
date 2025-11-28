@@ -1,0 +1,17 @@
+diff --git a/repro_len_pipeline.py b/repro_len_pipeline.py
+index 3cd008a9f..cd0763740 100644
+--- a/repro_len_pipeline.py
++++ b/repro_len_pipeline.py
+@@ -1,6 +1,8 @@
+-from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\npipe = Pipeline([("scale", StandardScaler()), ("clf", LogisticRegression())])\nprint("len(pipe):", len(pipe))\n
++
+ from sklearn.pipeline import Pipeline
+ from sklearn.preprocessing import StandardScaler
+ from sklearn.linear_model import LogisticRegression
+ pipe = Pipeline([('scale', StandardScaler()), ('clf', LogisticRegression())])
+-print('len(pipe):', len(pipe))
+\ No newline at end of file
++print('len(pipe):', len(pipe))
++sub = pipe[:len(pipe)]
++print('slice is Pipeline:', isinstance(sub, Pipeline), 'len(sub):', len(sub))
+\ No newline at end of file

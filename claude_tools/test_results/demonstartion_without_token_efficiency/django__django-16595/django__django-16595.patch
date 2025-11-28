@@ -1,0 +1,8 @@
+diff --git a/repro_optimize_alterfield.py b/repro_optimize_alterfield.py
+new file mode 100644
+index 0000000000..407ce8af5a
+--- /dev/null
++++ b/repro_optimize_alterfield.py
+@@ -0,0 +1 @@
++from django.db.migrations import optimizer\nfrom django.db.migrations.operations import AlterField\nfrom django.db import models\n\nops = [\n    AlterField(model_name='book', name='title', field=models.CharField(max_length=128, null=True)),\n    AlterField(model_name='book', name='title', field=models.CharField(max_length=128, null=True, help_text='help')),\n    AlterField(model_name='book', name='title', field=models.CharField(max_length=128, null=True, help_text='help', default=None)),\n]\nopt = optimizer.MigrationOptimizer()\nres = opt.optimize(ops, app_label='books')\nprint('Optimized len:', len(res))\nfor r in res:\n    print(type(r).__name__, r.model_name, r.name, getattr(r.field, 'help_text', None), getattr(r.field, 'default', None))\n
+\ No newline at end of file

@@ -1,0 +1,7 @@
+diff --git a/repro_inheritance_ordering.py b/repro_inheritance_ordering.py
+index c1212c7c7b..e69de29bb2 100644
+--- a/repro_inheritance_ordering.py
++++ b/repro_inheritance_ordering.py
+@@ -1 +0,0 @@
+-import sys\nsys.path.insert(0, '/testbed')\nfrom django.conf import settings\nsettings.configure(INSTALLED_APPS=['django.contrib.contenttypes'], DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3','NAME': ':memory:'}}, SECRET_KEY='x')\nimport django\ndjango.setup()\nfrom django.db import models\nclass Parent(models.Model):\n    class Meta:\n        app_label = 'myapp'\n        ordering = ['-pk']\nclass Child(Parent):\n    class Meta:\n        app_label = 'myapp'\n\nprint(Child.objects.all().query)\n
+\ No newline at end of file

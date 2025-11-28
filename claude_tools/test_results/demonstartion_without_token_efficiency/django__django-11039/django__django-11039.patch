@@ -1,0 +1,62 @@
+diff --git a/django/core/management/commands/sqlmigrate.py b/django/core/management/commands/sqlmigrate.py
+index f0b663222a..b51d1739a4 100644
+--- a/django/core/management/commands/sqlmigrate.py
++++ b/django/core/management/commands/sqlmigrate.py
+@@ -56,7 +56,7 @@ class Command(BaseCommand):
+         targets = [(app_label, migration.name)]
+ 
+         # Show begin/end around output only for atomic migrations
+-        self.output_transaction = migration.atomic
++        self.output_transaction = migration.atomic and connection.features.can_rollback_ddl
+ 
+         # Make a plan that represents just the requested migrations and show SQL
+         # for it
+diff --git a/reproduce_sqlmigrate.py b/reproduce_sqlmigrate.py
+new file mode 100644
+index 0000000000..77942cc9ef
+--- /dev/null
++++ b/reproduce_sqlmigrate.py
+@@ -0,0 +1,21 @@
++
++import io
++from django.core.management import call_command
++from django.conf import settings
++import django
++from django.db import connection
++from unittest import mock
++
++if not settings.configured:
++    settings.configure(
++        INSTALLED_APPS=["django.contrib.auth", "django.contrib.contenttypes"],
++        DATABASES={"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}},
++        SECRET_KEY="x",
++    )
++django.setup()
++out = io.StringIO()
++with mock.patch.object(connection.features, "can_rollback_ddl", False):
++    call_command("sqlmigrate", "contenttypes", "0001", stdout=out, no_color=True)
++sql = out.getvalue()
++print("HAS_BEGIN", "BEGIN" in sql)
++print("HAS_COMMIT", "COMMIT" in sql)
+\ No newline at end of file
+diff --git a/tests/migrations/test_commands.py b/tests/migrations/test_commands.py
+index 0e8fa9fdd1..4d4e0d6694 100644
+--- a/tests/migrations/test_commands.py
++++ b/tests/migrations/test_commands.py
+@@ -617,6 +617,16 @@ class MigrateTests(MigrationTestBase):
+         self.assertNotIn(connection.ops.end_transaction_sql().lower(), queries)
+ 
+     @override_settings(
++    @override_settings(MIGRATION_MODULES={"migrations": "migrations.test_migrations"})
++    def test_sqlmigrate_no_transaction_when_backend_cannot_rollback_ddl(self):
++        out = io.StringIO()
++        with mock.patch.object(connection.features, "can_rollback_ddl", False):
++            call_command("sqlmigrate", "migrations", "0001", stdout=out)
++        output = out.getvalue().lower()
++        queries = [q.strip() for q in output.splitlines()]
++        if connection.ops.start_transaction_sql():
++            self.assertNotIn(connection.ops.start_transaction_sql().lower(), queries)
++        self.assertNotIn(connection.ops.end_transaction_sql().lower(), queries)
+         INSTALLED_APPS=[
+             "migrations.migrations_test_apps.migrated_app",
+             "migrations.migrations_test_apps.migrated_unapplied_app",

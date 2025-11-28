@@ -1,0 +1,11 @@
+diff --git a/t_sample/test_it.py b/t_sample/test_it.py
+new file mode 100644
+index 000000000..bdf1217eb
+--- /dev/null
++++ b/t_sample/test_it.py
+@@ -0,0 +1,5 @@
++import pytest
++
++@pytest.mark.skip
++def test_skip_location():
++    assert 0

@@ -1,0 +1,43 @@
+diff --git a/repro_importlib.py b/repro_importlib.py
+new file mode 100644
+index 000000000..a55b650dd
+--- /dev/null
++++ b/repro_importlib.py
+@@ -0,0 +1,13 @@
++
++from pathlib import Path
++from _pytest.pathlib import import_path, ImportMode
++import importlib, sys
++
++root = Path("/testbed/tmp_pkg")
++path = root / "pkg" / "mod.py"
++m1 = import_path(str(path), mode=ImportMode.importlib, root=root)
++alias = importlib.import_module("pkg.mod")
++print("alias is m1:", alias is m1)
++m2 = import_path(str(path), mode=ImportMode.importlib, root=root)
++print("m1 is m2:", m1 is m2)
++print("sys.modules same:", sys.modules.get("pkg.mod") is m2)
+\ No newline at end of file
+diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py
+index e43310ef0..e0d9e0a3e 100644
+--- a/src/_pytest/pathlib.py
++++ b/src/_pytest/pathlib.py
+@@ -534,6 +534,10 @@ def import_path(
+         if spec is None:
+             raise ImportError(f"Can't find module {module_name} at location {path}")
+         mod = importlib.util.module_from_spec(spec)
++        existing = sys.modules.get(module_name)
++        if existing is not None:
++            insert_missing_modules(sys.modules, module_name)
++            return existing
+         sys.modules[module_name] = mod
+         spec.loader.exec_module(mod)  # type: ignore[union-attr]
+         insert_missing_modules(sys.modules, module_name)
+diff --git a/tmp_pkg/pkg/mod.py b/tmp_pkg/pkg/mod.py
+new file mode 100644
+index 000000000..1919fea62
+--- /dev/null
++++ b/tmp_pkg/pkg/mod.py
+@@ -0,0 +1 @@
++value = 0\n
+\ No newline at end of file

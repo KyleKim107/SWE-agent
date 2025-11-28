@@ -1,0 +1,25 @@
+diff --git a/repro_http_date.py b/repro_http_date.py
+index 9866fc91ab..d0784204f4 100644
+--- a/repro_http_date.py
++++ b/repro_http_date.py
+@@ -1 +1,17 @@
+-import datetime\nfrom django.utils.http import parse_http_date\n\ndef test(date_str):\n    try:\n        ts = parse_http_date(date_str)\n        print(date_str, '->', datetime.datetime.utcfromtimestamp(ts))\n    except Exception as e:\n        print(date_str, 'error:', e)\n\nsamples = [\n    'Wednesday, 09-Mar-69 12:00:00 GMT',\n    'Wednesday, 09-Mar-79 12:00:00 GMT',\n    'Wednesday, 09-Mar-99 12:00:00 GMT',\n    'Wednesday, 09-Mar-00 12:00:00 GMT',\n]\nfor s in samples:\n    test(s)\n
+\ No newline at end of file
++
++import datetime
++from django.utils.http import parse_http_date
++def test(date_str):
++    try:
++        ts = parse_http_date(date_str)
++        print(date_str, '->', datetime.datetime.utcfromtimestamp(ts))
++    except Exception as e:
++        print(date_str, 'error:', e)
++samples = [
++    'Wednesday, 09-Mar-69 12:00:00 GMT',
++    'Wednesday, 09-Mar-79 12:00:00 GMT',
++    'Wednesday, 09-Mar-99 12:00:00 GMT',
++    'Wednesday, 09-Mar-00 12:00:00 GMT',
++]
++for s in samples:
++    test(s)
+\ No newline at end of file

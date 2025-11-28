@@ -1,0 +1,69 @@
+diff --git a/print_printers_identity.py b/print_printers_identity.py
+new file mode 100644
+index 0000000000..a19e7b618d
+--- /dev/null
++++ b/print_printers_identity.py
+@@ -0,0 +1,10 @@
++
++from sympy import symbols, MatrixSymbol, Identity
++from sympy.printing.pycode import NumPyPrinter, PythonCodePrinter
++n = symbols("n", integer=True)
++A = MatrixSymbol("A", n, n)
++print("NumPyPrinter A + Identity:", NumPyPrinter().doprint(A + Identity(n)))
++try:
++    print("PythonCodePrinter Identity:", PythonCodePrinter().doprint(Identity(n)))
++except Exception as e:
++    print("PythonCodePrinter raises:", type(e).__name__, e)
+\ No newline at end of file
+diff --git a/repro_identity_lambdify.py b/repro_identity_lambdify.py
+new file mode 100644
+index 0000000000..15fa0be1a6
+--- /dev/null
++++ b/repro_identity_lambdify.py
+@@ -0,0 +1,10 @@
++
++from sympy import symbols, MatrixSymbol, Identity
++from sympy.utilities.lambdify import lambdify
++n = symbols("n", integer=True)
++A = MatrixSymbol("A", n, n)
++try:
++    f = lambdify(A, A + Identity(n), modules=["math"])
++    print("math backend generated function:", f)
++except Exception as e:
++    print("math backend raises:", type(e).__name__, e)
+\ No newline at end of file
+diff --git a/show_numpy_print.py b/show_numpy_print.py
+new file mode 100644
+index 0000000000..4db808864d
+--- /dev/null
++++ b/show_numpy_print.py
+@@ -0,0 +1,11 @@
++
++from sympy import symbols, MatrixSymbol, Identity
++from sympy.printing.pycode import NumPyPrinter, PythonCodePrinter
++n = symbols("n", integer=True)
++A = MatrixSymbol("A", n, n)
++print("NumPyPrinter Identity:", NumPyPrinter().doprint(Identity(n)))
++print("NumPyPrinter A + Identity:", NumPyPrinter().doprint(A + Identity(n)))
++try:
++    PythonCodePrinter().doprint(Identity(n))
++except Exception as e:
++    print("PythonCodePrinter raises:", type(e).__name__, e)
+\ No newline at end of file
+diff --git a/test_numpy_printer_identity.py b/test_numpy_printer_identity.py
+new file mode 100644
+index 0000000000..a19e7b618d
+--- /dev/null
++++ b/test_numpy_printer_identity.py
+@@ -0,0 +1,10 @@
++
++from sympy import symbols, MatrixSymbol, Identity
++from sympy.printing.pycode import NumPyPrinter, PythonCodePrinter
++n = symbols("n", integer=True)
++A = MatrixSymbol("A", n, n)
++print("NumPyPrinter A + Identity:", NumPyPrinter().doprint(A + Identity(n)))
++try:
++    print("PythonCodePrinter Identity:", PythonCodePrinter().doprint(Identity(n)))
++except Exception as e:
++    print("PythonCodePrinter raises:", type(e).__name__, e)
+\ No newline at end of file

@@ -1,0 +1,8 @@
+diff --git a/tmp/repro_block_input.py b/tmp/repro_block_input.py
+new file mode 100644
+index 0000000000..3ff2297f10
+--- /dev/null
++++ b/tmp/repro_block_input.py
+@@ -0,0 +1 @@
++import matplotlib.pyplot as pyplot\nimport matplotlib.widgets as widgets\n\ndef onchanged(values):\n    print("on changed", values)\n    pyplot.clf()\n    addElements()\n    pyplot.draw()\n\ndef onclick(e):\n    print("on click")\n    pyplot.clf()\n    addElements()\n    pyplot.draw()\n\ndef addElements():\n    ax = pyplot.axes([0.1, 0.45, 0.8, 0.1])\n    global slider\n    slider = widgets.RangeSlider(ax, "Test", valmin=1, valmax=10, valinit=(1, 10))\n    slider.on_changed(onchanged)\n    axb = pyplot.axes([0.1, 0.30, 0.8, 0.1])\n    global button\n    button = widgets.Button(axb, "Test")\n    button.on_clicked(onclick)\n\naddElements()\npyplot.show()n
+\ No newline at end of file

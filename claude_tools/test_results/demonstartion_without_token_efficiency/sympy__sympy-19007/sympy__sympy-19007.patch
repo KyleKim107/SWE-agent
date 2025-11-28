@@ -1,0 +1,25 @@
+diff --git a/repro_blockmatrix.py b/repro_blockmatrix.py
+new file mode 100644
+index 0000000000..3990e2016a
+--- /dev/null
++++ b/repro_blockmatrix.py
+@@ -0,0 +1 @@
++from sympy import *\nn, i = symbols('n, i', integer=True)\nA = MatrixSymbol('A', 1, 1)\nB = MatrixSymbol('B', n, 1)\nC = BlockMatrix([[A], [B]])\nprint('C is')\npprint(C)\nprint('C[i, 0] is')\npprint(C[i, 0])\n
+\ No newline at end of file
+diff --git a/repro_blockmatrix_fix.py b/repro_blockmatrix_fix.py
+new file mode 100644
+index 0000000000..9fc8853586
+--- /dev/null
++++ b/repro_blockmatrix_fix.py
+@@ -0,0 +1,10 @@
++
++from sympy import *
++n, i = symbols('n, i', integer=True)
++A = MatrixSymbol('A', 1, 1)
++B = MatrixSymbol('B', n, 1)
++C = BlockMatrix([[A], [B]])
++print('C is')
++pprint(C)
++print('C[i, 0] is')
++pprint(C[i, 0])
+\ No newline at end of file

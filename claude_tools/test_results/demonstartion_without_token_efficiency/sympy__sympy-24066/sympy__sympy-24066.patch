@@ -1,0 +1,100 @@
+diff --git a/patch_fix_units.py b/patch_fix_units.py
+new file mode 100644
+index 0000000000..91f7d36178
+--- /dev/null
++++ b/patch_fix_units.py
+@@ -0,0 +1 @@
++from pathlib import Path\np=Path('/testbed/sympy/physics/units/unitsystem.py')\ns=p.read_text()\nstart=s.find('elif isinstance(expr, Function):')\nif start==-1:\n    print('start not found'); raise SystemExit(1)\nrest=s[start:]\nend_rel=rest.find('elif isinstance(expr, Dimension):')\nif end_rel==-1:\n    print('end not found'); raise SystemExit(1)\nend=start+end_rel\nnew_block='\n        elif isinstance(expr, Function):\n            fds = [self._collect_factor_and_dimension(arg) for arg in expr.args]\n            dims = [d for _, d in fds]\n            if not all(self.get_dimension_system().is_dimensionless(d) for d in dims):\n                raise ValueError(\'Function arguments must be dimensionless: got dimensions %s\' % dims)\n            return expr.func(*(f for f, _ in fds)), Dimension(1)\n        elif isinstance(expr, Dimension):'\ns2=s[:start]+new_block+s[end:]\np.write_text(s2)\nprint('patched unitsystem Function handling')\n
+\ No newline at end of file
+diff --git a/patch_units_function.py b/patch_units_function.py
+new file mode 100644
+index 0000000000..f8b3903426
+--- /dev/null
++++ b/patch_units_function.py
+@@ -0,0 +1 @@
++import io,sys\nfrom pathlib import Path\np=Path('/testbed/sympy/physics/units/unitsystem.py')\ns=p.read_text()\nstart=s.find('elif isinstance(expr, Function):')\nif start==-1:\n    print('start not found'); sys.exit(1)\n# find the next elif for Dimension\nrest=s[start:]\nend_rel=rest.find('elif isinstance(expr, Dimension):')\nif end_rel==-1:\n    print('end not found'); sys.exit(1)\nend=start+end_rel\nnew_block="\n        elif isinstance(expr, Function):\n            fds = [self._collect_factor_and_dimension(arg) for arg in expr.args]\n            dims = [d for _, d in fds]\n            if not all(self.get_dimension_system().is_dimensionless(d) for d in dims):\n                raise ValueError('Function arguments must be dimensionless: got dimensions %s' % dims)\n            return expr.func(*(f for f, _ in fds)), Dimension(1)\n"\ns2=s[:start]+new_block+s[end:]\np.write_text(s2)\nprint('patched')\n
+\ No newline at end of file
+diff --git a/repro_dimless_exp.py b/repro_dimless_exp.py
+new file mode 100644
+index 0000000000..bcae004af3
+--- /dev/null
++++ b/repro_dimless_exp.py
+@@ -0,0 +1 @@
++from sympy import exp\nfrom sympy.physics import units\nfrom sympy.physics.units.systems.si import SI\n\nexpr = units.second / (units.ohm * units.farad)\nprint('expr:', expr)\nfac, dim = SI._collect_factor_and_dimension(expr)\nprint('dim:', dim)\nprint('is dimless:', SI.get_dimension_system().is_dimensionless(dim))\nprint('exp(expr):', exp(expr))\nprint('collect(exp(expr)):', SI._collect_factor_and_dimension(exp(expr)))\nprint('collect(100 + exp(expr)):', SI._collect_factor_and_dimension(100 + exp(expr)))\n
+\ No newline at end of file
+diff --git a/repro_units_dimless.py b/repro_units_dimless.py
+new file mode 100644
+index 0000000000..0776f0e3d5
+--- /dev/null
++++ b/repro_units_dimless.py
+@@ -0,0 +1,12 @@
++from sympy import exp\nfrom sympy.physics import units\nfrom sympy.physics.units.systems.si import SI\n\nexpr = units.second / (units.ohm * units.farad)\nprint('expr:', expr)\ndim = SI._collect_factor_and_dimension(expr)[1]\nprint('dim:', dim)\nprint('is dimless:', SI.get_dimension_system().is_dimensionless(dim))\n\nbuggy_expr = 100 + exp(expr)\nprint('buggy_expr:', buggy_expr)\nprint('collect:', SI._collect_factor_and_dimension(buggy_expr))\n
++from sympy import exp
++from sympy.physics import units
++from sympy.physics.units.systems.si import SI
++expr = units.second / (units.ohm * units.farad)
++print('expr:', expr)
++fac, dim = SI._collect_factor_and_dimension(expr)
++print('dim:', dim)
++print('is dimless:', SI.get_dimension_system().is_dimensionless(dim))
++buggy_expr = 100 + exp(expr)
++print('buggy_expr:', buggy_expr)
++print('collect:', SI._collect_factor_and_dimension(buggy_expr))
+\ No newline at end of file
+diff --git a/repro_units_dimless2.py b/repro_units_dimless2.py
+new file mode 100644
+index 0000000000..457aea250d
+--- /dev/null
++++ b/repro_units_dimless2.py
+@@ -0,0 +1,16 @@
++
++from sympy import exp
++from sympy.physics import units
++from sympy.physics.units.systems.si import SI
++expr = units.second / (units.ohm * units.farad)
++print('expr:', expr)
++fac, dim = SI._collect_factor_and_dimension(expr)
++print('dim:', dim)
++print('is dimless:', SI.get_dimension_system().is_dimensionless(dim))
++buggy_expr = 100 + exp(expr)
++print('buggy_expr:', buggy_expr)
++print('collect before fix attempt (if any):')
++try:
++    print(SI._collect_factor_and_dimension(buggy_expr))
++except Exception as e:
++    print('raised:', e)
+\ No newline at end of file
+diff --git a/repro_units_dimless3.py b/repro_units_dimless3.py
+new file mode 100644
+index 0000000000..2496aa362a
+--- /dev/null
++++ b/repro_units_dimless3.py
+@@ -0,0 +1 @@
++from sympy import exp\nfrom sympy.physics import units\nfrom sympy.physics.units.systems.si import SI\n\nexpr = units.second / (units.ohm * units.farad)\nprint('expr:', expr)\nfac, dim = SI._collect_factor_and_dimension(expr)\nprint('dim:', dim)\nprint('is dimless:', SI.get_dimension_system().is_dimensionless(dim))\nprint('100 + exp(expr):', 100 + exp(expr))\nprint('collect:', SI._collect_factor_and_dimension(100 + exp(expr)))\n
+\ No newline at end of file
+diff --git a/sympy/physics/units/unitsystem.py b/sympy/physics/units/unitsystem.py
+index 3daf84c108..48506b99c1 100644
+--- a/sympy/physics/units/unitsystem.py
++++ b/sympy/physics/units/unitsystem.py
+@@ -190,10 +190,19 @@ def _collect_factor_and_dimension(self, expr):
+                 dim /= idim**count
+             return factor, dim
+         elif isinstance(expr, Function):
++        elif isinstance(expr, Function):
++            fds = [self._collect_factor_and_dimension(arg) for arg in expr.args]
++            dims = [d for _, d in fds]
++            if not all(self.get_dimension_system().is_dimensionless(d) for d in dims):
++                raise ValueError('Function arguments must be dimensionless: got dimensions %s' % dims)
++            return expr.func(*(f for f, _ in fds)), Dimension(1)
+             fds = [self._collect_factor_and_dimension(
+                 arg) for arg in expr.args]
+-            return (expr.func(*(f[0] for f in fds)),
+-                    *(d[1] for d in fds))
++            return expr.func(*(f[0] for f in fds)),
++            dims = [d for _, d in fds]
++            if not all(self.get_dimension_system().is_dimensionless(d) for d in dims):
++                raise ValueError('Function arguments must be dimensionless: got dimensions %s' % dims)
++                    Dimension(1)
+         elif isinstance(expr, Dimension):
+             return S.One, expr
+         else:

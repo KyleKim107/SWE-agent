@@ -1,0 +1,33 @@
+diff --git a/django/core/management/commands/shell.py b/django/core/management/commands/shell.py
+index 2b306a579e..571d120467 100644
+--- a/django/core/management/commands/shell.py
++++ b/django/core/management/commands/shell.py
+@@ -84,13 +84,13 @@ class Command(BaseCommand):
+     def handle(self, **options):
+         # Execute the command and exit.
+         if options['command']:
+-            exec(options['command'])
++            exec(options['command'], {})
+             return
+ 
+         # Execute stdin if it has anything to read and exit.
+         # Not supported on Windows due to select.select() limitations.
+         if sys.platform != 'win32' and not sys.stdin.isatty() and select.select([sys.stdin], [], [], 0)[0]:
+-            exec(sys.stdin.read())
++            exec(sys.stdin.read(), {})
+             return
+ 
+         available_shells = [options['interface']] if options['interface'] else self.shells
+diff --git a/repro_shell_exec.py b/repro_shell_exec.py
+new file mode 100644
+index 0000000000..ff838ed462
+--- /dev/null
++++ b/repro_shell_exec.py
+@@ -0,0 +1,6 @@
++
++import sys
++sys.path.insert(0, '/testbed')
++from django.core.management.commands.shell import Command
++code = 'import django\ndef f():\n    print(django.__version__)\nf()'
++Command().handle(command=code)
+\ No newline at end of file

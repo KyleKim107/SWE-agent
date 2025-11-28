@@ -1,0 +1,23 @@
+diff --git a/repro_inner_class_serialize.py b/repro_inner_class_serialize.py
+new file mode 100644
+index 0000000000..aa94791387
+--- /dev/null
++++ b/repro_inner_class_serialize.py
+@@ -0,0 +1,16 @@
++
++from django.conf import settings
++import django
++from django.db.migrations.serializer import serializer_factory
++
++if not settings.configured:
++    settings.configure(INSTALLED_APPS=["django.contrib.contenttypes"], DATABASES={"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}, SECRET_KEY="x")
++django.setup()
++
++class Outer:
++    class Inner:
++        pass
++
++ser = serializer_factory(Outer.Inner)
++s, imports = ser.serialize()
++print("Serialized:", s)
+\ No newline at end of file

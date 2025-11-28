@@ -1,0 +1,28 @@
+diff --git a/repro_label_readonly_pwd.py b/repro_label_readonly_pwd.py
+new file mode 100644
+index 0000000000..89f3488e22
+--- /dev/null
++++ b/repro_label_readonly_pwd.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0,"/testbed"); from django.conf import settings; import django; settings.configure(SECRET_KEY="x", DEBUG=True); django.setup(); from django import forms; from django.contrib.auth.forms import ReadOnlyPasswordHashWidget; class F(forms.Form): p = forms.CharField(widget=ReadOnlyPasswordHashWidget()); f = F(); bf = f["p"]; print("id_for_label:", bf.id_for_label); print("label_tag:", bf.label_tag()); print("widget_render:", bf.as_widget(bf.field.widget))
+\ No newline at end of file
+diff --git a/repro_label_readonly_pwd2.py b/repro_label_readonly_pwd2.py
+new file mode 100644
+index 0000000000..c30d1f6bfc
+--- /dev/null
++++ b/repro_label_readonly_pwd2.py
+@@ -0,0 +1,14 @@
++import sys
++sys.path.insert(0, "/testbed")
++from django.conf import settings
++import django
++settings.configure(SECRET_KEY="x", DEBUG=True)
++django.setup()
++from django import forms
++from django.contrib.auth.forms import ReadOnlyPasswordHashWidget
++class F(forms.Form):
++    p = forms.CharField(widget=ReadOnlyPasswordHashWidget())
++f = F()
++bf = f["p"]
++print("id_for_label:", bf.id_for_label)
++print("label_tag:", bf.label_tag())

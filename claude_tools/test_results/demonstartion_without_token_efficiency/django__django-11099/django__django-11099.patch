@@ -1,0 +1,25 @@
+diff --git a/repro_username_validators.py b/repro_username_validators.py
+new file mode 100644
+index 0000000000..b9a2410344
+--- /dev/null
++++ b/repro_username_validators.py
+@@ -0,0 +1,18 @@
++from django.contrib.auth.validators import ASCIIUsernameValidator, UnicodeUsernameValidator\nfrom django.core.exceptions import ValidationError\n\nvalidators = [ASCIIUsernameValidator(), UnicodeUsernameValidator()]\n\ncases = {\n    'plain': 'validUser123',\n    'newline': 'validUser123\n',\n    'symbols': 'user.name+ok-@ok',\n}\n\nfor name, s in cases.items():\n    print(f'Case: {name}, input: {repr(s)}')\n    for v in validators:\n        try:\n            v(s)\n            print(f'  {v.__class__.__name__}: OK')\n        except ValidationError as e:\n            print(f'  {v.__class__.__name__}: ValidationError')\n    print()\n
++from django.contrib.auth.validators import ASCIIUsernameValidator, UnicodeUsernameValidator
++from django.core.exceptions import ValidationError
++validators = [ASCIIUsernameValidator(), UnicodeUsernameValidator()]
++cases = {
++    'plain': 'validUser123',
++    'newline': 'validUser123\n',
++    'symbols': 'user.name+ok-@ok',
++}
++for name, s in cases.items():
++    print(f'Case: {name}, input: {repr(s)}')
++    for v in validators:
++        try:
++            v(s)
++            print(f'  {v.__class__.__name__}: OK')
++        except ValidationError:
++            print(f'  {v.__class__.__name__}: ValidationError')
++    print()
+\ No newline at end of file

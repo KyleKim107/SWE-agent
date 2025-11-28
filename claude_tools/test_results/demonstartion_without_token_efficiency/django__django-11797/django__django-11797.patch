@@ -1,0 +1,8 @@
+diff --git a/repro_group_by.py b/repro_group_by.py
+new file mode 100644
+index 0000000000..e21bf47bac
+--- /dev/null
++++ b/repro_group_by.py
+@@ -0,0 +1 @@
++from django.conf import settings\nsettings.configure(INSTALLED_APPS=['django.contrib.auth','django.contrib.contenttypes'],DATABASES={'default': {'ENGINE':'django.db.backends.sqlite3','NAME':':memory:'}},USE_TZ=True)\nimport django\ndjango.setup()\nfrom django.contrib.auth import models\nfrom django.db.models import Max\n# Build the queryset described\na = models.User.objects.filter(email__isnull=True).values('email').annotate(m=Max('id')).values('m')\nprint('a SQL:', a.query)\nprint('a[:1] SQL:', a[:1].query)\nb = models.User.objects.filter(id=a[:1])\nprint('b SQL:', b.query)\n
+\ No newline at end of file

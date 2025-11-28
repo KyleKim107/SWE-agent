@@ -1,0 +1,29 @@
+diff --git a/repro_pretty_matadd.py b/repro_pretty_matadd.py
+new file mode 100644
+index 0000000000..b86abba35b
+--- /dev/null
++++ b/repro_pretty_matadd.py
+@@ -0,0 +1 @@
++from sympy import MatrixSymbol, symbols, pprint; n = symbols('n'); x = MatrixSymbol('x', n, n); y = MatrixSymbol('y*', n, n); pprint(x + y)
+\ No newline at end of file
+diff --git a/repro_pretty_matadd_neg.py b/repro_pretty_matadd_neg.py
+new file mode 100644
+index 0000000000..43cb6cd484
+--- /dev/null
++++ b/repro_pretty_matadd_neg.py
+@@ -0,0 +1 @@
++from sympy import MatrixSymbol, symbols, pprint\nn = symbols('n')\nx = MatrixSymbol('x', n, n)\ny = MatrixSymbol('y*', n, n)\npprint(x - y)\n
+\ No newline at end of file
+diff --git a/sympy/printing/pretty/pretty.py b/sympy/printing/pretty/pretty.py
+index 0545797d5f..968bceac9d 100644
+--- a/sympy/printing/pretty/pretty.py
++++ b/sympy/printing/pretty/pretty.py
+@@ -825,7 +825,7 @@ def _print_MatAdd(self, expr):
+             if s is None:
+                 s = pform     # First element
+             else:
+-                if S(item.args[0]).is_negative:
++                if _coeff_isneg(item):
+                     s = prettyForm(*stringPict.next(s, ' '))
+                     pform = self._print(item)
+                 else:

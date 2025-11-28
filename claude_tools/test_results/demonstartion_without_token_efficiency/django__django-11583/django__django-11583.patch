@@ -1,0 +1,37 @@
+diff --git a/repro_autoreload_null.py b/repro_autoreload_null.py
+new file mode 100644
+index 0000000000..244b436920
+--- /dev/null
++++ b/repro_autoreload_null.py
+@@ -0,0 +1,16 @@
++
++from pathlib import Path
++paths = [Path("/testbed"), Path("/Users\x00")]
++results = set()
++for p in paths:
++    try:
++        rp = p.resolve()
++    except (OSError, ValueError):
++        print("Skipped problematic path:", p)
++        continue
++    try:
++        results.add(rp.absolute())
++    except (OSError, ValueError):
++        print("Skipped after absolute():", rp)
++        continue
++print("Collected:", [str(r) for r in results])
+\ No newline at end of file
+diff --git a/repro_sys_path_dirs.py b/repro_sys_path_dirs.py
+new file mode 100644
+index 0000000000..126633e5de
+--- /dev/null
++++ b/repro_sys_path_dirs.py
+@@ -0,0 +1,7 @@
++
++import sys
++from django.utils.autoreload import sys_path_directories
++sys.path.insert(0, "/Users\x00")
++dirs = list(sys_path_directories())
++print("sys_path_directories count:", len(dirs))
++print("Sample entries:", [str(d) for d in dirs[:3]])
+\ No newline at end of file

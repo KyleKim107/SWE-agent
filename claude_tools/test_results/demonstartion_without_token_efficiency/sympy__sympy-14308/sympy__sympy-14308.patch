@@ -1,0 +1,36 @@
+diff --git a/tmp/repro2_vector_pretty.py b/tmp/repro2_vector_pretty.py
+new file mode 100644
+index 0000000000..51fff91ef5
+--- /dev/null
++++ b/tmp/repro2_vector_pretty.py
+@@ -0,0 +1 @@
++from sympy import symbols, pprint\nfrom sympy.vector import CoordSysCartesian\nx,y,t=symbols('x y t')\ne=CoordSysCartesian('e')\nexpr=(x/y)**t*e.j\npprint(expr)\n
+\ No newline at end of file
+diff --git a/tmp/repro3_vector_pretty.py b/tmp/repro3_vector_pretty.py
+new file mode 100644
+index 0000000000..58749c89c3
+--- /dev/null
++++ b/tmp/repro3_vector_pretty.py
+@@ -0,0 +1,7 @@
++
++from sympy import symbols, pprint
++from sympy.vector import CoordSysCartesian
++x,y,t=symbols('x y t')
++e=CoordSysCartesian('e')
++expr=(x/y)**t*e.j
++pprint(expr)
+\ No newline at end of file
+diff --git a/tmp/repro_vector_pretty.py b/tmp/repro_vector_pretty.py
+new file mode 100644
+index 0000000000..e403b8cff7
+--- /dev/null
++++ b/tmp/repro_vector_pretty.py
+@@ -0,0 +1,7 @@
++from sympy import symbols, pprint\nfrom sympy.vector import CoordSysCartesian\nx,y,t=symbols('x y t')\ne=CoordSysCartesian('e')\nexpr=(x/y)**t*e.j\npprint(expr)\n
++from sympy import symbols, pprint
++from sympy.vector import CoordSysCartesian
++x,y,t=symbols('x y t')
++e=CoordSysCartesian('e')
++expr=(x/y)**t*e.j
++pprint(expr)
+\ No newline at end of file

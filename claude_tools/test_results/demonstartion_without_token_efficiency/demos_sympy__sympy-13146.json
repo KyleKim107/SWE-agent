@@ -1,0 +1,38 @@
+{
+  "strategy": "semantic",
+  "k": 2,
+  "test_instance": "sympy__sympy-13146",
+  "query": "Exponent doesn't fully simplify\nSay I have code like this:\n\n```\nimport sympy\nfrom sympy import *\nx=Symbol('x')\nexpr1 = S(1)/2*x**2.5\nexpr2 = S(1)*x**(S(5)/2)/2\nres = expr1-expr2\nres= simplify(res.eval",
+  "demonstrations": [
+    {
+      "instance_id": "sympy__sympy-12171",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-12171.patch",
+      "patch_size": 2226,
+      "trajectory_file": "sympy__sympy-12171.traj",
+      "source_directory": "sympy__sympy-12171",
+      "problem_statement": "matematica code printer does not handle floats and derivatives correctly\nIn its current state the mathematica code printer does not handle Derivative(func(vars), deriver) \r\ne.g. Derivative(f(t), t) yields Derivative(f(t), t) instead of D[f[t],t]\r\n\r\nAlso floats with exponents are not handled correctly e.g. 1.0e-4 is not converted to 1.0*^-4\r\n\r\nThis has an easy fix by adding the following lines to MCodePrinter:\r\n\r\n\r\ndef _print_Derivative(self, expr):\r\n        return \"D[%s]\" % (self.stringify(expr.args, \", \"))\r\n\r\ndef _print_Float(self, expr):\r\n        res =str(expr)\r\n        return res.replace('e','*^') \r\n\r\n\r\n\n",
+      "hints_text": "I would like to work on this issue\nSo, should I add the lines in printing/mathematica.py ?\nI've tested the above code by adding these methods to a class derived from MCodePrinter and I was able to export an ODE system straight to NDSolve in Mathematica.\r\n\r\nSo I guess simply adding them to MCodePrinter in in printing/mathematica.py would fix the issue",
+      "created_at": "2017-02-13T18:20:56Z",
+      "patch": "diff --git a/sympy/printing/mathematica.py b/sympy/printing/mathematica.py\n--- a/sympy/printing/mathematica.py\n+++ b/sympy/printing/mathematica.py\n@@ -109,6 +109,9 @@ def _print_Integral(self, expr):\n     def _print_Sum(self, expr):\n         return \"Hold[Sum[\" + ', '.join(self.doprint(a) for a in expr.args) + \"]]\"\n \n+    def _print_Derivative(self, expr):\n+        return \"Hold[D[\" + ', '.join(self.doprint(a) for a in expr.args) + \"]]\"\n+\n \n def mathematica_code(expr, **settings):\n     r\"\"\"Converts an expr to a string of the Wolfram Mathematica code\n"
+    },
+    {
+      "instance_id": "sympy__sympy-11870",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-11870.patch",
+      "patch_size": 2740,
+      "trajectory_file": "sympy__sympy-11870.traj",
+      "source_directory": "sympy__sympy-11870",
+      "problem_statement": "simplifying exponential -> trig identities\n```\r\nf = 1 / 2 * (-I*exp(I*k) + I*exp(-I*k))\r\ntrigsimp(f)\r\n```\r\n\r\nIdeally, this would yield `sin(k)`. Is there a way to do this?\r\n\r\nAs a corollary, it would be awesome if \r\n\r\n```\r\nf = 1 / 2 / k* (-I*exp(I*k) + I*exp(-I*k))\r\ntrigsimp(f)\r\n```\r\n\r\ncould yield `sinc(k)`. Thank you for your consideration!\n",
+      "hints_text": "rewrite can be used:\n\n```\n>>> f = S(1) / 2 * (-I*exp(I*k) + I*exp(-I*k))\n>>> f.rewrite(sin).simplify()\nsin(k)\n```\n\nThank you for that suggestion!\n\n> On Nov 17, 2016, at 01:06, Kalevi Suominen notifications@github.com wrote:\n> \n> rewrite can be used:\n> \n> > > > f = S(1) / 2 \\* (-I_exp(I_k) + I_exp(-I_k))\n> > > > f.rewrite(sin).simplify()\n> > > > sin(k)\n> \n> \u2014\n> You are receiving this because you authored the thread.\n> Reply to this email directly, view it on GitHub, or mute the thread.\n\nToo bad this doesn't work as expected:\n\n```\n\u03c9 = sym.symbols('\u03c9', real=True)\nk = sym.symbols('k', real=True)\nf = 1 / 2 / \u03c0 * sym.exp(sym.I * \u03c9 * k)\nF = sym.integrate(f, (\u03c9, -\u03c0, \u03c0))\nF.rewrite(sym.sinc).simplify()\n```\n\nIt does not produce the desired sinc function in the equation.\n\nIt seems that rewrite for sinc has not been implemented.\n",
+      "created_at": "2016-11-17T21:36:03Z",
+      "patch": "diff --git a/sympy/functions/elementary/trigonometric.py b/sympy/functions/elementary/trigonometric.py\n--- a/sympy/functions/elementary/trigonometric.py\n+++ b/sympy/functions/elementary/trigonometric.py\n@@ -16,6 +16,8 @@\n from sympy.sets.sets import FiniteSet\n from sympy.utilities.iterables import numbered_symbols\n from sympy.core.compatibility import range\n+from sympy.core.relational import Ne\n+from sympy.functions.elementary.piecewise import Piecewise\n \n ###############################################################################\n ########################## TRIGONOMETRIC FUNCTIONS ############################\n@@ -400,6 +402,9 @@ def _eval_rewrite_as_csc(self, arg):\n     def _eval_rewrite_as_sec(self, arg):\n         return 1 / sec(arg - S.Pi / 2, evaluate=False)\n \n+    def _eval_rewrite_as_sinc(self, arg):\n+        return arg*sinc(arg)\n+\n     def _eval_conjugate(self):\n         return self.func(self.args[0].conjugate())\n \n@@ -1789,7 +1794,7 @@ def _eval_rewrite_as_jn(self, arg):\n         return jn(0, arg)\n \n     def _eval_rewrite_as_sin(self, arg):\n-        return sin(arg) / arg\n+        return Piecewise((sin(arg)/arg, Ne(arg, 0)), (1, True))\n \n \n ###############################################################################\n"
+    }
+  ],
+  "trajectory_files": [
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/sympy__sympy-12171/sympy__sympy-12171.traj",
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/sympy__sympy-11870/sympy__sympy-11870.traj"
+  ]
+}

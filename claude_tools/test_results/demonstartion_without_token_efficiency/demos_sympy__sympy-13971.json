@@ -1,0 +1,38 @@
+{
+  "strategy": "semantic",
+  "k": 2,
+  "test_instance": "sympy__sympy-13971",
+  "query": "Display of SeqFormula()\n```\r\nimport sympy as sp\r\nk, m, n = sp.symbols('k m n', integer=True)\r\nsp.init_printing()\r\n\r\nsp.SeqFormula(n**2, (n,0,sp.oo))\r\n```\r\n\r\nThe Jupyter rendering of this command backs",
+  "demonstrations": [
+    {
+      "instance_id": "sympy__sympy-11897",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-11897.patch",
+      "patch_size": 2446,
+      "trajectory_file": "sympy__sympy-11897.traj",
+      "source_directory": "sympy__sympy-11897",
+      "problem_statement": "LaTeX printer inconsistent with pretty printer\nThe LaTeX printer should always give the same output as the pretty printer, unless better output is possible from LaTeX. In some cases it is inconsistent. For instance:\n\n``` py\nIn [9]: var('x', positive=True)\nOut[9]: x\n\nIn [10]: latex(exp(-x)*log(x))\nOut[10]: '\\\\frac{1}{e^{x}} \\\\log{\\\\left (x \\\\right )}'\n\nIn [11]: pprint(exp(-x)*log(x))\n -x\n\u212f  \u22c5log(x)\n```\n\n(I also don't think the assumptions should affect printing). \n\n``` py\nIn [14]: var('x y')\nOut[14]: (x, y)\n\nIn [15]: latex(1/(x + y)/2)\nOut[15]: '\\\\frac{1}{2 x + 2 y}'\n\nIn [16]: pprint(1/(x + y)/2)\n    1\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n2\u22c5(x + y)\n```\n\n",
+      "hints_text": "In each of these cases, the pprint output is better. I think in general the pretty printer is better tuned than the LaTeX printer, so if they disagree, the pprint output is likely the better one. \n\nI want to fix this issue. How should I start?\n\nEach of the expressions is a Mul, so look at LatexPrinter._print_Mul and compare it to PrettyPrinter._print_Mul. \n\n@asmeurer In general what you want is that the output of both should be compared and if the LaTeX printer produces an output different from PrettyPrinter then Pretty Printer's output should be shown in the console. Right ? (A bit confused and posting a comment to clear my doubt)\n\nIt shouldn't change the printer type. They should just both produce the same form of the expression. \n\n@asmeurer Thanks for the clarification. \n\nAnother example:\n\n```\nIn [7]: var(\"sigma mu\")\nOut[7]: (\u03c3, \u03bc)\n\nIn [8]: (exp(-(x - mu)**2/sigma**2))\nOut[8]:\n          2\n -(-\u03bc + x)\n \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n       2\n      \u03c3\n\u212f\n\nIn [9]: latex(exp(-(x - mu)**2/sigma**2))\nOut[9]: 'e^{- \\\\frac{1}{\\\\sigma^{2}} \\\\left(- \\\\mu + x\\\\right)^{2}}'\n```\n\nAnother one (no parentheses around the piecewise):\n\n```\nIn [38]: FiniteSet(6**(S(1)/3)*x**(S(1)/3)*Piecewise(((-1)**(S(2)/3), 3*x/4 < 0), (1, True)))\nOut[38]:\n\u23a7            \u239b\u23a7    2/3      3\u22c5x    \u239e\u23ab\n\u23aa3 ___ 3 ___ \u239c\u23aa(-1)     for \u2500\u2500\u2500 < 0\u239f\u23aa\n\u23a8\u2572\u2571 6 \u22c5\u2572\u2571 x \u22c5\u239c\u23a8              4     \u239f\u23ac\n\u23aa            \u239c\u23aa                    \u239f\u23aa\n\u23a9            \u239d\u23a9   1      otherwise \u23a0\u23ad\n\nIn [39]: latex(FiniteSet(6**(S(1)/3)*x**(S(1)/3)*Piecewise(((-1)**(S(2)/3), 3*x/4 < 0), (1, True))))\nOut[39]: '\\\\left\\\\{\\\\sqrt[3]{6} \\\\sqrt[3]{x} \\\\begin{cases} \\\\left(-1\\\\right)^{\\\\frac{2}{3}} & \\\\text{for}\\\\: \\\\frac{3 x}{4} < 0 \\\\\\\\1 & \\\\text{otherwise} \\\\end{cases}\\\\right\\\\}'\n```\n\nSome of these were fixed in https://github.com/sympy/sympy/pull/11298\n\n```\nIn [39]: latex(FiniteSet(6**(S(1)/3)*x**(S(1)/3)*Piecewise(((-1)**(S(2)/3), 3*x/4 < 0), (1, True))))\nOut[39]: '\\\\left\\\\{\\\\sqrt[3]{6} \\\\sqrt[3]{x} \\\\begin{cases} \\\\left(-1\\\\right)^{\\\\frac{2}{3}} & \\\\text{for}\\\\: \\\\frac{3 x}{4} < 0 \\\\\\\\1 & \\\\text{otherwise} \\\\end{cases}\\\\right\\\\}'\n```\n\nThis error is caused since there is no closing parentheses included in the printing piecewise functions. Will it be fine to add closing parentheses in Piecewise functions?\n\nThe piecewise should print like it does for the Unicode pretty printer. \n",
+      "created_at": "2016-12-03T14:40:51Z",
+      "patch": "diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py\n--- a/sympy/printing/latex.py\n+++ b/sympy/printing/latex.py\n@@ -235,10 +235,12 @@ def _needs_mul_brackets(self, expr, first=False, last=False):\n         elif expr.is_Mul:\n             if not first and _coeff_isneg(expr):\n                 return True\n+        if expr.is_Piecewise:\n+            return True\n         if any([expr.has(x) for x in (Mod,)]):\n             return True\n         if (not last and\n-            any([expr.has(x) for x in (Integral, Piecewise, Product, Sum)])):\n+            any([expr.has(x) for x in (Integral, Product, Sum)])):\n             return True\n \n         return False\n"
+    },
+    {
+      "instance_id": "astropy__astropy-6938",
+      "repository": "astropy",
+      "resolved": true,
+      "patch_file": "astropy__astropy-6938.patch",
+      "patch_size": 10056,
+      "trajectory_file": "astropy__astropy-6938.traj",
+      "source_directory": "astropy__astropy-6938",
+      "problem_statement": "Possible bug in io.fits related to D exponents\nI came across the following code in ``fitsrec.py``:\r\n\r\n```python\r\n        # Replace exponent separator in floating point numbers\r\n        if 'D' in format:\r\n            output_field.replace(encode_ascii('E'), encode_ascii('D'))\r\n```\r\n\r\nI think this may be incorrect because as far as I can tell ``replace`` is not an in-place operation for ``chararray`` (it returns a copy). Commenting out this code doesn't cause any tests to fail so I think this code isn't being tested anyway.\n",
+      "hints_text": "It is tested with `astropy/io/fits/tests/test_checksum.py:test_ascii_table_data` but indeed the operation is not inplace and it does not fail. Using 'D' is probably better, but since #5362 (I had vague memory about something like this ^^, see also #5353) anyway 'D' and 'E' are read as double, so I think there is not difference on Astropy side.",
+      "created_at": "2017-12-07T00:01:14Z",
+      "patch": "diff --git a/astropy/io/fits/fitsrec.py b/astropy/io/fits/fitsrec.py\n--- a/astropy/io/fits/fitsrec.py\n+++ b/astropy/io/fits/fitsrec.py\n@@ -1261,7 +1261,7 @@ def _scale_back_ascii(self, col_idx, input_field, output_field):\n \n         # Replace exponent separator in floating point numbers\n         if 'D' in format:\n-            output_field.replace(encode_ascii('E'), encode_ascii('D'))\n+            output_field[:] = output_field.replace(b'E', b'D')\n \n \n def _get_recarray_field(array, key):\n"
+    }
+  ],
+  "trajectory_files": [
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/sympy__sympy-11897/sympy__sympy-11897.traj",
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/astropy__astropy-6938/astropy__astropy-6938.traj"
+  ]
+}

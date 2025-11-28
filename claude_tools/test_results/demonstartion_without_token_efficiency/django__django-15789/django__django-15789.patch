@@ -1,0 +1,22 @@
+diff --git a/repro_json_script2.py b/repro_json_script2.py
+new file mode 100644
+index 0000000000..5cb271a4a1
+--- /dev/null
++++ b/repro_json_script2.py
+@@ -0,0 +1,16 @@
++import sys
++sys.path.insert(0, "/testbed")
++from django.utils.html import json_script
++import json
++
++class MyEncoder(json.JSONEncoder):
++    def default(self, o):
++        if hasattr(o, "__dict__"):
++            return {"_custom": True}
++        return super().default(o)
++
++class Obj:
++    pass
++
++print("Default:", json_script({"a": 1}, element_id="id1"))
++print("Custom:", json_script(Obj(), element_id="id2", encoder=MyEncoder))

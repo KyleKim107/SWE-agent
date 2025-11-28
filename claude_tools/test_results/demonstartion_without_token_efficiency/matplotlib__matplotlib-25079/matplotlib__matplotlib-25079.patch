@@ -1,0 +1,45 @@
+diff --git a/repro_set_log_norm.py b/repro_set_log_norm.py
+new file mode 100644
+index 0000000000..2fc2f30c02
+--- /dev/null
++++ b/repro_set_log_norm.py
+@@ -0,0 +1 @@
++import matplotlib; matplotlib.use("Agg"); import sys; sys.path.insert(0, "/testbed/lib"); import matplotlib.pyplot as plt; from matplotlib.colors import LogNorm; import numpy as np; rng = np.random.default_rng(0); img = rng.uniform(1, 5, (25, 25)); fig, ax = plt.subplots(); plot = ax.pcolormesh(img); cbar = fig.colorbar(plot, ax=ax); plot.norm = LogNorm(1, 5); plot.autoscale(); print("done")
+\ No newline at end of file
+diff --git a/tmp/patch_colorbar_log.py b/tmp/patch_colorbar_log.py
+new file mode 100644
+index 0000000000..7414b4f25b
+--- /dev/null
++++ b/tmp/patch_colorbar_log.py
+@@ -0,0 +1,30 @@
++
++path = "/testbed/lib/matplotlib/colorbar.py"
++with open(path, "r", encoding="utf-8") as f:
++    lines = f.read().splitlines()
++start = None; end = None
++for i, line in enumerate(lines):
++    if line.strip() == "if not self.norm.scaled():":
++        start = i + 1
++    if "self.norm.vmin, self.norm.vmax = mtransforms.nonsingular(" in line:
++        end = i
++        break
++if start is not None and end is not None and end > start:
++    indent = lines[start][:len(lines[start]) - len(lines[start].lstrip())] if start < len(lines) else "            "
++    block = [
++        indent + "# Guard defaults: respect transform domain",
++        indent + "try:",
++        indent + "    tvmin, tvmax = self.norm._trf.transform([0, 1])",
++        indent + "    if np.isfinite(tvmin) and np.isfinite(tvmax):",
++        indent + "        self.norm.vmin = 0",
++        indent + "        self.norm.vmax = 1",
++        indent + "    else:",
++        indent + "        self.norm.vmin = 1",
++        indent + "        self.norm.vmax = 10",
++        indent + "except Exception:",
++        indent + "    self.norm.vmin = 1",
++        indent + "    self.norm.vmax = 10",
++    ]
++    lines[start:end] = block
++with open(path, "w", encoding="utf-8") as f:
++    f.write("\n".join(lines))
+\ No newline at end of file

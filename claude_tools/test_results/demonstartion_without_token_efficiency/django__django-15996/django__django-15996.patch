@@ -1,0 +1,47 @@
+diff --git a/django/db/migrations/serializer.py b/django/db/migrations/serializer.py
+index 38da1e6ecc..0059046879 100644
+--- a/django/db/migrations/serializer.py
++++ b/django/db/migrations/serializer.py
+@@ -125,10 +125,30 @@ class EnumSerializer(BaseSerializer):
+     def serialize(self):
+         enum_class = self.value.__class__
+         module = enum_class.__module__
+-        return (
+-            "%s.%s[%r]" % (module, enum_class.__qualname__, self.value.name),
+-            {"import %s" % module},
+-        )
++        imports = {"import %s" % module}
++        name = getattr(self.value, "name", None)
++        qual = enum_class.__qualname__
++        if name is not None:
++            return ("%s.%s[%r]" % (module, qual, name), imports)
++        try:
++            is_flag = issubclass(enum_class, enum.Flag)
++        except Exception:
++            is_flag = False
++        if is_flag:
++            members = []
++            for member in enum_class:
++                if getattr(member, "value", None) == 0:
++                    continue
++                try:
++                    if (self.value & member) == member:
++                        members.append(member)
++                except Exception:
++                    pass
++            if members:
++                parts = ["%s.%s.%s" % (module, qual, m.name) for m in members]
++                return (" | ".join(parts), imports)
++        value = getattr(self.value, "value", self.value)
++        return ("%s.%s(%r)" % (module, qual, value), imports)
+ 
+ 
+ class FloatSerializer(BaseSimpleSerializer):
+diff --git a/repro_enum_flags.py b/repro_enum_flags.py
+new file mode 100644
+index 0000000000..7d0e67bb7e
+--- /dev/null
++++ b/repro_enum_flags.py
+@@ -0,0 +1 @@
++import re
+\ No newline at end of file

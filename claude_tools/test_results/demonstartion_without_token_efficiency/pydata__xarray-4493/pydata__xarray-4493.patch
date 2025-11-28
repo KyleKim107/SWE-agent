@@ -1,0 +1,22 @@
+diff --git a/repro_xarray_update_dask.py b/repro_xarray_update_dask.py
+new file mode 100644
+index 00000000..525f1129
+--- /dev/null
++++ b/repro_xarray_update_dask.py
+@@ -0,0 +1,15 @@
++
++import numpy as np
++import dask.array as da
++import xarray as xr
++
++foo = xr.DataArray(da.random.random((3,3), chunks=(2,2)), dims=('x','y'))
++print('foo dask-backed:', hasattr(foo.data, 'chunks'))
++ds1 = xr.Dataset(dict(a=(('x','y'), foo)))
++print('ds1 a dask-backed:', hasattr(ds1.a.data, 'chunks'))
++foo2 = xr.DataArray(da.random.random((4,3), chunks=(2,2)), dims=('x','y'))
++ds = xr.Dataset({'foo': foo2, 'bar': ('x', np.array([1,2,3,4]))})
++print('initial ds foo dask-backed:', hasattr(ds.foo.data, 'chunks'))
++upd = {'foo': (('x','y'), ds.foo[1:, :]), 'bar': ('x', ds.bar[1:])}
++ds.update(upd)
++print('after update ds foo dask-backed:', hasattr(ds.foo.data, 'chunks'))
+\ No newline at end of file

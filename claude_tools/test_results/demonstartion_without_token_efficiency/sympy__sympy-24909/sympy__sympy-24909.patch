@@ -1,0 +1,33 @@
+diff --git a/repro_units.py b/repro_units.py
+new file mode 100644
+index 0000000000..6cc71fe885
+--- /dev/null
++++ b/repro_units.py
+@@ -0,0 +1,4 @@
++
++from sympy.physics.units import milli, W
++print('milli*W =', milli*W)
++print('W*milli =', W*milli)
+\ No newline at end of file
+diff --git a/sympy/physics/units/prefixes.py b/sympy/physics/units/prefixes.py
+index ca6a642156..5ec4fc0f86 100644
+--- a/sympy/physics/units/prefixes.py
++++ b/sympy/physics/units/prefixes.py
+@@ -85,7 +85,7 @@ def __mul__(self, other):
+ 
+         fact = self.scale_factor * other.scale_factor
+ 
+-        if fact == 1:
++        if isinstance(other, Prefix) and fact == 1:
+             return 1
+         elif isinstance(other, Prefix):
+             # simplify prefix
+@@ -102,7 +102,7 @@ def __truediv__(self, other):
+ 
+         fact = self.scale_factor / other.scale_factor
+ 
+-        if fact == 1:
++        if isinstance(other, Prefix) and fact == 1:
+             return 1
+         elif isinstance(other, Prefix):
+             for p in PREFIXES:

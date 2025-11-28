@@ -1,0 +1,29 @@
+diff --git a/repro_subs_pw.py b/repro_subs_pw.py
+new file mode 100644
+index 0000000000..40f0af3487
+--- /dev/null
++++ b/repro_subs_pw.py
+@@ -0,0 +1 @@
++from sympy import *\nfrom sympy.core.cache import clear_cache\nx,y,z = symbols("x y z", real=True)\nclear_cache()\nexpr = exp(sinh(Piecewise((x, y > x), (y, True)) / z))\ntry:\n    print("Result before fix:", expr.subs({1: 1.0}))\nexcept Exception as e:\n    print("ERROR before fix:", type(e).__name__, e)\n
+\ No newline at end of file
+diff --git a/repro_subs_pw2.py b/repro_subs_pw2.py
+new file mode 100644
+index 0000000000..7d4ee515ba
+--- /dev/null
++++ b/repro_subs_pw2.py
+@@ -0,0 +1 @@
++from sympy import *; x,y,z=symbols("x y z", real=True); expr=exp(sinh(Piecewise((x, y > x), (y, True))/z)); print(expr.subs({1:1.0}))
+\ No newline at end of file
+diff --git a/sympy/polys/polytools.py b/sympy/polys/polytools.py
+index bfec61de64..ff6419500b 100644
+--- a/sympy/polys/polytools.py
++++ b/sympy/polys/polytools.py
+@@ -4396,7 +4396,7 @@ def _parallel_poly_from_expr(exprs, opt):
+ 
+     for k in opt.gens:
+         if isinstance(k, Piecewise):
+-            raise PolynomialError("Piecewise generators do not make sense")
++                        raise PolificationFailed(opt, origs, exprs, True)
+ 
+     coeffs_list, lengths = [], []
+ 

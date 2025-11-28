@@ -1,0 +1,50 @@
+diff --git a/django/db/migrations/autodetector.py b/django/db/migrations/autodetector.py
+index 89e2dceeaf..9eb185b76a 100644
+--- a/django/db/migrations/autodetector.py
++++ b/django/db/migrations/autodetector.py
+@@ -184,10 +184,12 @@ class MigrationAutodetector:
+         self.generate_altered_fields()
+         self.generate_altered_unique_together()
+         self.generate_altered_index_together()
++
++        self.generate_altered_order_with_respect_to()
+         self.generate_added_indexes()
+         self.generate_added_constraints()
+         self.generate_altered_db_table()
+-        self.generate_altered_order_with_respect_to()
++
+ 
+         self._sort_migrations()
+         self._build_migration_list(graph)
+diff --git a/repro_order_with_respect_to.py b/repro_order_with_respect_to.py
+new file mode 100644
+index 0000000000..a2413043a4
+--- /dev/null
++++ b/repro_order_with_respect_to.py
+@@ -0,0 +1,25 @@
++
++from django.db.migrations.autodetector import MigrationAutodetector
++from django.db.migrations.state import ProjectState, ModelState
++from django.db import models
++
++from_state = ProjectState()
++fields = [
++    ('id', models.AutoField(primary_key=True)),
++    ('look', models.ForeignKey('posts.Look', on_delete=models.CASCADE)),
++]
++options = { 'order_with_respect_to': 'look', 'indexes': [models.Index(fields=['look', '_order'], name='idx_look_order')] }
++model_state = ModelState('app', 'LookImage', fields=fields, options=options)
++
++to_state = ProjectState()
++to_state.add_model(model_state)
++
++autodetector = MigrationAutodetector(from_state, to_state)
++changes = autodetector._detect_changes()
++app_migrations = changes.get('app', [])
++ops = [op.__class__.__name__ for op in app_migrations[0].operations] if app_migrations else []
++print('Ops order:', ops)
++if 'AlterOrderWithRespectTo' in ops and 'AddIndex' in ops:
++    print('AlterOrderWithRespectTo before AddIndex:', ops.index('AlterOrderWithRespectTo') < ops.index('AddIndex'))
++else:
++    print('AlterOrderWithRespectTo before AddIndex: N/A')
+\ No newline at end of file

@@ -1,0 +1,24 @@
+diff --git a/repro_sym_m2m_minimal.py b/repro_sym_m2m_minimal.py
+new file mode 100644
+index 0000000000..5ff20c81a0
+--- /dev/null
++++ b/repro_sym_m2m_minimal.py
+@@ -0,0 +1,5 @@
++
++from django.db.models.fields.related import ManyToManyField
++f = ManyToManyField('self', symmetrical=True, related_name='friend_of')
++errs = f._check_related_name_on_symmetrical()
++print([e.id for e in errs], [e.msg for e in errs])
+\ No newline at end of file
+diff --git a/repro_sym_m2m_minimal_ok.py b/repro_sym_m2m_minimal_ok.py
+new file mode 100644
+index 0000000000..dac3e962e9
+--- /dev/null
++++ b/repro_sym_m2m_minimal_ok.py
+@@ -0,0 +1,5 @@
++
++from django.db.models.fields.related import ManyToManyField
++f = ManyToManyField('self', symmetrical=True, related_name='+')
++errs = f._check_related_name_on_symmetrical()
++print([e.id for e in errs], [e.msg for e in errs])
+\ No newline at end of file

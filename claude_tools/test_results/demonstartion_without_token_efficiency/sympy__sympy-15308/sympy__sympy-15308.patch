@@ -1,0 +1,16 @@
+diff --git a/repro_trace_latex.py b/repro_trace_latex.py
+new file mode 100644
+index 0000000000..3b52670a80
+--- /dev/null
++++ b/repro_trace_latex.py
+@@ -0,0 +1,9 @@
++
++from sympy import symbols
++from sympy.printing.latex import latex
++from sympy.matrices.expressions import MatrixSymbol, Trace
++n = symbols('n', integer=True, positive=True)
++A = MatrixSymbol('A', n, n)
++expr = Trace(A**2)
++print(latex(expr))
++print(latex(A**2))
+\ No newline at end of file

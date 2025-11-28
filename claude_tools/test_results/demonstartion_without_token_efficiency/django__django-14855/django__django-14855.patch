@@ -1,0 +1,21 @@
+diff --git a/django/contrib/admin/helpers.py b/django/contrib/admin/helpers.py
+index dd154f72ee..35108cc359 100644
+--- a/django/contrib/admin/helpers.py
++++ b/django/contrib/admin/helpers.py
+@@ -209,7 +209,7 @@ class AdminReadonlyField:
+             remote_field.model._meta.model_name,
+         )
+         try:
+-            url = reverse(url_name, args=[quote(remote_obj.pk)])
++            url = reverse(url_name, args=[quote(remote_obj.pk)], current_app=self.model_admin.admin_site.name)
+             return format_html('<a href="{}">{}</a>', url, remote_obj)
+         except NoReverseMatch:
+             return str(remote_obj)
+diff --git a/repro_admin_url.py b/repro_admin_url.py
+new file mode 100644
+index 0000000000..5f8a3f6255
+--- /dev/null
++++ b/repro_admin_url.py
+@@ -0,0 +1 @@
++import django.contrib.admin.helpers as helpers\n\nclass DummySite:\n    name = "custom-admin"\n\nclass DummyModelAdmin:\n    admin_site = DummySite()\n    def get_empty_value_display(self):\n        return "-"\n\nclass DummyMeta:\n    app_label = "app"\n    model_name = "model"\n\nclass DummyModel:\n    _meta = DummyMeta()\n\nclass DummyRemoteField:\n    model = DummyModel()\n\nclass DummyObj:\n    pk = 42\n    def __str__(self):\n        return "Obj42"\n\ncaptured = {}\n\ndef fake_reverse(url_name, args=None, current_app=None):\n    captured['current_app'] = current_app\n    captured['url_name'] = url_name\n    captured['args'] = args\n    return f"/{current_app}/{url_name}/{args[0] if args else ''}"\n\nhelpers.reverse = fake_reverse\nself_like = type("S", (), {"model_admin": DummyModelAdmin()})()\nhtml = helpers.AdminReadonlyField.get_admin_url(self_like, DummyRemoteField(), DummyObj())\nprint("captured:", captured)\nprint("html:", html)
+\ No newline at end of file

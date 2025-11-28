@@ -1,0 +1,27 @@
+diff --git a/django/db/migrations/serializer.py b/django/db/migrations/serializer.py
+index e19c881cda..072a2efc14 100644
+--- a/django/db/migrations/serializer.py
++++ b/django/db/migrations/serializer.py
+@@ -273,7 +273,7 @@ class TupleSerializer(BaseSequenceSerializer):
+ class TypeSerializer(BaseSerializer):
+     def serialize(self):
+         special_cases = [
+-            (models.Model, "models.Model", []),
++            (models.Model, "models.Model", ["from django.db import models"]),
+             (type(None), 'type(None)', []),
+         ]
+         for case, string, imports in special_cases:
+diff --git a/repro_missing_models_import.py b/repro_missing_models_import.py
+new file mode 100644
+index 0000000000..e7d61205a9
+--- /dev/null
++++ b/repro_missing_models_import.py
+@@ -0,0 +1,7 @@
++from django.db.migrations.serializer import serializer_factory\nfrom django.db import models\ns = serializer_factory(models.Model)\ntext, imports = s.serialize()\nprint('serialized:', text)\nprint('imports:', sorted(imports))\n
++from django.db.migrations.serializer import serializer_factory
++from django.db import models
++s = serializer_factory(models.Model)
++text, imports = s.serialize()
++print('serialized:', text)
++print('imports:', sorted(imports))
+\ No newline at end of file

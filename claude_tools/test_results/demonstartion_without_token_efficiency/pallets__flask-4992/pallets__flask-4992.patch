@@ -1,0 +1,60 @@
+diff --git a/repro_toml.py b/repro_toml.py
+new file mode 100644
+index 00000000..eafdf6fb
+--- /dev/null
++++ b/repro_toml.py
+@@ -0,0 +1,30 @@
++
++import os
++from flask import Flask
++
++def binary_loader(f):
++    data = f.read()
++    if not isinstance(data, (bytes, bytearray)):\n        raise TypeError('File must be opened in binary mode')
++    text = data.decode('utf-8')
++    mapping = {}
++    for line in text.splitlines():
++        if '=' in line:
++            k, v = line.split('=', 1)
++            mapping[k.strip().upper()] = int(v.strip())
++    return mapping
++
++app = Flask(__name__)
++root = app.config.root_path
++path = os.path.join(root, 'config.toml')
++os.makedirs(root, exist_ok=True)
++with open(path, 'wb') as f:
++    f.write(b'x = 123\n')
++
++try:
++    app.config.from_file('config.toml', binary_loader)
++    print('Unexpected success without binary mode')
++except Exception as e:
++    print('Expected error without mode:', type(e).__name__)
++
++app.config.from_file('config.toml', binary_loader, mode='b')
++print('Loaded X:', app.config['X'])
+\ No newline at end of file
+diff --git a/src/flask/config.py b/src/flask/config.py
+index d4fc310f..bc9938fb 100644
+--- a/src/flask/config.py
++++ b/src/flask/config.py
+@@ -235,6 +235,8 @@ class Config(dict):
+         load: t.Callable[[t.IO[t.Any]], t.Mapping],
+         silent: bool = False,
+     ) -> bool:
++        mode: str = 't',
++
+         """Update the values in the config from a file that is loaded
+         using the ``load`` parameter. The loaded data is passed to the
+         :meth:`from_mapping` method.
+@@ -261,7 +263,8 @@ class Config(dict):
+         filename = os.path.join(self.root_path, filename)
+ 
+         try:
+-            with open(filename) as f:
++            open_mode = 'rb' if mode == 'b' else 'r'
++            with open(filename, mode=open_mode) as f:
+                 obj = load(f)
+         except OSError as e:
+             if silent and e.errno in (errno.ENOENT, errno.EISDIR):

@@ -1,0 +1,53 @@
+diff --git a/repro_branch_guard.py b/repro_branch_guard.py
+new file mode 100644
+index 0000000000..04911664d0
+--- /dev/null
++++ b/repro_branch_guard.py
+@@ -0,0 +1 @@
++from sympy import symbols, S, simplify, N\nx = symbols("x")\ne = (-x/4 - S(1)/12)**x - 1\nprint("e:", e)\nf = simplify(e)\nprint("simplify(e):", f)\na = S(9)/5\nprint("simplify(e.subs):", simplify(e.subs(x,a)))\nprint("simplify(f.subs):", simplify(f.subs(x,a)))\nprint("N(e.subs):", N(e.subs(x,a)))\nprint("N(f.subs):", N(f.subs(x,a)))\n
+\ No newline at end of file
+diff --git a/repro_fix_branch.py b/repro_fix_branch.py
+new file mode 100644
+index 0000000000..164d39f7a4
+--- /dev/null
++++ b/repro_fix_branch.py
+@@ -0,0 +1 @@
++from sympy import symbols, S, simplify, N\nx = symbols('x')\ne = (-x/4 - S(1)/12)**x - 1\nprint('e:', e)\nf = simplify(e)\nprint('simplify(e):', f)\na = S(9)/5\nprint('simplify(e.subs):', simplify(e.subs(x,a)))\nprint('simplify(f.subs):', simplify(f.subs(x,a)))\nprint('N(e.subs):', N(e.subs(x,a)))\nprint('N(f.subs):', N(f.subs(x,a)))\n
+\ No newline at end of file
+diff --git a/repro_pow_fix.py b/repro_pow_fix.py
+new file mode 100644
+index 0000000000..04911664d0
+--- /dev/null
++++ b/repro_pow_fix.py
+@@ -0,0 +1 @@
++from sympy import symbols, S, simplify, N\nx = symbols("x")\ne = (-x/4 - S(1)/12)**x - 1\nprint("e:", e)\nf = simplify(e)\nprint("simplify(e):", f)\na = S(9)/5\nprint("simplify(e.subs):", simplify(e.subs(x,a)))\nprint("simplify(f.subs):", simplify(f.subs(x,a)))\nprint("N(e.subs):", N(e.subs(x,a)))\nprint("N(f.subs):", N(f.subs(x,a)))\n
+\ No newline at end of file
+diff --git a/repro_pow_guard.py b/repro_pow_guard.py
+new file mode 100644
+index 0000000000..bf2a2f2017
+--- /dev/null
++++ b/repro_pow_guard.py
+@@ -0,0 +1 @@
++from sympy import symbols, S, simplify, N; x = symbols("x"); e = (-x/4 - S(1)/12)**x - 1; print("e:", e); f = simplify(e); print("simplify(e):", f); a = S(9)/5; print("simplify(e.subs):", simplify(e.subs(x,a))); print("simplify(f.subs):", simplify(f.subs(x,a))); print("N(e.subs):", N(e.subs(x,a))); print("N(f.subs):", N(f.subs(x,a)))
+\ No newline at end of file
+diff --git a/repro_pow_split.py b/repro_pow_split.py
+new file mode 100644
+index 0000000000..164d39f7a4
+--- /dev/null
++++ b/repro_pow_split.py
+@@ -0,0 +1 @@
++from sympy import symbols, S, simplify, N\nx = symbols('x')\ne = (-x/4 - S(1)/12)**x - 1\nprint('e:', e)\nf = simplify(e)\nprint('simplify(e):', f)\na = S(9)/5\nprint('simplify(e.subs):', simplify(e.subs(x,a)))\nprint('simplify(f.subs):', simplify(f.subs(x,a)))\nprint('N(e.subs):', N(e.subs(x,a)))\nprint('N(f.subs):', N(f.subs(x,a)))\n
+\ No newline at end of file
+diff --git a/sympy/simplify/powsimp.py b/sympy/simplify/powsimp.py
+index a7fd30e118..b5cdc7d590 100644
+--- a/sympy/simplify/powsimp.py
++++ b/sympy/simplify/powsimp.py
+@@ -597,7 +597,7 @@ def _denest_pow(eq):
+     """
+     from sympy.simplify.simplify import logcombine
+ 
+-    b, e = eq.as_base_exp()
++    b, e = eq.as_base_exp()\n    # Guard: avoid branch-changing denesting when exponent is non-integer and base is not provably positive\n    if not e.is_integer and (b.is_positive != True):\n        return eq
+     if b.is_Pow or isinstance(b.func, exp) and e != 1:
+         new = b._eval_power(e)
+         if new is not None:

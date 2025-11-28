@@ -1,0 +1,8 @@
+diff --git a/repro_exprwrapper.py b/repro_exprwrapper.py
+new file mode 100644
+index 0000000000..9d492ed875
+--- /dev/null
++++ b/repro_exprwrapper.py
+@@ -0,0 +1 @@
++import django\nfrom django.conf import settings\nsettings.configure(DATABASES={'default': {'ENGINE':'django.db.backends.sqlite3','NAME':':memory:'}},INSTALLED_APPS=[])\ndjango.setup()\nfrom django.db.models import Q, BooleanField, Model\nfrom django.db.models.expressions import ExpressionWrapper\nfrom django.db.models.sql.query import Query\nclass Dummy(Model):\n    class Meta:\n        app_label = 'app'\n        managed = False\n        db_table = 'table'\nfrom django.db.models import QuerySet\nqs = QuerySet(model=Dummy, query=Query(Dummy)).annotate(foo=ExpressionWrapper(Q(pk__in=[]), output_field=BooleanField())).values('foo')\nprint('Q(pk__in=[]):', qs.query)\nqs2 = QuerySet(model=Dummy, query=Query(Dummy)).annotate(foo=ExpressionWrapper(~Q(pk__in=[]), output_field=BooleanField())).values('foo')\nprint('~Q(pk__in=[]):', qs2.query)
+\ No newline at end of file

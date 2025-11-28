@@ -1,0 +1,26 @@
+diff --git a/repro_pairplot_multiindex.py b/repro_pairplot_multiindex.py
+new file mode 100644
+index 00000000..baad7b9e
+--- /dev/null
++++ b/repro_pairplot_multiindex.py
+@@ -0,0 +1,19 @@
++
++import numpy as np
++import pandas as pd
++import seaborn as sns
++
++np.random.seed(0)
++data = {
++    ("A", "1"): np.random.rand(100),
++    ("A", "2"): np.random.rand(100),
++    ("B", "1"): np.random.rand(100),
++    ("B", "2"): np.random.rand(100),
++}
++df = pd.DataFrame(data)
++print("Columns:", df.columns.tolist())
++try:
++    g = sns.pairplot(df)
++    print("pairplot succeeded")
++except Exception as e:
++    print("pairplot error:", type(e).__name__, e)
+\ No newline at end of file

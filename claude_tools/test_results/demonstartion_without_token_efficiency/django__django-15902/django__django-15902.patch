@@ -1,0 +1,25 @@
+diff --git a/repro_mgmt_form_warning.py b/repro_mgmt_form_warning.py
+new file mode 100644
+index 0000000000..c9a733fcef
+--- /dev/null
++++ b/repro_mgmt_form_warning.py
+@@ -0,0 +1,18 @@
++
++import sys
++sys.path.insert(0, '/testbed')
++from django.conf import settings
++import django
++settings.configure(SECRET_KEY='x', USE_I18N=False)
++django.setup()
++from django import forms
++from django.forms import formset_factory
++import warnings
++warnings.simplefilter('always')
++class F(forms.Form):
++    a = forms.CharField()
++FS = formset_factory(F, extra=0)
++fs = FS()
++print('Access management_form...')
++mf = fs.management_form
++print('Rendered:', str(mf))
+\ No newline at end of file

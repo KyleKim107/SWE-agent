@@ -1,0 +1,15 @@
+diff --git a/repro_affprop_nonconverged.py b/repro_affprop_nonconverged.py
+new file mode 100644
+index 000000000..73c933d35
+--- /dev/null
++++ b/repro_affprop_nonconverged.py
+@@ -0,0 +1,8 @@
++
++import pandas as pd
++from sklearn.cluster import AffinityPropagation
++data = pd.DataFrame([[1,0,0,0,0,0],[0,1,1,1,0,0],[0,0,1,0,0,1]])
++af = AffinityPropagation(affinity='euclidean', verbose=False, copy=False, max_iter=2).fit(data)
++print('n_iter_:', getattr(af, 'n_iter_', None))
++print('cluster_centers_indices_:', af.cluster_centers_indices_)
++print('labels_:', af.labels_)
+\ No newline at end of file

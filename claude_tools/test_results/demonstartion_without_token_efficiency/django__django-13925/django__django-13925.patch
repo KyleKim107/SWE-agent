@@ -1,0 +1,27 @@
+diff --git a/myapp/__init__.py b/myapp/__init__.py
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/myapp/apps.py b/myapp/apps.py
+new file mode 100644
+index 0000000000..f6c3b92ee8
+--- /dev/null
++++ b/myapp/apps.py
+@@ -0,0 +1 @@
++from django.apps import AppConfig\n\nclass MyAppConfig(AppConfig):\n    name = 'myapp'\n    label = 'myapp'\n
+\ No newline at end of file
+diff --git a/myapp/models.py b/myapp/models.py
+new file mode 100644
+index 0000000000..282ce8ae7b
+--- /dev/null
++++ b/myapp/models.py
+@@ -0,0 +1 @@
++from django.db import models\n\nclass Base(models.Model):\n    id = models.BigAutoField(primary_key=True)\n    class Meta:\n        app_label = 'myapp'\n\nclass Child(Base):\n    extra = models.IntegerField(default=1)\n    class Meta:\n        app_label = 'myapp'\n
+\ No newline at end of file
+diff --git a/repro_inherited_pk_check.py b/repro_inherited_pk_check.py
+new file mode 100644
+index 0000000000..dbc10f214d
+--- /dev/null
++++ b/repro_inherited_pk_check.py
+@@ -0,0 +1 @@
++import sys\nsys.path.insert(0, '/testbed')\nfrom django.conf import settings\nsettings.configure(INSTALLED_APPS=['django.contrib.contenttypes','django.contrib.auth','myapp.apps.MyAppConfig'], DEFAULT_AUTO_FIELD='django.db.models.AutoField')\nimport django\ndjango.setup()\nfrom django.core.checks import run_checks\nissues = run_checks()\nfor i in issues:\n    if i.id == 'models.W042':\n        print('W042:', getattr(i.obj,'__name__',i.obj))\nprint('Done')\n
+\ No newline at end of file

@@ -1,0 +1,11 @@
+diff --git a/repro_symbol_slots.py b/repro_symbol_slots.py
+new file mode 100644
+index 0000000000..535bcbe9e9
+--- /dev/null
++++ b/repro_symbol_slots.py
+@@ -0,0 +1,4 @@
++
++import sympy
++s = sympy.Symbol('s')
++print('Symbol has __dict__:', hasattr(s, '__dict__'))
+\ No newline at end of file

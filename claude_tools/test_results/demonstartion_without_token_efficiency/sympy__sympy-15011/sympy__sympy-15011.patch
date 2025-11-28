@@ -1,0 +1,24 @@
+diff --git a/repro_curly_matrixsymbol.py b/repro_curly_matrixsymbol.py
+new file mode 100644
+index 0000000000..cf8951d63a
+--- /dev/null
++++ b/repro_curly_matrixsymbol.py
+@@ -0,0 +1,17 @@
++
++import sympy as sy
++curlyx = sy.symbols('{x}')
++v = sy.MatrixSymbol('v', 2, 1)
++curlyv = sy.MatrixSymbol('{v}', 2, 1)
++print('scalar ok type:', type(sy.lambdify(curlyx, curlyx)))
++print('vector ok type:', type(sy.lambdify(v, v)))
++try:
++    sy.lambdify(curlyv, curlyv)
++    print('curly vector ok (unexpected)')
++except Exception as e:
++    print('curly vector failed as expected:', type(e).__name__, e)
++try:
++    sy.lambdify(curlyv, curlyv, dummify=True)
++    print('curly vector dummify ok (expected)')
++except Exception as e:
++    print('curly vector dummify failed:', type(e).__name__, e)
+\ No newline at end of file

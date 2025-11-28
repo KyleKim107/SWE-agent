@@ -1,0 +1,8 @@
+diff --git a/example.py b/example.py
+new file mode 100644
+index 000000000..6b7b8fc02
+--- /dev/null
++++ b/example.py
+@@ -0,0 +1 @@
++__all__ = []\n\ndef foo():\n    "docstring"\n\ndef bar():\n    "docstring"\n\ndef baz():\n    "docstring"n
+\ No newline at end of file

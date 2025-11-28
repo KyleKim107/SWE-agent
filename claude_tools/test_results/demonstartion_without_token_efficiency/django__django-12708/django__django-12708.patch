@@ -1,0 +1,80 @@
+diff --git a/django/db/backends/base/schema.py b/django/db/backends/base/schema.py
+index 61f88401ab..1f521cfc5c 100644
+--- a/django/db/backends/base/schema.py
++++ b/django/db/backends/base/schema.py
+@@ -393,7 +393,7 @@ class BaseDatabaseSchemaEditor:
+         news = {tuple(fields) for fields in new_index_together}
+         # Deleted indexes
+         for fields in olds.difference(news):
+-            self._delete_composed_index(model, fields, {'index': True}, self.sql_delete_index)
++            self._delete_composed_index(model, fields, {'index': True, 'unique': False}, self.sql_delete_index)
+         # Created indexes
+         for field_names in news.difference(olds):
+             fields = [model._meta.get_field(field) for field in field_names]
+diff --git a/repro_index_together.py b/repro_index_together.py
+new file mode 100644
+index 0000000000..69358fefbf
+--- /dev/null
++++ b/repro_index_together.py
+@@ -0,0 +1,60 @@
++from django.db.backends.base.schema import BaseDatabaseSchemaEditor\n\nclass DummyCursor:\n    def __enter__(self):\n        return self\n    def __exit__(self, exc_type, exc, tb):\n        return False\n\nclass DummyIntrospection:\n    def identifier_converter(self, name):\n        return name\n    def get_constraints(self, cursor, table):\n        return {\n            'mytable_uniq': {\n                'columns': ['col1', 'col2'],\n                'unique': True,\n                'primary_key': False,\n                'index': True,\n                'check': False,\n                'foreign_key': False,\n                'type': 'u',\n            },\n            'mytable_idx': {\n                'columns': ['col1', 'col2'],\n                'unique': False,\n                'primary_key': False,\n                'index': True,\n                'check': False,\n                'foreign_key': False,\n                'type': 'i',\n            },\n        }\n\nclass DummyFeatures:\n    can_rollback_ddl = True\n\nclass DummyConnection:\n    alias = 'default'\n    features = DummyFeatures()\n    introspection = DummyIntrospection()\n    def cursor(self):\n        return DummyCursor()\n\nclass DummyMeta:\n    db_table = 'mytable'\n\nclass DummyModel:\n    _meta = DummyMeta()\n\nconn = DummyConnection()\neditor = BaseDatabaseSchemaEditor(conn)\n\ncols = ['col1', 'col2']\n# Before fix logic (index=True only) would match both names\nboth = editor._constraint_names(DummyModel, column_names=cols, index=True)\nprint('constraints with index=True:', both)\n# After fix logic (index=True, unique=False) should match only non-unique index\nfiltered = editor._constraint_names(DummyModel, column_names=cols, index=True, unique=False)\nprint('constraints with index=True, unique=False:', filtered)\nassert filtered == ['mytable_idx']\nprint('OK')
++from django.db.backends.base.schema import BaseDatabaseSchemaEditor
++
++class DummyCursor:
++    def __enter__(self):
++        return self
++    def __exit__(self, exc_type, exc, tb):
++        return False
++
++class DummyIntrospection:
++    def identifier_converter(self, name):
++        return name
++    def get_constraints(self, cursor, table):
++        return {
++            'mytable_uniq': {
++                'columns': ['col1', 'col2'],
++                'unique': True,
++                'primary_key': False,
++                'index': True,
++                'check': False,
++                'foreign_key': False,
++                'type': 'u',
++            },
++            'mytable_idx': {
++                'columns': ['col1', 'col2'],
++                'unique': False,
++                'primary_key': False,
++                'index': True,
++                'check': False,
++                'foreign_key': False,
++                'type': 'i',
++            },
++        }
++
++class DummyFeatures:
++    can_rollback_ddl = True
++
++class DummyConnection:
++    alias = 'default'
++    features = DummyFeatures()
++    introspection = DummyIntrospection()
++    def cursor(self):
++        return DummyCursor()
++
++class DummyMeta:
++    db_table = 'mytable'
++
++class DummyModel:
++    _meta = DummyMeta()
++
++conn = DummyConnection()
++editor = BaseDatabaseSchemaEditor(conn)
++
++cols = ['col1', 'col2']
++both = editor._constraint_names(DummyModel, column_names=cols, index=True)
++print('constraints with index=True:', both)
++filtered = editor._constraint_names(DummyModel, column_names=cols, index=True, unique=False)
++print('constraints with index=True, unique=False:', filtered)
++assert filtered == ['mytable_idx']
++print('OK')
+\ No newline at end of file

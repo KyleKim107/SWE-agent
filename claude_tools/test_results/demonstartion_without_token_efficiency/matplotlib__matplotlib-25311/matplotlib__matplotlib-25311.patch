@@ -1,0 +1,23 @@
+diff --git a/repro_pickle_draggable_legend.py b/repro_pickle_draggable_legend.py
+index 2ee49a2f7a..c966e1a5e5 100644
+--- a/repro_pickle_draggable_legend.py
++++ b/repro_pickle_draggable_legend.py
+@@ -1 +1,15 @@
+-import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt; import pickle\nfig = plt.figure(); ax = fig.add_subplot(111)\nax.plot([0,1,2],[1,2,3], label="speed")\nleg = ax.legend(); leg.set_draggable(True)\ntry:\n    data = pickle.dumps(fig)\n    print("Pickle success, size:", len(data))\nexcept Exception as e:\n    print("Pickle failed:", type(e).__name__, e)\n
+\ No newline at end of file
++import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt; import pickle\nfig = plt.figure(); ax = fig.add_subplot(111)\nax.plot([0,1,2],[1,2,3], label="speed")\nleg = ax.legend(); leg.set_draggable(True)\ntry:\n    data = pickle.dumps(fig)\n    print("Pickle success, size:", len(data))\nexcept Exception as e:\n    print("Pickle failed:", type(e).__name__, e)\n
++import matplotlib
++matplotlib.use("Agg")
++import matplotlib.pyplot as plt
++import pickle
++fig = plt.figure()
++ax = fig.add_subplot(111)
++ax.plot([0,1,2],[1,2,3], label="speed")
++leg = ax.legend()
++leg.set_draggable(True)
++try:
++    data = pickle.dumps(fig)
++    print("Pickle success, size:", len(data))
++except Exception as e:
++    print("Pickle failed:", type(e).__name__, e)
+\ No newline at end of file

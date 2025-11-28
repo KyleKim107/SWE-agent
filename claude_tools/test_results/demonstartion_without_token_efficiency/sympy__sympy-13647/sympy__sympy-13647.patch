@@ -1,0 +1,26 @@
+diff --git a/patch_notes.txt b/patch_notes.txt
+new file mode 100644
+index 000000000..ba55f42fd
+--- /dev/null
++++ b/patch_notes.txt
+@@ -0,0 +1 @@
++Investigate col_insert implementation causing misordered columns when inserting block. Ensure left part, inserted block, and right part order preserved.
+\ No newline at end of file
+diff --git a/repro_col_insert.py b/repro_col_insert.py
+new file mode 100644
+index 000000000..cc69a59b4
+--- /dev/null
++++ b/repro_col_insert.py
+@@ -0,0 +1,11 @@
++
++import sympy as sm
++M = sm.eye(6)
++V = 2*sm.ones(6,2)
++print('M=')
++print(M)
++print('V=')
++print(V)
++R = M.col_insert(3, V)
++print('Result:')
++print(R)
+\ No newline at end of file

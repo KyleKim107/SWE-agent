@@ -1,0 +1,15 @@
+diff --git a/repro_sqf_list.py b/repro_sqf_list.py
+new file mode 100644
+index 0000000000..80530cc815
+--- /dev/null
++++ b/repro_sqf_list.py
+@@ -0,0 +1,8 @@
++
++from sympy import symbols
++from sympy.polys.polytools import sqf_list
++x = symbols('x')
++expr = (x**2 + 1) * (x - 1)**2 * (x - 2)**3 * (x - 3)**3
++print('sqf_list expr:', sqf_list(expr, x))
++expr2 = x**5 - 2*x**4 - 2*x**3 + 4*x**2 + x - 2
++print('sqf_list expr2:', sqf_list(expr2, x))
+\ No newline at end of file

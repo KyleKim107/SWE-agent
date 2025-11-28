@@ -1,0 +1,21 @@
+diff --git a/repro_nap.py b/repro_nap.py
+new file mode 100644
+index 000000000..bb742b73d
+--- /dev/null
++++ b/repro_nap.py
+@@ -0,0 +1 @@
++from sphinx.ext.napoleon.docstring import GoogleDocstring\nfrom sphinx.ext.napoleon import Config\ncfg = Config(napoleon_use_param=False, napoleon_use_ivar=False)\ndoc = 'Attributes\n----------\nhello_: int\n    hi\n'\nprint(str(GoogleDocstring(doc, cfg)))\n
+\ No newline at end of file
+diff --git a/sphinx/ext/napoleon/docstring.py b/sphinx/ext/napoleon/docstring.py
+index 11409e6f6..a87c055f8 100644
+--- a/sphinx/ext/napoleon/docstring.py
++++ b/sphinx/ext/napoleon/docstring.py
+@@ -319,7 +319,7 @@ class GoogleDocstring:
+ 
+     def _escape_args_and_kwargs(self, name: str) -> str:
+         if name.endswith('_'):
+-            name = name[:-1] + r'\_'
++            name = name[:-1] + '_'
+ 
+         if name[:2] == '**':
+             return r'\*\*' + name[2:]

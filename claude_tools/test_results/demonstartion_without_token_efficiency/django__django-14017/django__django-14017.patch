@@ -1,0 +1,37 @@
+diff --git a/repro_q_exists.py b/repro_q_exists.py
+new file mode 100644
+index 0000000000..9f17c21690
+--- /dev/null
++++ b/repro_q_exists.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0, "/testbed"); from django.db.models.query_utils import Q; from django.db.models.expressions import Exists; class DummyQS: pass\ntry:\n    print("Exists & Q:", Exists(DummyQS()) & Q())\nexcept Exception as e:\n    print("Exists & Q error:", type(e).__name__, e)\ntry:\n    print("Q & Exists:", Q() & Exists(DummyQS()))\nexcept Exception as e:\n    print("Q & Exists error:", type(e).__name__, e)\n
+\ No newline at end of file
+diff --git a/repro_q_exists_fix.py b/repro_q_exists_fix.py
+new file mode 100644
+index 0000000000..b5ac5cd9ac
+--- /dev/null
++++ b/repro_q_exists_fix.py
+@@ -0,0 +1 @@
++import sys\nsys.path.insert(0, "/testbed")\nfrom django.db.models.query_utils import Q\nfrom django.db.models.expressions import Exists\n\nclass DummyQS:\n    pass\n\nprint("Exists & Q:")\ntry:\n    print(Exists(DummyQS()) & Q())\nexcept Exception as e:\n    print("Exists & Q error:", type(e).__name__, e)\n\nprint("Q & Exists:")\ntry:\n    print(Q() & Exists(DummyQS()))\nexcept Exception as e:\n    print("Q & Exists error:", type(e).__name__, e)\n
+\ No newline at end of file
+diff --git a/repro_q_exists_ok.py b/repro_q_exists_ok.py
+new file mode 100644
+index 0000000000..de3ff56ac2
+--- /dev/null
++++ b/repro_q_exists_ok.py
+@@ -0,0 +1 @@
++import sys\nsys.path.insert(0, "/testbed")\nfrom django.db.models.query_utils import Q\nfrom django.db.models.expressions import Exists\n\nclass DummyQS:\n    # minimal stub\n    pass\n\nprint("Exists & Q:")\ntry:\n    print(Exists(DummyQS()) & Q())\nexcept Exception as e:\n    print("Exists & Q error:", type(e).__name__, e)\n\nprint("Q & Exists:")\ntry:\n    print(Q() & Exists(DummyQS()))\nexcept Exception as e:\n    print("Q & Exists error:", type(e).__name__, e)\n
+\ No newline at end of file
+diff --git a/repro_q_exists_run.py b/repro_q_exists_run.py
+new file mode 100644
+index 0000000000..44b259280c
+--- /dev/null
++++ b/repro_q_exists_run.py
+@@ -0,0 +1,7 @@
++import sys
++sys.path.insert(0, "/testbed")
++from django.db.models.query_utils import Q
++from django.db.models.expressions import Exists
++class D: pass
++print("Exists & Q ->", Exists(D()) & Q())
++print("Q & Exists ->", Q() & Exists(D()))

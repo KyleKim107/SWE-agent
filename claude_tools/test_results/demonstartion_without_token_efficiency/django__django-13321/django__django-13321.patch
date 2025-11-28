@@ -1,0 +1,46 @@
+diff --git a/django/contrib/sessions/backends/base.py b/django/contrib/sessions/backends/base.py
+index 187e14b1b7..cfca507887 100644
+--- a/django/contrib/sessions/backends/base.py
++++ b/django/contrib/sessions/backends/base.py
+@@ -132,8 +132,12 @@ class SessionBase:
+ 
+     def _legacy_decode(self, session_data):
+         # RemovedInDjango40Warning: pre-Django 3.1 format will be invalid.
+-        encoded_data = base64.b64decode(session_data.encode('ascii'))
+         try:
++        try:
++            encoded_data = base64.b64decode(session_data.encode('ascii') )
++        except Exception:
++            # Invalid base64 (e.g., incorrect padding) should yield an empty session
++            return {}
+             # could produce ValueError if there is no ':'
+             hash, serialized = encoded_data.split(b':', 1)
+             expected_hash = self._hash(serialized)
+diff --git a/repro_bad_session.py b/repro_bad_session.py
+new file mode 100644
+index 0000000000..9bf2609d62
+--- /dev/null
++++ b/repro_bad_session.py
+@@ -0,0 +1,21 @@
++
++from django.contrib.sessions.backends.base import SessionBase
++
++class DummyStore(SessionBase):
++    def exists(self, session_key):
++        return False
++    def create(self):
++        pass
++    def save(self, must_create=False):
++        pass
++    def delete(self, session_key=None):
++        pass
++
++store = DummyStore()
++invalid_session = 'invalid_base64===bad'
++print('Decoding invalid legacy session...')
++data = store._legacy_decode(invalid_session)
++print('Legacy decode returned:', data)
++print('Decoding via decode()...')
++decoded = store.decode(invalid_session)
++print('decode() returned:', decoded)
+\ No newline at end of file

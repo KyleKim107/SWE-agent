@@ -1,0 +1,89 @@
+diff --git a/repro_fk_duplicates.py b/repro_fk_duplicates.py
+new file mode 100644
+index 0000000000..0390bb14a2
+--- /dev/null
++++ b/repro_fk_duplicates.py
+@@ -0,0 +1,82 @@
++
++from django.conf import settings
++import django
++from django.db import models
++from django.db.models import Q
++from django import forms
++
++settings.configure(INSTALLED_APPS=["django.contrib.contenttypes"], DATABASES={"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}, SECRET_KEY="x")
++django.setup()
++
++class Author(models.Model):
++    name = models.CharField(max_length=50)
++    class Meta:
++        app_label = "myapp"
++
++class Book(models.Model):
++    title = models.CharField(max_length=50)
++    author = models.ForeignKey(Author, on_delete=models.CASCADE)
++    class Meta:
++        app_label = "myapp"
++
++from django.db import connection
++with connection.schema_editor() as se:
++    se.create_model(Author)
++    se.create_model(Book)
++
++# Seed data with multiple books per author to create join multiplicity
++a1 = Author.objects.create(name="A1")
++Book.objects.create(title="B1", author=a1)
++Book.objects.create(title="B2", author=a1)
++
++# ForeignKey with limit_choices_to join on Book causing duplicates of A1 choices
++class Article(models.Model):
++    author = models.ForeignKey(Author, on_delete=models.CASCADE, limit_choices_to=Q(book__title__startswith="B"))
++    class Meta:
++        app_label = "myapp"
++
++with connection.schema_editor() as se:
++    se.create_model(Article)
++
++af = Article._meta.get_field("author")
++formfield = af.formfield()
++choices = list(formfield.choices)
++print("choices:", choices)
++from django.conf import settings
++import django
++from django.db import models
++from django.db.models import Q
++from django import forms
++
++settings.configure(INSTALLED_APPS=["django.contrib.contenttypes"], DATABASES={"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}, SECRET_KEY="x")
++django.setup()
++
++class Author(models.Model):
++    name = models.CharField(max_length=50)
++
++class Book(models.Model):
++    title = models.CharField(max_length=50)
++    author = models.ForeignKey(Author, on_delete=models.CASCADE)
++
++# Create tables
++from django.db import connection
++with connection.schema_editor() as se:
++    se.create_model(Author)
++    se.create_model(Book)
++
++# Seed data with multiple books per author to create join multiplicity
++a1 = Author.objects.create(name="A1")
++Book.objects.create(title="B1", author=a1)
++Book.objects.create(title="B2", author=a1)
++
++# ForeignKey with limit_choices_to join on Book causing duplicates of A1 choices
++class Article(models.Model):
++    author = models.ForeignKey(Author, on_delete=models.CASCADE, limit_choices_to=Q(book__title__startswith="B"))
++
++with connection.schema_editor() as se:
++    se.create_model(Article)
++
++af = Article._meta.get_field("author")
++formfield = af.formfield()
++choices = list(formfield.choices)
++print("choices:", choices)
+\ No newline at end of file

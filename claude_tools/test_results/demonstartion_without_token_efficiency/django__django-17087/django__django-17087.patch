@@ -1,0 +1,21 @@
+diff --git a/django/db/migrations/serializer.py b/django/db/migrations/serializer.py
+index d88cda6e20..06657ebaab 100644
+--- a/django/db/migrations/serializer.py
++++ b/django/db/migrations/serializer.py
+@@ -168,7 +168,7 @@ class FunctionTypeSerializer(BaseSerializer):
+         ):
+             klass = self.value.__self__
+             module = klass.__module__
+-            return "%s.%s.%s" % (module, klass.__name__, self.value.__name__), {
++            return "%s.%s.%s" % (module, klass.__qualname__, self.value.__name__), {
+                 "import %s" % module
+             }
+         # Further error checking
+diff --git a/repro_nested_classmethod.py b/repro_nested_classmethod.py
+new file mode 100644
+index 0000000000..3175e8b5a1
+--- /dev/null
++++ b/repro_nested_classmethod.py
+@@ -0,0 +1 @@
++from django.db.migrations.serializer import serializer_factory\n\nclass Profile:\n    class Capability:\n        @classmethod\n        def default(cls):\n            return ['BASIC']\n\nser = serializer_factory(Profile.Capability.default)\ns, imports = ser.serialize()\nprint('Serialized:', s)\nprint('Imports:', imports)
+\ No newline at end of file

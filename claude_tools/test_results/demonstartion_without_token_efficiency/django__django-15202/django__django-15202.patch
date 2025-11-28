@@ -1,0 +1,40 @@
+diff --git a/django/core/validators.py b/django/core/validators.py
+index 72fbe15551..c171ad1790 100644
+--- a/django/core/validators.py
++++ b/django/core/validators.py
+@@ -127,7 +127,7 @@ class URLValidator(RegexValidator):
+                 raise
+         else:
+             # Now verify IPv6 in the netloc part
+-            host_match = re.search(r'^\[(.+)\](?::\d{1,5})?$', urlsplit(value).netloc)
++            host_match = re.search(r'^\[(.+)\](?::\d{1,5})?$', value.split('://',1)[1].split('/',1)[0])
+             if host_match:
+                 potential_ip = host_match[1]
+                 try:
+@@ -139,7 +139,9 @@ class URLValidator(RegexValidator):
+         # section 3.1. It's defined to be 255 bytes or less, but this includes
+         # one byte for the length of the name and one byte for the trailing dot
+         # that's used to indicate absolute names in DNS.
+-        if len(urlsplit(value).hostname) > 253:
++        nl = value.split('://',1)[1].split('\/',1)[0]
++hn = nl.split(':',1)[0] if not nl.startswith('[') else None
++if hn and len(hn) > 253:
+             raise ValidationError(self.message, code=self.code, params={'value': value})
+ 
+ 
+diff --git a/repro_urlfield.py b/repro_urlfield.py
+new file mode 100644
+index 0000000000..13790b8e46
+--- /dev/null
++++ b/repro_urlfield.py
+@@ -0,0 +1 @@
++from django.forms import URLField\n\nuf = URLField()\ntry:\n    print(uf.clean("////]@N.AN"))\nexcept Exception as e:\n    print(type(e).__name__, str(e))\n
+\ No newline at end of file
+diff --git a/repro_urlfield2.py b/repro_urlfield2.py
+new file mode 100644
+index 0000000000..117445032a
+--- /dev/null
++++ b/repro_urlfield2.py
+@@ -0,0 +1 @@
++from django.forms import URLField\nuf = URLField()\nprint("Calling clean...")\nuf.clean("////]@N.AN")\nprint("Completed clean")\n
+\ No newline at end of file

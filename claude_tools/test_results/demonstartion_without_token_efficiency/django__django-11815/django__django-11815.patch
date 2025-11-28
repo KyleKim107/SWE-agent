@@ -1,0 +1,19 @@
+diff --git a/repro_enum_serialize.py b/repro_enum_serialize.py
+index 9aa6216892..1ecd32b682 100644
+--- a/repro_enum_serialize.py
++++ b/repro_enum_serialize.py
+@@ -1 +1,11 @@
+-from enum import Enum\nfrom django.db.migrations.serializer import serializer_factory\n\nclass Status(Enum):\n    GOOD = 'Good'\n    BAD = 'Bad'\n\nval = Status.GOOD\nser = serializer_factory(val)\ncode, imports = ser.serialize()\nprint('Before fix serialization:', code)\nprint('Imports:', imports)
+\ No newline at end of file
++
++from enum import Enum
++from django.db.migrations.serializer import serializer_factory
++class Status(Enum):
++    GOOD = 'Good'
++    BAD = 'Bad'
++val = Status.GOOD
++ser = serializer_factory(val)
++code, imports = ser.serialize()
++print('Serialization:', code)
++print('Imports:', imports)
+\ No newline at end of file

@@ -1,0 +1,21 @@
+diff --git a/django/db/models/fields/__init__.py b/django/db/models/fields/__init__.py
+index 2a98396cad..5b1c3e30d4 100644
+--- a/django/db/models/fields/__init__.py
++++ b/django/db/models/fields/__init__.py
+@@ -1014,7 +1014,7 @@ class Field(RegisterLookupMixin):
+         if self.has_default():
+             if callable(self.default):
+                 defaults["initial"] = self.default
+-                defaults["show_hidden_initial"] = True
++                # Avoid hidden initial for callable defaults to prevent stale initial overriding\n                if not callable(self.default):\n                    defaults["show_hidden_initial"] = True
+             else:
+                 defaults["initial"] = self.get_default()
+         if self.choices is not None:
+diff --git a/repro_callable_default.py b/repro_callable_default.py
+new file mode 100644
+index 0000000000..5dbd1e3de7
+--- /dev/null
++++ b/repro_callable_default.py
+@@ -0,0 +1 @@
++from django import forms\nfrom django.db import models\nfrom django.forms import modelform_factory\n\nclass Thing(models.Model):\n    pass\n\nclass RelatedModel(models.Model):\n    thing = models.ForeignKey(Thing, on_delete=models.CASCADE)\n    plop = models.ArrayField(models.CharField(max_length=42), default=list)\n\nclass RelatedModelForm(forms.ModelForm):\n    class Meta:\n        model = RelatedModel\n        fields = ['plop']\n    def clean(self):\n        raise forms.ValidationError('whatever')\n\nFormClass = modelform_factory(RelatedModel, form=RelatedModelForm)\n\n# Simulate two POST submissions with same data\npost1 = {'plop': ['test']}\nform1 = FormClass(post1)\nprint('form1 valid:', form1.is_valid())\nprint('form1 errors:', form1.errors)\npost2 = {'plop': ['test']}\nform2 = FormClass(post2)\nprint('form2 valid:', form2.is_valid())\nprint('form2 errors:', form2.errors)\n
+\ No newline at end of file

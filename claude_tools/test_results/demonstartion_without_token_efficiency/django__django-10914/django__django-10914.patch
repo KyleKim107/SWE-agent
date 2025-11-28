@@ -1,0 +1,62 @@
+diff --git a/django/conf/global_settings.py b/django/conf/global_settings.py
+index acee9887d2..bdeec80610 100644
+--- a/django/conf/global_settings.py
++++ b/django/conf/global_settings.py
+@@ -304,7 +304,7 @@ FILE_UPLOAD_TEMP_DIR = None
+ 
+ # The numeric mode to set newly-uploaded files to. The value should be a mode
+ # you'd pass directly to os.chmod; see https://docs.python.org/library/os.html#files-and-directories.
+-FILE_UPLOAD_PERMISSIONS = None
++FILE_UPLOAD_PERMISSIONS = 0o644
+ 
+ # The numeric mode to assign to newly-created directories, when uploading files.
+ # The value should be a mode as you'd pass to os.chmod;
+diff --git a/repro_upload_perms.py b/repro_upload_perms.py
+new file mode 100644
+index 0000000000..727de03040
+--- /dev/null
++++ b/repro_upload_perms.py
+@@ -0,0 +1,26 @@
++import os
++import tempfile
++from django.conf import settings
++from django.core.files.storage import FileSystemStorage
++from django.core.files.base import ContentFile
++settings.configure()
++base_dir = '/testbed/tmp_uploads_fix'
++os.makedirs(base_dir, exist_ok=True)
++storage = FileSystemStorage(location=base_dir)
++ntf = tempfile.NamedTemporaryFile(delete=False)
++ntf.write(b'temp data')
++ntf.flush()
++ntf.close()
++class TempContent:
++    def __init__(self, path):
++        self._path = path
++    def temporary_file_path(self):
++        return self._path
++from_temp = TempContent(ntf.name)
++name1 = storage._save('from_temp.txt', from_temp)
++path1 = os.path.join(base_dir, name1)
++print('from_temp mode:', oct(os.stat(path1).st_mode & 0o777))
++cf = ContentFile(b'chunked data', name='from_chunks.txt')
++name2 = storage.save(None, cf)
++path2 = os.path.join(base_dir, name2)
++print('from_chunks mode:', oct(os.stat(path2).st_mode & 0o777))
+\ No newline at end of file
+diff --git a/tmp_uploads_fix/from_chunks.txt b/tmp_uploads_fix/from_chunks.txt
+new file mode 100644
+index 0000000000..78055de2f1
+--- /dev/null
++++ b/tmp_uploads_fix/from_chunks.txt
+@@ -0,0 +1 @@
++chunked data
+\ No newline at end of file
+diff --git a/tmp_uploads_fix/from_temp.txt b/tmp_uploads_fix/from_temp.txt
+new file mode 100644
+index 0000000000..1144f833e8
+--- /dev/null
++++ b/tmp_uploads_fix/from_temp.txt
+@@ -0,0 +1 @@
++temp data
+\ No newline at end of file

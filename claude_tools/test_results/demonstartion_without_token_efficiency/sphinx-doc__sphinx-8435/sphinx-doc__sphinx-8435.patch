@@ -1,0 +1,61 @@
+diff --git a/docs/conf.py b/docs/conf.py
+new file mode 100644
+index 000000000..68d886eac
+--- /dev/null
++++ b/docs/conf.py
+@@ -0,0 +1 @@
++autodoc_type_aliases = {\n    \"String\": \"example.MyString\"\n}\n
+\ No newline at end of file
+diff --git a/docs/example.py b/docs/example.py
+new file mode 100644
+index 000000000..ed716d2d2
+--- /dev/null
++++ b/docs/example.py
+@@ -0,0 +1 @@
++from __future__ import annotations\n\n#: blah blah blah\nvar: String\n\nclass MyString:\n    \"mystring\"\n    #: blah blah blah\n    var: String\n
+\ No newline at end of file
+diff --git a/docs/index.rst b/docs/index.rst
+new file mode 100644
+index 000000000..837434e2e
+--- /dev/null
++++ b/docs/index.rst
+@@ -0,0 +1 @@
++.. automodule:: example\n   :members:\n   :undoc-members:\n
+\ No newline at end of file
+diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py
+index 171a3e7b0..4efdc7cfd 100644
+--- a/sphinx/ext/autodoc/__init__.py
++++ b/sphinx/ext/autodoc/__init__.py
+@@ -1716,8 +1716,14 @@ class DataDocumenter(ModuleLevelDocumenter):
+                 annotations = {}
+ 
+             if self.objpath[-1] in annotations:
++            ann = annotations.get(self.objpath[-1])
++            if isinstance(ann, str):
++                alias = getattr(self.config, "autodoc_type_aliases", {}).get(ann)
++                if alias:
++                    annotations[self.objpath[-1]] = alias
+                 objrepr = stringify_typehint(annotations.get(self.objpath[-1]))
+                 self.add_line('   :type: ' + objrepr, sourcename)
++                objrepr = stringify_typehint(getattr(self.config, "autodoc_type_aliases", {}).get(annotations.get(self.objpath[-1]), annotations.get(self.objpath[-1])))
+             else:
+                 key = ('.'.join(self.objpath[:-1]), self.objpath[-1])
+                 if self.analyzer and key in self.analyzer.annotations:
+@@ -2103,11 +2109,17 @@ class AttributeDocumenter(DocstringStripSignatureMixin, ClassLevelDocumenter):
+                 # a broken class found (refs: https://github.com/sphinx-doc/sphinx/issues/8084)
+                 annotations = {}
+             except AttributeError:
++            ann = annotations.get(self.objpath[-1])
++            if isinstance(ann, str):
++                alias = getattr(self.config, "autodoc_type_aliases", {}).get(ann)
++                if alias:
++                    annotations[self.objpath[-1]] = alias
+                 # AttributeError is raised on 3.5.2 (fixed by 3.5.3)
+                 annotations = {}
+ 
+             if self.objpath[-1] in annotations:
+                 objrepr = stringify_typehint(annotations.get(self.objpath[-1]))
++                objrepr = stringify_typehint(getattr(self.config, "autodoc_type_aliases", {}).get(annotations.get(self.objpath[-1]), annotations.get(self.objpath[-1])))
+                 self.add_line('   :type: ' + objrepr, sourcename)
+             else:
+                 key = ('.'.join(self.objpath[:-1]), self.objpath[-1])

@@ -1,0 +1,17 @@
+diff --git a/tmp/save_ps.py b/tmp/save_ps.py
+index 2226d0876e..747c7cb1ed 100644
+--- a/tmp/save_ps.py
++++ b/tmp/save_ps.py
+@@ -1,10 +1 @@
+-import sys
+-sys.path.insert(0, "/testbed/lib")
+-from matplotlib.figure import Figure
+-
+-figure = Figure()
+-ax = figure.add_subplot(111)
+-ax.annotate(text="
+-Lower label", xy=(0, 0))
+-figure.savefig("/testbed/tmp/figure.eps")
+-print("Saved EPS to /testbed/tmp/figure.eps")
++import sys\nsys.path.insert(0, "/testbed/lib")\nfrom matplotlib.figure import Figure\n\nfigure = Figure()\nax = figure.add_subplot(111)\nax.annotate(text="\nLower label", xy=(0, 0))\nfigure.savefig("/testbed/tmp/figure.eps")\nprint("Saved EPS to /testbed/tmp/figure.eps")\n
+\ No newline at end of file

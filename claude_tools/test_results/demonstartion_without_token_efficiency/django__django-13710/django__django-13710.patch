@@ -1,0 +1,70 @@
+diff --git a/django/contrib/admin/options.py b/django/contrib/admin/options.py
+index dadd4acfa1..71bb855fe5 100644
+--- a/django/contrib/admin/options.py
++++ b/django/contrib/admin/options.py
+@@ -2040,7 +2040,26 @@ class InlineModelAdmin(BaseModelAdmin):
+         if self.verbose_name is None:
+             self.verbose_name = self.model._meta.verbose_name
+         if self.verbose_name_plural is None:
+-            self.verbose_name_plural = self.model._meta.verbose_name_plural
++
++            if type(self).verbose_name is not None:
++                name = str(self.verbose_name)
++                self.verbose_name_plural = name if name.endswith('s') else (name + 's')
++            else:
++                self.verbose_name_plural = self.model._meta.verbose_name_plural
++
++
++                name = str(self.verbose_name)
++                self.verbose_name_plural = name if name.endswith('s') else (name + 's')
++            name = str(self.verbose_name)
++            self.verbose_name_plural = name if name.endswith('s') else (name + 's')
++
++
++
++
++
++
++
++
+ 
+     @property
+     def media(self):
+diff --git a/repro_inline_verbose.py b/repro_inline_verbose.py
+new file mode 100644
+index 0000000000..e921c808f6
+--- /dev/null
++++ b/repro_inline_verbose.py
+@@ -0,0 +1 @@
++import sys\nsys.path.insert(0, "/testbed")\nfrom django.contrib.admin.options import InlineModelAdmin\n\nclass DummyModel:\n    _meta = type("Meta", (), {"verbose_name": "Child", "verbose_name_plural": "Children"})()\n\nclass DummyAdminSite:\n    def is_registered(self, model):\n        return False\n\nclass MyInline(InlineModelAdmin):\n    model = DummyModel()\n    verbose_name = "Kid"\n    verbose_name_plural = None\n\ninline = MyInline(parent_model=DummyModel(), admin_site=DummyAdminSite())\nprint("verbose_name:", inline.verbose_name)\nprint("verbose_name_plural:", inline.verbose_name_plural)\nn
+\ No newline at end of file
+diff --git a/repro_inline_verbose2.py b/repro_inline_verbose2.py
+new file mode 100644
+index 0000000000..4cd5bec035
+--- /dev/null
++++ b/repro_inline_verbose2.py
+@@ -0,0 +1 @@
++import sys; sys.path.insert(0, '/testbed'); from django.contrib.admin.options import InlineModelAdmin; class DummyModel: _meta = type('Meta', (), {'verbose_name': 'Child', 'verbose_name_plural': 'Children'})(); class DummyAdminSite: is_registered = lambda self, model: False; class MyInline(InlineModelAdmin): model = DummyModel(); verbose_name = 'Kid'; verbose_name_plural = None; inline = MyInline(parent_model=DummyModel(), admin_site=DummyAdminSite()); print('verbose_name:', inline.verbose_name); print('verbose_name_plural:', inline.verbose_name_plural)
+\ No newline at end of file
+diff --git a/repro_inline_verbose3.py b/repro_inline_verbose3.py
+new file mode 100644
+index 0000000000..6c1d32e341
+--- /dev/null
++++ b/repro_inline_verbose3.py
+@@ -0,0 +1,15 @@
++import sys
++sys.path.insert(0, '/testbed')
++from django.contrib.admin.options import InlineModelAdmin
++class DummyModel:
++    _meta = type('Meta', (), {'verbose_name': 'Child', 'verbose_name_plural': 'Children'})()
++class DummyAdminSite:
++    def is_registered(self, model):
++        return False
++class MyInline(InlineModelAdmin):
++    model = DummyModel
++    verbose_name = 'Kid'
++    verbose_name_plural = None
++inline = MyInline(parent_model=DummyModel, admin_site=DummyAdminSite())
++print('verbose_name:', inline.verbose_name)
++print('verbose_name_plural:', inline.verbose_name_plural)
+\ No newline at end of file

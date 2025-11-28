@@ -1,0 +1,18 @@
+diff --git a/tmp/repro_point2d_eval.py b/tmp/repro_point2d_eval.py
+new file mode 100644
+index 0000000000..d9ae318d17
+--- /dev/null
++++ b/tmp/repro_point2d_eval.py
+@@ -0,0 +1,11 @@
++
++import sympy as sp
++from sympy import evaluate
++print('Default evaluate:')
++print(sp.S('Point2D(Integer(1),Integer(2))'))
++print('Context evaluate(False):')
++with evaluate(False):
++    try:
++        print(sp.S('Point2D(Integer(1),Integer(2))'))
++    except Exception as e:
++        print('ERROR:', type(e).__name__, e)
+\ No newline at end of file

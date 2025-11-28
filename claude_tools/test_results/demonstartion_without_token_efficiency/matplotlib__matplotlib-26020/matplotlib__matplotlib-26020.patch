@@ -1,0 +1,9 @@
+diff --git a/repro_axesgrid_nondefault.py b/repro_axesgrid_nondefault.py
+index 08cd304ed2..bb2abe39b0 100644
+--- a/repro_axesgrid_nondefault.py
++++ b/repro_axesgrid_nondefault.py
+@@ -1 +1 @@
+-import matplotlib.pyplot as plt\nfrom mpl_toolkits.axes_grid1 import AxesGrid\nfrom matplotlib.axes import Axes\n\nfig = plt.figure()\naxes_class = (Axes, {})\ntry:\n    gr = AxesGrid(fig, 111, nrows_ncols=(1,1), axes_class=axes_class)\n    print("AxesGrid created successfully with standard Axes class")\nexcept Exception as e:\n    print("Error:", type(e).__name__, e)\n
+\ No newline at end of file
++import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt; from mpl_toolkits.axes_grid1 import AxesGrid; from matplotlib.axes import Axes as StdAxes; fig = plt.figure(); axes_class = (StdAxes, {}); gr = AxesGrid(fig, 111, nrows_ncols=(1,1), axes_class=axes_class); print("AxesGrid created successfully with standard Axes class")
+\ No newline at end of file

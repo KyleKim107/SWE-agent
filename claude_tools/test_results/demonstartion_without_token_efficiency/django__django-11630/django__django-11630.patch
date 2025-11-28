@@ -1,0 +1,25 @@
+diff --git a/django/core/checks/model_checks.py b/django/core/checks/model_checks.py
+index 5c2266ca1d..a99e5a44c8 100644
+--- a/django/core/checks/model_checks.py
++++ b/django/core/checks/model_checks.py
+@@ -6,10 +6,11 @@ from itertools import chain
+ from django.apps import apps
+ from django.core.checks import Error, Tags, register
+ 
++from django.db import router
+ 
+ @register(Tags.models)
+ def check_all_models(app_configs=None, **kwargs):
+-    db_table_models = defaultdict(list)
++    db_table_models = defaultdict(list)  # keyed by (db_alias, db_table)
+     indexes = defaultdict(list)
+     constraints = defaultdict(list)
+     errors = []
+diff --git a/repro_db_table_check.py b/repro_db_table_check.py
+new file mode 100644
+index 0000000000..f979d77774
+--- /dev/null
++++ b/repro_db_table_check.py
+@@ -0,0 +1 @@
++import types\nfrom collections import namedtuple\n\n# Import the check function and apps to monkeypatch\nfrom django.core.checks.model_checks import check_all_models\nfrom django.apps import apps\nfrom django.db import router\n\n# Build a minimal dummy _meta object\nMeta = namedtuple('Meta', ['managed', 'proxy', 'db_table', 'label', 'indexes', 'constraints'])\n\nclass DummyModelA:\n    _meta = Meta(managed=True, proxy=False, db_table='shared_table', label='base.ModelA', indexes=[], constraints=[])\n    @classmethod\n    def check(cls, **kwargs):\n        return []\n\nclass DummyModelB:\n    _meta = Meta(managed=True, proxy=False, db_table='shared_table', label='app2.ModelB', indexes=[], constraints=[])\n    @classmethod\n    def check(cls, **kwargs):\n        return []\n\n# Monkeypatch apps.get_models to return our dummy models\napps.get_models = lambda: [DummyModelA, DummyModelB]\n\n# Monkeypatch router.db_for_read to route models to different databases based on label\norig_db_for_read = router.db_for_read\n\ndef fake_db_for_read(model, **hints):\n    label = getattr(model._meta, 'label', '')\n    return 'default' if label.startswith('base.') else 'other'\n\nrouter.db_for_read = fake_db_for_read\n\n# Run the check and print errors\nerrors = check_all_models()\nfor e in errors:\n    print(e.id, e.msg)\n\n# Restore original router method\nrouter.db_for_read = orig_db_for_read\n
+\ No newline at end of file

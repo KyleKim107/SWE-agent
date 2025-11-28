@@ -1,0 +1,16 @@
+diff --git a/repro_internalerror.py b/repro_internalerror.py
+new file mode 100644
+index 000000000..c7926a73b
+--- /dev/null
++++ b/repro_internalerror.py
+@@ -0,0 +1,9 @@
++
++class SomeClass:
++    def __getattribute__(self, attr):
++        raise Exception('boom getattribute')
++    def __repr__(self):
++        raise Exception('boom repr')
++
++def test():
++    SomeClass().attr
+\ No newline at end of file

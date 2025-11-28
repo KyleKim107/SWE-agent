@@ -1,0 +1,52 @@
+diff --git a/django/urls/resolvers.py b/django/urls/resolvers.py
+index 2154a46320..7fcf8efe49 100644
+--- a/django/urls/resolvers.py
++++ b/django/urls/resolvers.py
+@@ -25,6 +25,7 @@ from django.utils.translation import get_language
+ 
+ from .converters import get_converter
+ from .exceptions import NoReverseMatch, Resolver404
++from django.http import Http404
+ from .utils import get_callable
+ 
+ 
+@@ -258,7 +259,7 @@ class RoutePattern(CheckURLMixin):
+                 converter = self.converters[key]
+                 try:
+                     kwargs[key] = converter.to_python(value)
+-                except ValueError:
++                except ValueError:\n                    return None\n                except Http404:\n                    raise
+                     return None
+             return path[match.end():], (), kwargs
+         return None
+diff --git a/repro_converter_http404.py b/repro_converter_http404.py
+new file mode 100644
+index 0000000000..969ef2c6e3
+--- /dev/null
++++ b/repro_converter_http404.py
+@@ -0,0 +1,24 @@
++
++from django.conf import settings
++settings.configure(DEBUG=True, SECRET_KEY="x", ROOT_URLCONF=__name__, ALLOWED_HOSTS=["testserver"])
++import django
++django.setup()
++from django.urls import path, register_converter
++from django.http import Http404, HttpResponse
++class Always404Converter:
++    regex = '[^/]+'
++    def to_python(self, value):
++        raise Http404('Converter raised 404')
++    def to_url(self, value):
++        return value
++register_converter(Always404Converter, 'a404')
++def view(request, param):
++    return HttpResponse('ok')
++urlpatterns = [
++    path('test/<a404:param>/', view),
++]
++from django.test import Client
++client = Client()
++resp = client.get('/test/something/')
++print('Status:', resp.status_code)
++print('Content length:', len(resp.content))
+\ No newline at end of file

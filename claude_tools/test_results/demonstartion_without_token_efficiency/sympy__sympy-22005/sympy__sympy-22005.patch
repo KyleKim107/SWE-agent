@@ -1,0 +1,23 @@
+diff --git a/repro_polysys_infinite.py b/repro_polysys_infinite.py
+new file mode 100644
+index 0000000000..1e0e8fbd19
+--- /dev/null
++++ b/repro_polysys_infinite.py
+@@ -0,0 +1,16 @@
++
++from sympy.solvers.polysys import solve_poly_system
++from sympy.abc import x, y
++from sympy import Poly
++
++def check_call(desc, func, *args):
++    try:
++        res = func(*args)
++        print(desc, "->", res)
++    except NotImplementedError as e:
++        print(desc, "-> Raised NotImplementedError as expected")
++
++check_call("[y-1], x, y", solve_poly_system, [y-1], x, y)
++check_call("[x-1], x, y", solve_poly_system, [x-1], x, y)
++check_call("[Poly(x-1,x,y)], x, y", solve_poly_system, [Poly(x-1, x, y)], x, y)
++check_call("[Poly(y-1,x,y)], x, y", solve_poly_system, [Poly(y-1, x, y)], x, y)
+\ No newline at end of file

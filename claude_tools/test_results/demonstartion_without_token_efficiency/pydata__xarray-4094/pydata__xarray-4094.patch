@@ -1,0 +1,20 @@
+diff --git a/repro_unstack_bug.py b/repro_unstack_bug.py
+new file mode 100644
+index 00000000..3e88cf9a
+--- /dev/null
++++ b/repro_unstack_bug.py
+@@ -0,0 +1,13 @@
++
++import numpy as np
++import xarray as xr
++
++arr = xr.DataArray(np.arange(3), coords=[("x", [0,1,2])])
++data = xr.Dataset({"a": arr, "b": arr})
++stacked = data.to_stacked_array("y", sample_dims=["x"])
++print("stacked:", stacked)
++try:
++    unstacked = stacked.to_unstacked_dataset("y")
++    print("unstacked:", unstacked)
++except Exception as e:
++    print("Error:", type(e).__name__, e)
+\ No newline at end of file

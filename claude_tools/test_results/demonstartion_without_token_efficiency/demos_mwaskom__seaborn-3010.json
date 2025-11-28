@@ -1,0 +1,38 @@
+{
+  "strategy": "semantic",
+  "k": 2,
+  "test_instance": "mwaskom__seaborn-3010",
+  "query": "PolyFit is not robust to missing data\n```python\r\nso.Plot([1, 2, 3, None, 4], [1, 2, 3, 4, 5]).add(so.Line(), so.PolyFit())\r\n```\r\n\r\n<details><summary>Traceback</summary>\r\n\r\n```python-traceback\r\n-------",
+  "demonstrations": [
+    {
+      "instance_id": "matplotlib__matplotlib-23314",
+      "repository": "matplotlib",
+      "resolved": true,
+      "patch_file": "matplotlib__matplotlib-23314.patch",
+      "patch_size": 2070,
+      "trajectory_file": "matplotlib__matplotlib-23314.traj",
+      "source_directory": "matplotlib__matplotlib-23314",
+      "problem_statement": "[Bug]: set_visible() not working for 3d projection \n### Bug summary\r\n\r\nin the subplot projection=\"3d\" the set_visible function doesn't work even if the value is set to False\r\n\r\n### Code for reproduction\r\n\r\n```python\r\nimport matplotlib.pyplot as plt\r\nfrom matplotlib.gridspec import GridSpec\r\n\r\nfig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'})\r\nax1.scatter(1,1,1)\r\nax2.scatter(1,1,1, c='r')\r\nax1.set_visible(False)\r\n\r\nplt.show()\r\n# Thanks Tim for your help! \r\n```\r\n\r\n\r\n### Actual outcome\r\n\r\nthe subplot remains visible which should not happen if the value is set to False\r\n\r\n### Expected outcome\r\n\r\nthe subplot is not visible if the value is set to False\r\n\r\n### Additional information\r\n\r\n_No response_\r\n\r\n### Operating system\r\n\r\n_No response_\r\n\r\n### Matplotlib Version\r\n\r\n3.4.2\r\n\r\n### Matplotlib Backend\r\n\r\nQt5Agg\r\n\r\n### Python version\r\n\r\n3.8.10\r\n\r\n### Jupyter version\r\n\r\n_No response_\r\n\r\n### Installation\r\n\r\n_No response_\n",
+      "hints_text": "Please try to boil down the problem to a minimal example when reporting issues.\r\n\r\nI've now done that for you:\r\n```\r\nimport matplotlib.pyplot as plt\r\nfrom matplotlib.gridspec import GridSpec\r\n\r\nfig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw={'projection': '3d'})\r\nax1.scatter(1,1,1)\r\nax2.scatter(1,1,1, c='r')\r\nax1.set_visible(False)\r\n\r\nplt.show()\r\n```\r\n**Output**\r\n![grafik](https://user-images.githubusercontent.com/2836374/174673179-f5b14df5-7689-49eb-995a-4c97e31c3c43.png)\r\n\r\n**Expected**\r\nThe left axes should be invisible.\r\n",
+      "created_at": "2022-06-21T02:41:34Z",
+      "patch": "diff --git a/lib/mpl_toolkits/mplot3d/axes3d.py b/lib/mpl_toolkits/mplot3d/axes3d.py\n--- a/lib/mpl_toolkits/mplot3d/axes3d.py\n+++ b/lib/mpl_toolkits/mplot3d/axes3d.py\n@@ -387,6 +387,8 @@ def apply_aspect(self, position=None):\n \n     @martist.allow_rasterization\n     def draw(self, renderer):\n+        if not self.get_visible():\n+            return\n         self._unstale_viewLim()\n \n         # draw the background patch\n"
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6506",
+      "repository": "pylint-dev",
+      "resolved": true,
+      "patch_file": "pylint-dev__pylint-6506.patch",
+      "patch_size": 1034,
+      "trajectory_file": "pylint-dev__pylint-6506.traj",
+      "source_directory": "pylint-dev__pylint-6506",
+      "problem_statement": "Traceback printed for unrecognized option\n### Bug description\n\nA traceback is printed when an unrecognized option is passed to pylint.\n\n### Configuration\n\n_No response_\n\n### Command used\n\n```shell\npylint -Q\n```\n\n\n### Pylint output\n\n```shell\n************* Module Command line\r\nCommand line:1:0: E0015: Unrecognized option found: Q (unrecognized-option)\r\nTraceback (most recent call last):\r\n  File \"/Users/markbyrne/venv310/bin/pylint\", line 33, in <module>\r\n    sys.exit(load_entry_point('pylint', 'console_scripts', 'pylint')())\r\n  File \"/Users/markbyrne/programming/pylint/pylint/__init__.py\", line 24, in run_pylint\r\n    PylintRun(argv or sys.argv[1:])\r\n  File \"/Users/markbyrne/programming/pylint/pylint/lint/run.py\", line 135, in __init__\r\n    args = _config_initialization(\r\n  File \"/Users/markbyrne/programming/pylint/pylint/config/config_initialization.py\", line 85, in _config_initialization\r\n    raise _UnrecognizedOptionError(options=unrecognized_options)\r\npylint.config.exceptions._UnrecognizedOptionError\n```\n\n\n### Expected behavior\n\nThe top part of the current output is handy:\r\n`Command line:1:0: E0015: Unrecognized option found: Q (unrecognized-option)`\r\n\r\nThe traceback I don't think is expected & not user-friendly.\r\nA usage tip, for example:\r\n```python\r\nmypy -Q\r\nusage: mypy [-h] [-v] [-V] [more options; see below]\r\n            [-m MODULE] [-p PACKAGE] [-c PROGRAM_TEXT] [files ...]\r\nmypy: error: unrecognized arguments: -Q\r\n```\n\n### Pylint version\n\n```shell\npylint 2.14.0-dev0\r\nastroid 2.11.3\r\nPython 3.10.0b2 (v3.10.0b2:317314165a, May 31 2021, 10:02:22) [Clang 12.0.5 (clang-1205.0.22.9)]\n```\n\n\n### OS / Environment\n\n_No response_\n\n### Additional dependencies\n\n_No response_\n",
+      "hints_text": "@Pierre-Sassoulas Agreed that this is a blocker for `2.14` but not necessarily for the beta. This is just a \"nice-to-have\".\r\n\r\nThanks @mbyrnepr2 for reporting though!\n\ud83d\udc4d the blocker are for the final release only. We could add a 'beta-blocker' label, that would be very humorous !",
+      "created_at": "2022-05-05T13:01:41Z",
+      "patch": "diff --git a/pylint/config/config_initialization.py b/pylint/config/config_initialization.py\n--- a/pylint/config/config_initialization.py\n+++ b/pylint/config/config_initialization.py\n@@ -81,8 +81,7 @@ def _config_initialization(\n             unrecognized_options.append(opt[1:])\n     if unrecognized_options:\n         msg = \", \".join(unrecognized_options)\n-        linter.add_message(\"unrecognized-option\", line=0, args=msg)\n-        raise _UnrecognizedOptionError(options=unrecognized_options)\n+        linter._arg_parser.error(f\"Unrecognized option found: {msg}\")\n \n     # Set the current module to configuration as we don't know where\n     # the --load-plugins key is coming from\n"
+    }
+  ],
+  "trajectory_files": [
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/matplotlib__matplotlib-23314/matplotlib__matplotlib-23314.traj",
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/pylint-dev__pylint-6506/pylint-dev__pylint-6506.traj"
+  ]
+}

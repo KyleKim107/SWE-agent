@@ -1,0 +1,22 @@
+diff --git a/repro_redirect.py b/repro_redirect.py
+index 161e376d..39db1655 100644
+--- a/repro_redirect.py
++++ b/repro_redirect.py
+@@ -1 +1,14 @@
+-import requests\nfrom requests.adapters import HTTPAdapter\nfrom requests.models import Response\n\nclass FakeAdapter(HTTPAdapter):\n    def send(self, request, **kwargs):\n        resp = Response()\n        resp.request = request\n        # Simulate the chain: POST -> 303 -> 307\n        url = request.url\n        history = kwargs.get("history", [])\n        # First call: original POST -> 303\n        if not history:\n            resp.status_code = 303\n            resp.headers["Location"] = "/new_thing_1513"\n            resp.url = url\n        # Second call: redirected GET to /new_thing_1513 -> 307\n        elif len(history) == 1:\n            resp.status_code = 307\n            resp.headers["Location"] = "//failover.example.com/new_thing_1513"\n            resp.url = url\n        # Final call: the 307 target\n        else:\n            resp.status_code = 200\n            resp._content = b"ok"\n            resp.url = url\n        return resp\n\ns = requests.Session()\nadapter = FakeAdapter()\ns.mount("http://", adapter)\ns.mount("https://", adapter)\n\n# Start with POST\nr = s.post("http://server.example.com/do_something", data={"a":1})\nprint("final status", r.status_code)\nprint("history codes", [h.status_code for h in r.history])\nprint("original method", r.history[0].request.method)\nprint("second method", r.history[1].request.method)\nprint("final method", r.request.method)\n
+\ No newline at end of file
++
++import requests
++from requests.adapters import HTTPAdapter
++from requests.models import Response
++
++class FakeAdapter(HTTPAdapter):
++    def __init__(self):
++        super().__init__()
++        self.calls = 0
++    def send(self, request, **kwargs):
++        self.calls += 1
++        resp = Response()
++        resp.request = request
++        resp.url = request.url
+\ No newline at end of file

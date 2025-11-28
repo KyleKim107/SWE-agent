@@ -1,0 +1,14 @@
+diff --git a/repro_labelencoder_empty.py b/repro_labelencoder_empty.py
+new file mode 100644
+index 000000000..74e8752ee
+--- /dev/null
++++ b/repro_labelencoder_empty.py
+@@ -0,0 +1,7 @@
++
++from sklearn.preprocessing import LabelEncoder
++le = LabelEncoder()
++le.fit([1,2])
++print('int fit, transform([]):', le.transform([]))
++le.fit(['a','b'])
++print('str fit, transform([]):', le.transform([]))
+\ No newline at end of file

@@ -1,0 +1,32 @@
+diff --git a/django/utils/autoreload.py b/django/utils/autoreload.py
+index 7ca0d68fae..a3ae73c923 100644
+--- a/django/utils/autoreload.py
++++ b/django/utils/autoreload.py
+@@ -220,7 +220,7 @@ class BaseReloader:
+     def __init__(self):
+         self.extra_files = set()
+         self.directory_globs = defaultdict(set)
+-        self._stop_condition = threading.Event()
++        self._stop_condition = threading.Event(); self.extra_files.add(Path(sys.argv[0]).resolve().absolute()) if Path(sys.argv[0]).exists() else None
+ 
+     def watch_dir(self, path, glob):
+         path = Path(path)
+diff --git a/repro_autoreload_watch.py b/repro_autoreload_watch.py
+new file mode 100644
+index 0000000000..3e56d0938d
+--- /dev/null
++++ b/repro_autoreload_watch.py
+@@ -0,0 +1,12 @@
++
++import sys
++from pathlib import Path
++from django.utils.autoreload import BaseReloader
++
++print('Main script:', sys.argv[0])
++reloader = BaseReloader()
++watched = list(reloader.watched_files())
++main_path = Path(sys.argv[0]).resolve().absolute()
++print('Main path:', main_path)
++print('Is main in watched files?:', main_path in watched)
++print('Watched files count:', len(watched))
+\ No newline at end of file

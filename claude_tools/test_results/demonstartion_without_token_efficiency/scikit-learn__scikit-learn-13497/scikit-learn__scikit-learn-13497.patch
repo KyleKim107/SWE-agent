@@ -1,0 +1,16 @@
+diff --git a/repro_mi_auto.py b/repro_mi_auto.py
+new file mode 100644
+index 000000000..024700054
+--- /dev/null
++++ b/repro_mi_auto.py
+@@ -0,0 +1,9 @@
++
++import numpy as np
++from sklearn.feature_selection.mutual_info_ import _estimate_mi
++X = np.array([[0.,1.,0.],[1.,0.,1.],[0.,1.,0.],[1.,1.,0.],[0.,0.,1.]])
++y = np.array([0,1,0,1,0])
++mask = np.array([True, False, True])
++idx = np.array([0,2])
++print('_estimate_mi with boolean mask:', _estimate_mi(X, y, discrete_features=mask, discrete_target=False, n_neighbors=2, copy=True, random_state=None))
++print('_estimate_mi with index array:', _estimate_mi(X, y, discrete_features=idx, discrete_target=False, n_neighbors=2, copy=True, random_state=None))
+\ No newline at end of file

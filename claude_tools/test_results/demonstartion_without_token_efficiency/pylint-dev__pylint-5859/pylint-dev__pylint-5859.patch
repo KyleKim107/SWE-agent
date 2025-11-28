@@ -1,0 +1,38 @@
+diff --git a/pylint/checkers/misc.py b/pylint/checkers/misc.py
+index 69149e61a..28978365f 100644
+--- a/pylint/checkers/misc.py
++++ b/pylint/checkers/misc.py
+@@ -121,9 +121,9 @@ class EncodingChecker(BaseChecker):
+ 
+         notes = "|".join(re.escape(note) for note in self.config.notes)
+         if self.config.notes_rgx:
+-            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})\b"
++            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})(?=\W|$)"
+         else:
+-            regex_string = rf"#\s*({notes})\b"
++            regex_string = rf"#\s*({notes})(?=\W|$)"
+ 
+         self._fixme_pattern = re.compile(regex_string, re.I)
+ 
+diff --git a/repro_notes.py b/repro_notes.py
+new file mode 100644
+index 000000000..54802902e
+--- /dev/null
++++ b/repro_notes.py
+@@ -0,0 +1,15 @@
++
++import re
++notes=["YES","???"]
++notes_part = "|".join(re.escape(n) for n in notes)
++regex_b = rf"#\s*({notes_part})\b"
++pattern_b = re.compile(regex_b, re.I)
++texts = ["# YES: yes", "# ???: no"]
++print("Before fix:")
++for t in texts:
++    print(t, bool(pattern_b.search(t.lower())))
++regex_fix = rf"#\s*({notes_part})(?=\W|$)"
++pattern_fix = re.compile(regex_fix, re.I)
++print("After fix:")
++for t in texts:
++    print(t, bool(pattern_fix.search(t.lower())))
+\ No newline at end of file

@@ -1,0 +1,86 @@
+diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py
+index c55864243a..e9de76c665 100644
+--- a/lib/matplotlib/figure.py
++++ b/lib/matplotlib/figure.py
+@@ -3043,6 +3043,8 @@ class Figure(FigureBase):
+ 
+         self.__dict__ = state
+ 
++        # Preserve original dpi from state to avoid backend-side adjustments on unpickle
++        _saved_dpi = getattr(self, "dpi", None)
+         # re-initialise some of the unstored state information
+         FigureCanvasBase(self)  # Set self.canvas.
+ 
+@@ -3055,6 +3057,12 @@ class Figure(FigureBase):
+             mgr = plt._backend_mod.new_figure_manager_given_figure(num, self)
+             pylab_helpers.Gcf._set_new_active_manager(mgr)
+             plt.draw_if_interactive()
++        # Restore the original dpi to avoid device scaling changing it
++        if _saved_dpi is not None:
++            try:
++                self.set_dpi(_saved_dpi)
++            except Exception:
++                self.dpi = _saved_dpi
+ 
+         self.stale = True
+ 
+@@ -3440,4 +3448,4 @@ def figaspect(arg):
+     # Finally, if we have a really funky aspect ratio, break it but respect
+     # the min/max dimensions (we don't want figures 10 feet tall!)
+     newsize = np.clip(newsize, figsize_min, figsize_max)
+-    return newsize
++    return newsize
+\ No newline at end of file
+diff --git a/tmp/patch_fix_setstate.py b/tmp/patch_fix_setstate.py
+new file mode 100644
+index 0000000000..f5642d4c23
+--- /dev/null
++++ b/tmp/patch_fix_setstate.py
+@@ -0,0 +1 @@
++path = "/testbed/lib/matplotlib/figure.py"\nwith open(path, "r", encoding="utf-8") as f:\n    lines = f.read().splitlines()\n# Remove all occurrences of plt.draw_if_interactive()\nnew_lines = [ln for ln in lines if ln.strip() != "plt.draw_if_interactive()"]\n# Reinsert a single plt.draw_if_interactive() right after setting active manager\nfor i, ln in enumerate(new_lines):\n    if "pylab_helpers.Gcf._set_new_active_manager(mgr)" in ln:\n        new_lines.insert(i+1, "            plt.draw_if_interactive()")\n        break\nwith open(path, "w", encoding="utf-8") as f:\n    f.write("\n".join(new_lines))
+\ No newline at end of file
+diff --git a/tmp/patch_remove_duplicate_setstate.py b/tmp/patch_remove_duplicate_setstate.py
+new file mode 100644
+index 0000000000..e1d5344b0c
+--- /dev/null
++++ b/tmp/patch_remove_duplicate_setstate.py
+@@ -0,0 +1,12 @@
++
++path = "/testbed/lib/matplotlib/figure.py"
++with open(path, "r", encoding="utf-8") as f:
++    lines = f.read().splitlines()
++idxs = [i for i, ln in enumerate(lines) if ln.lstrip().startswith("def __setstate__(self, state):")]
++if len(idxs) >= 2:
++    first, second = idxs[0], idxs[1]
++    new_lines = lines[:first] + lines[second:]
++else:
++    new_lines = lines
++with open(path, "w", encoding="utf-8") as f:
++    f.write("\n".join(new_lines))
+\ No newline at end of file
+diff --git a/tmp/repro_unpickle_dpi.py b/tmp/repro_unpickle_dpi.py
+new file mode 100644
+index 0000000000..7aa09c073b
+--- /dev/null
++++ b/tmp/repro_unpickle_dpi.py
+@@ -0,0 +1,15 @@
++
++import pickle
++import matplotlib.pyplot as plt
++fig = plt.figure()
++print("initial dpi:", fig.dpi)
++with open("tmp_fig.pkl","wb") as f:
++    pickle.dump(fig, f)
++with open("tmp_fig.pkl","rb") as f:
++    fig2 = pickle.load(f)
++print("after unpickle dpi:", fig2.dpi)
++with open("tmp_fig.pkl","wb") as f:
++    pickle.dump(fig2, f)
++with open("tmp_fig.pkl","rb") as f:
++    fig3 = pickle.load(f)
++print("second unpickle dpi:", fig3.dpi)
+\ No newline at end of file
+diff --git a/tmp_fig.pkl b/tmp_fig.pkl
+new file mode 100644
+index 0000000000..702594f0d0
+Binary files /dev/null and b/tmp_fig.pkl differ

@@ -1,0 +1,21 @@
+diff --git a/django/db/models/fields/__init__.py b/django/db/models/fields/__init__.py
+index 1a55d3d417..a33249e72f 100644
+--- a/django/db/models/fields/__init__.py
++++ b/django/db/models/fields/__init__.py
+@@ -764,7 +764,7 @@ class Field(RegisterLookupMixin):
+             if not getattr(cls, self.attname, None):
+                 setattr(cls, self.attname, self.descriptor_class(self))
+         if self.choices is not None:
+-            if not hasattr(cls, 'get_%s_display' % self.name):
++            if True:
+                 setattr(
+                     cls,
+                     'get_%s_display' % self.name,
+diff --git a/repro_inherited_choices.py b/repro_inherited_choices.py
+new file mode 100644
+index 0000000000..99e0c1fef9
+--- /dev/null
++++ b/repro_inherited_choices.py
+@@ -0,0 +1 @@
++from django.db import models\n\nclass A(models.Model):\n    foo_choice = [("A","output1"),("B","output2")]\n    field_foo = models.CharField(max_length=254, choices=foo_choice)\n    class Meta:\n        abstract = True\n\nclass B(A):\n    foo_choice = [("A","output1"),("B","output2"),("C","output3")]\n    field_foo = models.CharField(max_length=254, choices=foo_choice)\n\n# Simulate instance and get display via model method using internal machinery\nb = B()\nb.field_foo = "C"\nprint('Display for C:', b.get_field_foo_display())\n
+\ No newline at end of file

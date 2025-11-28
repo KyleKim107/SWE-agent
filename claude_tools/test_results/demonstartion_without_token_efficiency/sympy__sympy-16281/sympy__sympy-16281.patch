@@ -1,0 +1,19 @@
+diff --git a/repro_product_pretty.py b/repro_product_pretty.py
+new file mode 100644
+index 0000000000..0093739537
+--- /dev/null
++++ b/repro_product_pretty.py
+@@ -0,0 +1,12 @@
++
++from sympy import symbols, Product, oo
++from sympy import pprint
++n = symbols('n')
++print('Unicode:')
++pprint(Product(1, (n, 1, oo)))
++pprint(Product(1/n, (n, 1, oo)))
++pprint(Product(1/n**2, (n, 1, oo)))
++print('ASCII:')
++pprint(Product(1, (n, 1, oo)), use_unicode=False)
++pprint(Product(1/n, (n, 1, oo)), use_unicode=False)
++pprint(Product(1/n**2, (n, 1, oo)), use_unicode=False)
+\ No newline at end of file

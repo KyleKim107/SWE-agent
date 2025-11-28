@@ -1,0 +1,26 @@
+diff --git a/repro_formset_nonform.py b/repro_formset_nonform.py
+index ef474fbd46..be964e5b70 100644
+--- a/repro_formset_nonform.py
++++ b/repro_formset_nonform.py
+@@ -1 +1,18 @@
+-from django import forms\nfrom django.forms import formset_factory\nimport warnings\n\nclass SimpleForm(forms.Form):\n    name = forms.CharField()\n\n# Create a formset requiring at least 2 forms, validate on clean\nFS = formset_factory(SimpleForm, min_num=2, validate_min=True)\nfs = FS(data={'form-TOTAL_FORMS': '1', 'form-INITIAL_FORMS': '0', 'form-MIN_NUM_FORMS': '2', 'form-0-name': ''})\n\n# Access non-form errors and render\nerrs = fs.non_form_errors()\nprint('ErrorList repr:', repr(errs))\nprint('ErrorList as str:', str(errs))\n
+\ No newline at end of file
++from django import forms\nfrom django.forms import formset_factory\nimport warnings\n\nclass SimpleForm(forms.Form):\n    name = forms.CharField()\n\n# Create a formset requiring at least 2 forms, validate on clean\nFS = formset_factory(SimpleForm, min_num=2, validate_min=True)\nfs = FS(data={'form-TOTAL_FORMS': '1', 'form-INITIAL_FORMS': '0', 'form-MIN_NUM_FORMS': '2', 'form-0-name': ''})\n\n# Access non-form errors and render\nerrs = fs.non_form_errors()\nprint('ErrorList repr:', repr(errs))\nprint('ErrorList as str:', str(errs))\n
++import django
++from django.conf import settings
++settings.configure(USE_I18N=False, SECRET_KEY="x", STATIC_URL="/static/")
++django.setup()
++from django import forms
++from django.forms import formset_factory
++
++class SimpleForm(forms.Form):
++    name = forms.CharField()
++
++FS = formset_factory(SimpleForm, min_num=2, validate_min=True, extra=0)
++fs = FS(data={"form-TOTAL_FORMS": "1", "form-INITIAL_FORMS": "0", "form-MIN_NUM_FORMS": "2", "form-0-name": ""})
++
++errs = fs.non_form_errors()
++html = str(errs)
++print("ErrorList:", html)
++print("Has nonform class:", "errorlist nonform" in html)
+\ No newline at end of file

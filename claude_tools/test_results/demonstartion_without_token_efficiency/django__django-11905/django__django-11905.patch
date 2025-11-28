@@ -1,0 +1,45 @@
+diff --git a/django/db/models/lookups.py b/django/db/models/lookups.py
+index 9344979c56..f7948c9caa 100644
+--- a/django/db/models/lookups.py
++++ b/django/db/models/lookups.py
+@@ -464,6 +464,9 @@ class IsNull(BuiltinLookup):
+ 
+     def as_sql(self, compiler, connection):
+         sql, params = compiler.compile(self.lhs)
++
++        if not isinstance(self.rhs, bool):
++            raise ValueError('The isnull lookup requires a boolean value.')
+         if self.rhs:
+             return "%s IS NULL" % sql, params
+         else:
+diff --git a/repro_isnull.py b/repro_isnull.py
+new file mode 100644
+index 0000000000..4da5163228
+--- /dev/null
++++ b/repro_isnull.py
+@@ -0,0 +1,24 @@
++
++from django.conf import settings
++settings.configure(INSTALLED_APPS=['django.contrib.contenttypes'], DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3','NAME': ':memory:'}})
++import django
++django.setup()
++from django.db import models
++class Item(models.Model):
++    name = models.CharField(max_length=10)
++    class Meta:
++        app_label = 'myapp'
++print('Boolean True/False should work and compile:')
++qs_true = Item.objects.filter(name__isnull=True)
++print('True SQL:', str(qs_true.query)[:60])
++qs_false = Item.objects.filter(name__isnull=False)
++print('False SQL:', str(qs_false.query)[:60])
++print('Non-boolean values should raise:')
++for bad in [1, 0, 'yes', None, [], {}]:
++    try:
++        qs_bad = Item.objects.filter(name__isnull=bad)
++        print('Attempting:', repr(bad))
++        print(str(qs_bad.query))
++        print('ERROR: non-boolean was accepted')
++    except Exception as e:
++        print('Raised as expected for', repr(bad), ':', type(e).__name__, str(e))
+\ No newline at end of file

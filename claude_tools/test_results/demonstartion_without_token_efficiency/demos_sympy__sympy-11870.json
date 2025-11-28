@@ -1,0 +1,38 @@
+{
+  "strategy": "semantic",
+  "k": 2,
+  "test_instance": "sympy__sympy-11870",
+  "query": "simplifying exponential -> trig identities\n```\r\nf = 1 / 2 * (-I*exp(I*k) + I*exp(-I*k))\r\ntrigsimp(f)\r\n```\r\n\r\nIdeally, this would yield `sin(k)`. Is there a way to do this?\r\n\r\nAs a corollary, it would ",
+  "demonstrations": [
+    {
+      "instance_id": "sympy__sympy-11870",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-11870.patch",
+      "patch_size": 2740,
+      "trajectory_file": "sympy__sympy-11870.traj",
+      "source_directory": "sympy__sympy-11870",
+      "problem_statement": "simplifying exponential -> trig identities\n```\r\nf = 1 / 2 * (-I*exp(I*k) + I*exp(-I*k))\r\ntrigsimp(f)\r\n```\r\n\r\nIdeally, this would yield `sin(k)`. Is there a way to do this?\r\n\r\nAs a corollary, it would be awesome if \r\n\r\n```\r\nf = 1 / 2 / k* (-I*exp(I*k) + I*exp(-I*k))\r\ntrigsimp(f)\r\n```\r\n\r\ncould yield `sinc(k)`. Thank you for your consideration!\n",
+      "hints_text": "rewrite can be used:\n\n```\n>>> f = S(1) / 2 * (-I*exp(I*k) + I*exp(-I*k))\n>>> f.rewrite(sin).simplify()\nsin(k)\n```\n\nThank you for that suggestion!\n\n> On Nov 17, 2016, at 01:06, Kalevi Suominen notifications@github.com wrote:\n> \n> rewrite can be used:\n> \n> > > > f = S(1) / 2 \\* (-I_exp(I_k) + I_exp(-I_k))\n> > > > f.rewrite(sin).simplify()\n> > > > sin(k)\n> \n> \u2014\n> You are receiving this because you authored the thread.\n> Reply to this email directly, view it on GitHub, or mute the thread.\n\nToo bad this doesn't work as expected:\n\n```\n\u03c9 = sym.symbols('\u03c9', real=True)\nk = sym.symbols('k', real=True)\nf = 1 / 2 / \u03c0 * sym.exp(sym.I * \u03c9 * k)\nF = sym.integrate(f, (\u03c9, -\u03c0, \u03c0))\nF.rewrite(sym.sinc).simplify()\n```\n\nIt does not produce the desired sinc function in the equation.\n\nIt seems that rewrite for sinc has not been implemented.\n",
+      "created_at": "2016-11-17T21:36:03Z",
+      "patch": "diff --git a/sympy/functions/elementary/trigonometric.py b/sympy/functions/elementary/trigonometric.py\n--- a/sympy/functions/elementary/trigonometric.py\n+++ b/sympy/functions/elementary/trigonometric.py\n@@ -16,6 +16,8 @@\n from sympy.sets.sets import FiniteSet\n from sympy.utilities.iterables import numbered_symbols\n from sympy.core.compatibility import range\n+from sympy.core.relational import Ne\n+from sympy.functions.elementary.piecewise import Piecewise\n \n ###############################################################################\n ########################## TRIGONOMETRIC FUNCTIONS ############################\n@@ -400,6 +402,9 @@ def _eval_rewrite_as_csc(self, arg):\n     def _eval_rewrite_as_sec(self, arg):\n         return 1 / sec(arg - S.Pi / 2, evaluate=False)\n \n+    def _eval_rewrite_as_sinc(self, arg):\n+        return arg*sinc(arg)\n+\n     def _eval_conjugate(self):\n         return self.func(self.args[0].conjugate())\n \n@@ -1789,7 +1794,7 @@ def _eval_rewrite_as_jn(self, arg):\n         return jn(0, arg)\n \n     def _eval_rewrite_as_sin(self, arg):\n-        return sin(arg) / arg\n+        return Piecewise((sin(arg)/arg, Ne(arg, 0)), (1, True))\n \n \n ###############################################################################\n"
+    },
+    {
+      "instance_id": "sympy__sympy-11400",
+      "repository": "sympy",
+      "resolved": true,
+      "patch_file": "sympy__sympy-11400.patch",
+      "patch_size": 2589,
+      "trajectory_file": "sympy__sympy-11400.traj",
+      "source_directory": "sympy__sympy-11400",
+      "problem_statement": "ccode(sinc(x)) doesn't work\n```\nIn [30]: ccode(sinc(x))\nOut[30]: '// Not supported in C:\\n// sinc\\nsinc(x)'\n```\n\nI don't think `math.h` has `sinc`, but it could print\n\n```\nIn [38]: ccode(Piecewise((sin(theta)/theta, Ne(theta, 0)), (1, True)))\nOut[38]: '((Ne(theta, 0)) ? (\\n   sin(theta)/theta\\n)\\n: (\\n   1\\n))'\n```\n\n",
+      "hints_text": "@asmeurer I would like to fix this issue. Should I work upon  the codegen.py file ? If there's something else tell me how to start ?\n\nThe relevant file is sympy/printing/ccode.py\n\n@asmeurer I am new here. I would like to work on this issue. Please tell me how to start?\n\nSince there are two people asking, maybe one person can try #11286 which is very similar, maybe even easier.\n",
+      "created_at": "2016-07-15T21:40:49Z",
+      "patch": "diff --git a/sympy/printing/ccode.py b/sympy/printing/ccode.py\n--- a/sympy/printing/ccode.py\n+++ b/sympy/printing/ccode.py\n@@ -231,6 +231,20 @@ def _print_Symbol(self, expr):\n         else:\n             return name\n \n+    def _print_Relational(self, expr):\n+        lhs_code = self._print(expr.lhs)\n+        rhs_code = self._print(expr.rhs)\n+        op = expr.rel_op\n+        return (\"{0} {1} {2}\").format(lhs_code, op, rhs_code)\n+\n+    def _print_sinc(self, expr):\n+        from sympy.functions.elementary.trigonometric import sin\n+        from sympy.core.relational import Ne\n+        from sympy.functions import Piecewise\n+        _piecewise = Piecewise(\n+            (sin(expr.args[0]) / expr.args[0], Ne(expr.args[0], 0)), (1, True))\n+        return self._print(_piecewise)\n+\n     def _print_AugmentedAssignment(self, expr):\n         lhs_code = self._print(expr.lhs)\n         op = expr.rel_op\n"
+    }
+  ],
+  "trajectory_files": [
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/sympy__sympy-11870/sympy__sympy-11870.traj",
+    "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/demonstration_pool/sympy__sympy-11400/sympy__sympy-11400.traj"
+  ]
+}

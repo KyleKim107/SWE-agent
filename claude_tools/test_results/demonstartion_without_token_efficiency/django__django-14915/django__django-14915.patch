@@ -1,0 +1,12 @@
+diff --git a/repro_model_choice_hash.py b/repro_model_choice_hash.py
+new file mode 100644
+index 0000000000..acde3d7b0e
+--- /dev/null
++++ b/repro_model_choice_hash.py
+@@ -0,0 +1,5 @@
++
++from django.forms.models import ModelChoiceIteratorValue
++val = ModelChoiceIteratorValue(1, None)
++show_fields = {1: ['first_name','last_name']}
++print('Membership test:', val in show_fields)
+\ No newline at end of file

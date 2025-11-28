@@ -1,0 +1,120 @@
+{
+  "strategy": "semantic",
+  "k": 2,
+  "total_instances": 300,
+  "results": [
+    {
+      "instance_id": "sympy__sympy-20442",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-20590",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/token_optimized_full/sympy__sympy-20590",
+      "return_code": 0
+    },
+    {
+      "instance_id": "sympy__sympy-20639",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/token_optimized_full/sympy__sympy-20639",
+      "return_code": 0
+    },
+    {
+      "instance_id": "sympy__sympy-21055",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-21171",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-21379",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/token_optimized_full/sympy__sympy-21379",
+      "return_code": 0
+    },
+    {
+      "instance_id": "sympy__sympy-21612",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-21614",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/token_optimized_full/sympy__sympy-21614",
+      "return_code": 0
+    },
+    {
+      "instance_id": "sympy__sympy-21627",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-21847",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-22005",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/token_optimized_full/sympy__sympy-22005",
+      "return_code": 0
+    },
+    {
+      "instance_id": "sympy__sympy-22714",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/token_optimized_full/sympy__sympy-22714",
+      "return_code": 0
+    },
+    {
+      "instance_id": "sympy__sympy-22840",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-23117",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-23191",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-23262",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-24066",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-24102",
+      "success": true,
+      "output_dir": "/Users/kylekim/Desktop/TAMU/CS689/course_project/SWE-agent/claude_tools/test_results/token_optimized_full/sympy__sympy-24102",
+      "return_code": 0
+    },
+    {
+      "instance_id": "sympy__sympy-24152",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-24213",
+      "success": false,
+      "timeout": true
+    },
+    {
+      "instance_id": "sympy__sympy-24909",
+      "success": false,
+      "timeout": true
+    }
+  ],
+  "success_rate": 0.3333333333333333
+}

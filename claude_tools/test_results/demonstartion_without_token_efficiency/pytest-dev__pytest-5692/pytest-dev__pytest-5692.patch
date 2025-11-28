@@ -1,0 +1,18 @@
+diff --git a/tmp_junit/report.xml b/tmp_junit/report.xml
+new file mode 100644
+index 000000000..eba7297e3
+--- /dev/null
++++ b/tmp_junit/report.xml
+@@ -0,0 +1 @@
++<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="0" failures="0" hostname="90f544f13eac" name="pytest" skipped="0" tests="1" time="0.007" timestamp="2025-11-27T17:26:22"><testcase classname="tmp_junit.test_sample" file="tmp_junit/test_sample.py" line="1" name="test_ok" time="0.000"></testcase></testsuite></testsuites>
+\ No newline at end of file
+diff --git a/tmp_junit/test_sample.py b/tmp_junit/test_sample.py
+new file mode 100644
+index 000000000..6c7b7522a
+--- /dev/null
++++ b/tmp_junit/test_sample.py
+@@ -0,0 +1,3 @@
++
++def test_ok():
++    assert 1+1==2
+\ No newline at end of file

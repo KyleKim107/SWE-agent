@@ -1,0 +1,25 @@
+diff --git a/lib/matplotlib/__init__.py b/lib/matplotlib/__init__.py
+index b657a35cf7..c0c45f265e 100644
+--- a/lib/matplotlib/__init__.py
++++ b/lib/matplotlib/__init__.py
+@@ -130,7 +130,9 @@ __bibtex__ = r"""@Article{Hunter:2007,
+ }"""
+ 
+ 
++version_info = tuple(_version.version_tuple[:3])
+ def __getattr__(name):
++
+     if name == "__version__":
+         import setuptools_scm
+         global __version__  # cache it.
+diff --git a/tmp/repro_version_info.py b/tmp/repro_version_info.py
+new file mode 100644
+index 0000000000..eb58882568
+--- /dev/null
++++ b/tmp/repro_version_info.py
+@@ -0,0 +1,4 @@
++import matplotlib as mpl\nprint('matplotlib.version_info =', mpl.version_info)\nprint('Comparable check >= (3,5,0):', mpl.version_info >= (3,5,0))
++import matplotlib as mpl
++print('matplotlib.version_info =', mpl.version_info)
++print('Comparable check >= (3,5,0):', mpl.version_info >= (3,5,0))
+\ No newline at end of file

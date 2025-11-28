@@ -1,0 +1,21 @@
+diff --git a/reproduce_is_upper.py b/reproduce_is_upper.py
+new file mode 100644
+index 0000000000..350e3e2c55
+--- /dev/null
++++ b/reproduce_is_upper.py
+@@ -0,0 +1 @@
++import sympy as sp; A=sp.zeros(4,2); print('A.is_upper:', A.is_upper)
+\ No newline at end of file
+diff --git a/sympy/matrices/matrices.py b/sympy/matrices/matrices.py
+index 90ea232faf..c600fe88e2 100644
+--- a/sympy/matrices/matrices.py
++++ b/sympy/matrices/matrices.py
+@@ -1112,7 +1112,7 @@ def is_upper(self):
+         """
+         return all(self[i, j].is_zero
+                    for i in range(1, self.rows)
+-                   for j in range(i))
++                   for j in range(min(i, self.cols)))
+ 
+     @property
+     def is_zero(self):
