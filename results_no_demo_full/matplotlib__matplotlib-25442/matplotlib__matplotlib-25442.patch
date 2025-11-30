@@ -1,0 +1,8 @@
+diff --git a/tmp/repro_mplcursor.py b/tmp/repro_mplcursor.py
+new file mode 100644
+index 0000000000..5900bc3ed9
+--- /dev/null
++++ b/tmp/repro_mplcursor.py
+@@ -0,0 +1 @@
++import matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nfrom matplotlib import offsetbox as ob\n\nfig, ax = plt.subplots()\nann = ax.annotate('a', (0.5, 0.5))\ndr = ob.DraggableAnnotation(ann)\n# Simulate figure becoming None by removing the artist then checking parenting\nann.remove()\ntry:\n    ok = dr._check_still_parented()\n    print('check_still_parented:', ok)\n    print('Repro OK: no AttributeError when disconnecting with figure=None')\nexcept Exception as e:\n    print('Repro FAIL:', type(e).__name__, e)\n
+\ No newline at end of file

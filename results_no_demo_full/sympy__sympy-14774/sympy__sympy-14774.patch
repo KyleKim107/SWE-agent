@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..ca6dfbf35d
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++from sympy import symbols, asin, acsc, asec\nfrom sympy import latex\nx = symbols("x")\nprint(latex(asin(x), inv_trig_style="full"))\nprint(latex(acsc(x), inv_trig_style="full"))\nprint(latex(asec(x), inv_trig_style="full"))\n
+\ No newline at end of file

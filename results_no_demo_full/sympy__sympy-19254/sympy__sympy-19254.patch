@@ -1,0 +1,66 @@
+diff --git a/reproduce_kc_bound.py b/reproduce_kc_bound.py
+new file mode 100644
+index 0000000000..101731d91e
+--- /dev/null
++++ b/reproduce_kc_bound.py
+@@ -0,0 +1 @@
++print("Reproduce KC bounds:")\nfrom sympy.polys.rings import ring\nfrom sympy.polys.domains import ZZ\nfrom sympy.polys.specialpolys import w_polys\nfrom sympy import nextprime\nR, x = ring("x", ZZ)\nprint("dup KC bound for 2*x**2 + 3*x + 4:", R.dup_zz_mignotte_bound(2*x**2 + 3*x + 4))\nR2, x, y, z = ring("x,y,z", ZZ)\nw1, _ = w_polys()\nB = R2.dmp_zz_mignotte_bound(w1)\nprint("dmp KC bound for w_1:", B)\nprint("nextprime of dmp KC bound for w_1:", nextprime(B))\n
+\ No newline at end of file
+diff --git a/sympy/polys/factortools.py b/sympy/polys/factortools.py
+index 93298f47e6..ebb764d953 100644
+--- a/sympy/polys/factortools.py
++++ b/sympy/polys/factortools.py
+@@ -124,22 +124,22 @@ def dmp_trial_division(f, factors, u, K):
+ 
+ 
+ def dup_zz_mignotte_bound(f, K):
+-    """Mignotte bound for univariate polynomials in `K[x]`. """
+-    a = dup_max_norm(f, K)
+-    b = abs(dup_LC(f, K))
+     n = dup_degree(f)
+-
+-    return K.sqrt(K(n + 1))*2**n*a*b
+-
++    S = sum(int(c)**2 for c in f)
++    return K.sqrt(K(n + 1)) * 2**(n - 1) * K.sqrt(K(S))
+ 
+ def dmp_zz_mignotte_bound(f, u, K):
+-    """Mignotte bound for multivariate polynomials in `K[X]`. """
+-    a = dmp_max_norm(f, u, K)
+-    b = abs(dmp_ground_LC(f, u, K))
+     n = sum(dmp_degree_list(f, u))
+-
+-    return K.sqrt(K(n + 1))*2**n*a*b
+-
++    def _sum_squares(poly, uu):
++        if uu == 0:
++            return sum(int(c)**2 for c in poly)
++        total = 0
++        v = uu - 1
++        for c in poly:
++            total += _sum_squares(c, v)
++        return total
++    S = _sum_squares(f, u)
++    return K.sqrt(K(n + 1)) * 2**(n - 1) * K.sqrt(K(S))
+ 
+ def dup_zz_hensel_step(m, f, g, h, s, t, K):
+     """
+diff --git a/sympy/polys/tests/test_factortools.py b/sympy/polys/tests/test_factortools.py
+index 7bcd935756..216c12cb60 100644
+--- a/sympy/polys/tests/test_factortools.py
++++ b/sympy/polys/tests/test_factortools.py
+@@ -27,12 +27,12 @@ def test_dmp_trial_division():
+ 
+ def test_dup_zz_mignotte_bound():
+     R, x = ring("x", ZZ)
+-    assert R.dup_zz_mignotte_bound(2*x**2 + 3*x + 4) == 32
++    assert R.dup_zz_mignotte_bound(2*x**2 + 3*x + 4) == 10
+ 
+ 
+ def test_dmp_zz_mignotte_bound():
+     R, x, y = ring("x,y", ZZ)
+-    assert R.dmp_zz_mignotte_bound(2*x**2 + 3*x + 4) == 32
++    assert R.dmp_zz_mignotte_bound(2*x**2 + 3*x + 4) == 10
+ 
+ 
+ def test_dup_zz_hensel_step():

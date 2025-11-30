@@ -1,0 +1,24 @@
+diff --git a/scripts/repro.py b/scripts/repro.py
+new file mode 100644
+index 0000000000..f3c8a84b12
+--- /dev/null
++++ b/scripts/repro.py
+@@ -0,0 +1,18 @@
++from pathlib import Path
++from django.conf import settings
++from django import setup
++
++BASE_DIR = Path.cwd()
++settings.configure(TEMPLATES=[{
++    'BACKEND': 'django.template.backends.django.DjangoTemplates',
++    'DIRS': [BASE_DIR],
++    'APP_DIRS': True,
++}], INSTALLED_APPS=["django.contrib.auth","django.contrib.contenttypes"])
++setup()
++from django.template.autoreload import template_changed
++
++class DummySender: pass
++py_result = template_changed(DummySender(), BASE_DIR / 'test.py')
++html_result = template_changed(DummySender(), BASE_DIR / 'template.html')
++print('py_result:', py_result)
++print('html_result:', html_result)

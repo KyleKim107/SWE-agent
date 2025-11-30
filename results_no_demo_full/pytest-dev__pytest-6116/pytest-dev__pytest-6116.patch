@@ -1,0 +1,35 @@
+diff --git a/scripts/repro_collect_short.py b/scripts/repro_collect_short.py
+new file mode 100644
+index 000000000..91d2dfa4a
+--- /dev/null
++++ b/scripts/repro_collect_short.py
+@@ -0,0 +1,19 @@
++import os, sys, subprocess
++
++try:
++    os.remove("ran.txt")
++except FileNotFoundError:
++    pass
++
++env = dict(os.environ)
++env["PYTHONPATH"] = "src"
++cmd = [sys.executable, "-m", "pytest", "-q", "-C", "testing_short"]
++print("Running:", " ".join(cmd))
++res = subprocess.run(cmd, env=env)
++if res.returncode != 0:
++    print("ERROR: pytest returned code", res.returncode)
++    sys.exit(1)
++if os.path.exists("ran.txt"):
++    print("ERROR: collect-only should not have created ran.txt")
++    sys.exit(1)
++print("OK: -C performed collection only")
+diff --git a/testing_short/test_sample.py b/testing_short/test_sample.py
+new file mode 100644
+index 000000000..1cc114df9
+--- /dev/null
++++ b/testing_short/test_sample.py
+@@ -0,0 +1,4 @@
++def test_writes_marker():
++    with open("ran.txt","w") as f:
++        f.write("ran")
++    assert True

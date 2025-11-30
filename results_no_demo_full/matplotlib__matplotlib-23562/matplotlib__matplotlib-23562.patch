@@ -1,0 +1,8 @@
+diff --git a/tmp/repro.py b/tmp/repro.py
+new file mode 100644
+index 0000000000..8b9954a2a3
+--- /dev/null
++++ b/tmp/repro.py
+@@ -0,0 +1 @@
++import os\nos.environ.setdefault('MPLBACKEND','Agg')\nimport numpy as np\nimport matplotlib.pyplot as plt\nfrom mpl_toolkits.mplot3d import Axes3D\n\ny,x = np.ogrid[1:10:100j, 1:10:100j]\nz2 = np.cos(x)**3 - np.sin(y)**2\nfig = plt.figure()\nax = fig.add_subplot(111, projection='3d')\nr = ax.plot_surface(x,y,z2, cmap='hot')\nfc = r.get_facecolors()\nprint('OK facecolors shape:', getattr(fc, 'shape', None))\n
+\ No newline at end of file

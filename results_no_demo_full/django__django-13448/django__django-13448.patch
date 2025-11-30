@@ -1,0 +1,8 @@
+diff --git a/repro_check.py b/repro_check.py
+new file mode 100644
+index 0000000000..341bd9dad4
+--- /dev/null
++++ b/repro_check.py
+@@ -0,0 +1 @@
++from pathlib import Path\np = Path("/testbed/django/db/backends/base/creation.py").read_text()\nneedle = "if serialize and self.connection.settings_dict[\"TEST\"].get(\"MIGRATE\", True):"\nif needle in p:\n    print("OK: Patch applied; serialization is gated by TEST[MIGRATE]")\nelse:\n    print("ERROR: Patch missing")\n    raise SystemExit(1)\n
+\ No newline at end of file

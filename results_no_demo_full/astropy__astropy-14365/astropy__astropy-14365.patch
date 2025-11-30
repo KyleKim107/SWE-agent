@@ -1,0 +1,45 @@
+diff --git a/astropy/io/ascii/qdp.py b/astropy/io/ascii/qdp.py
+index 83a4f004a..e01148ab1 100644
+--- a/astropy/io/ascii/qdp.py
++++ b/astropy/io/ascii/qdp.py
+@@ -60,7 +60,7 @@ def _line_type(line, delimiter=None):
+     ValueError: Unrecognized QDP line...
+     """
+     _decimal_re = r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?"
+-    _command_re = r"READ [TS]ERR(\s+[0-9]+)+"
++    _command_re = r"(?i:READ [TS]ERR(\s+[0-9]+)+)"
+ 
+     sep = delimiter
+     if delimiter is None:
+diff --git a/repro_qdp_lowercase.py b/repro_qdp_lowercase.py
+new file mode 100644
+index 000000000..2a24a2d10
+--- /dev/null
++++ b/repro_qdp_lowercase.py
+@@ -0,0 +1 @@
++from astropy.table import Table; open("test_lowercase.qdp","w").write("read serr 1 2\n1 0.5 1 0.5\n"); t=Table.read("test_lowercase.qdp", format="ascii.qdp"); print("SUCCESS", t.colnames, len(t))
+\ No newline at end of file
+diff --git a/repro_qdp_uppercase.py b/repro_qdp_uppercase.py
+new file mode 100644
+index 000000000..05e27f40f
+--- /dev/null
++++ b/repro_qdp_uppercase.py
+@@ -0,0 +1 @@
++from astropy.table import Table; open("test_uppercase.qdp","w").write("READ SERR 1 2\n1 0.5 1 0.5\n"); t=Table.read("test_uppercase.qdp", format="ascii.qdp"); print("SUCCESS", t.colnames, len(t))
+\ No newline at end of file
+diff --git a/test_lowercase.qdp b/test_lowercase.qdp
+new file mode 100644
+index 000000000..b5750561d
+--- /dev/null
++++ b/test_lowercase.qdp
+@@ -0,0 +1,2 @@
++read serr 1 2
++1 0.5 1 0.5
+diff --git a/test_uppercase.qdp b/test_uppercase.qdp
+new file mode 100644
+index 000000000..ddaaf09f5
+--- /dev/null
++++ b/test_uppercase.qdp
+@@ -0,0 +1,2 @@
++READ SERR 1 2
++1 0.5 1 0.5

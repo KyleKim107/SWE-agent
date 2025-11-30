@@ -1,0 +1,8 @@
+diff --git a/tmp/repro_rangeslider.py b/tmp/repro_rangeslider.py
+new file mode 100644
+index 0000000000..3baf5e57f6
+--- /dev/null
++++ b/tmp/repro_rangeslider.py
+@@ -0,0 +1 @@
++import sys\nsys.path.insert(0, '/testbed/lib')\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nfrom matplotlib.widgets import RangeSlider\nfig, axs = plt.subplots(1, 2, figsize=(6, 3))\nfig.subplots_adjust(bottom=0.25)\nslider_ax = fig.add_axes([0.20, 0.1, 0.60, 0.03])\nslider = RangeSlider(slider_ax, 'Threshold', 0.0, 1.0, valinit=[0.0, 0.0])\nprint('RangeSlider initialized successfully with valinit:', slider.val)\nplt.close(fig)\n
+\ No newline at end of file

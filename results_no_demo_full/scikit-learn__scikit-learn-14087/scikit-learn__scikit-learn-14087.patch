@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 000000000..ad5208893
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++import numpy as np\nfrom sklearn.linear_model import LogisticRegressionCV\nnp.random.seed(29)\nX = np.random.normal(size=(1000, 3))\nbeta = np.random.normal(size=3)\nintercept = np.random.normal(size=None)\ny = np.sign(intercept + X @ beta)\nprint('Starting fit...')\nclf = LogisticRegressionCV(cv=5, solver='saga', tol=1e-2, refit=False)\nclf.fit(X, y)\nprint('Done without error')\n
+\ No newline at end of file

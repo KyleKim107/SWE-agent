@@ -1,0 +1,21 @@
+diff --git a/reproduce.py b/reproduce.py
+new file mode 100644
+index 0000000000..e374c9645d
+--- /dev/null
++++ b/reproduce.py
+@@ -0,0 +1,15 @@
++from django.core.management.base import BaseCommand
++
++class Cmd(BaseCommand):
++    help = """
++Import a contract from tzkt 
++Example usage: 
++	./manage.py tzkt_import 'Tezos Mainnet' KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe
++"""
++
++    def add_arguments(self, parser):
++        parser.add_argument('blockchain', help='Name of the blockchain to import into')
++        parser.add_argument('target', help='Id of the contract to import')
++
++if __name__ == '__main__':
++    Cmd().print_help('manage.py', 'tzkt_import')

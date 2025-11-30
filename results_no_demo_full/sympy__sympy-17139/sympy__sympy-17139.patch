@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 000000000..4331c5349
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++from sympy import *\nx = Symbol('x')\nprint(simplify(cos(x)**I))\n
+\ No newline at end of file

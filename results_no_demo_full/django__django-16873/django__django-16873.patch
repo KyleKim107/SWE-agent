@@ -1,0 +1,8 @@
+diff --git a/repro_join.py b/repro_join.py
+new file mode 100644
+index 0000000000..7ecadf7894
+--- /dev/null
++++ b/repro_join.py
+@@ -0,0 +1 @@
++from django.template import Template, Context\nfrom django.utils.html import escape\n\nsome_list = ["<p>Hello World!</p>", "beta & me", "<script>Hi</script>"]\nsome_var = "<br/>"\n\ntmpl1 = Template("{{ some_list|join:some_var }}")\nout1 = tmpl1.render(Context({"some_list": some_list, "some_var": some_var}))\nexp1 = escape(some_var.join(some_list))\nprint(out1)\nprint(exp1)\nassert out1 == exp1\n\ntmpl2 = Template("{% autoescape off %}{{ some_list|join:some_var }}{% endautoescape %}")\nout2 = tmpl2.render(Context({"some_list": some_list, "some_var": some_var}))\nexp2 = some_var.join(some_list)\nprint(out2)\nprint(exp2)\nassert out2 == exp2\n
+\ No newline at end of file

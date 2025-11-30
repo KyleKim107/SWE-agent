@@ -1,0 +1,18 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..5454a13b29
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,11 @@
++
++from sympy import var, exp, log, latex, pprint
++x = var('x', positive=True)
++print('latex(exp(-x)*log(x)) =', latex(exp(-x)*log(x)))
++print('pprint(exp(-x)*log(x)) =')
++pprint(exp(-x)*log(x))
++x, y = var('x y')
++expr = 1/(x + y)/2
++print('latex(1/(x+y)/2) =', latex(expr))
++print('pprint(1/(x+y)/2) =')
++pprint(expr)
+\ No newline at end of file

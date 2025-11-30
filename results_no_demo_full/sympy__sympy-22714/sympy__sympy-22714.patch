@@ -1,0 +1,21 @@
+diff --git a/reproduce.py b/reproduce.py
+index 06b717f4fa..42fe9cb232 100644
+--- a/reproduce.py
++++ b/reproduce.py
+@@ -1 +1,13 @@
+-import sympy as sp\nprint('SymPy', sp.__version__)\nprint('Case 1: with evaluate(False) and S(code)')\ntry:\n    with sp.evaluate(False):\n        print(sp.S('Point2D(Integer(1),Integer(2))'))\nexcept Exception as e:\n    print('Error:', type(e).__name__, e)\nprint('Case 2: S(code) default')\nprint(sp.S('Point2D(Integer(1),Integer(2))'))\nprint('Case 3: S(code, evaluate=False)')\nprint(sp.S('Point2D(Integer(1),Integer(2))', evaluate=False))\n
+\ No newline at end of file
++import sympy as sp\nprint('SymPy', sp.__version__)\nprint('Case 1: with evaluate(False) and S(code)')\ntry:\n    with sp.evaluate(False):\n        print(sp.S('Point2D(Integer(1),Integer(2))'))\nexcept Exception as e:\n    print('Error:', type(e).__name__, e)\nprint('Case 2: S(code) default')\nprint(sp.S('Point2D(Integer(1),Integer(2))'))\nprint('Case 3: S(code, evaluate=False)')\nprint(sp.S('Point2D(Integer(1),Integer(2))', evaluate=False))\n
++import sympy as sp
++print('SymPy', sp.__version__)
++print('Case 1: with evaluate(False) and S(code)')
++try:
++    with sp.evaluate(False):
++        print(sp.S('Point2D(Integer(1),Integer(2))'))
++except Exception as e:
++    print('Error:', type(e).__name__, e)
++print('Case 2: S(code) default')
++print(sp.S('Point2D(Integer(1),Integer(2))'))
++print('Case 3: S(code, evaluate=False)')
++print(sp.S('Point2D(Integer(1),Integer(2))', evaluate=False))
+\ No newline at end of file

@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..d3c27d183c
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++from sympy.ntheory.residue_ntheory import nthroot_mod\n\nprint('roots (all_roots=True):', nthroot_mod(17*17, 5, 17, True))\nprint('root (all_roots=False):', nthroot_mod(17*17, 5, 17))\nassert nthroot_mod(17*17, 5, 17, True) == [0]\nassert nthroot_mod(17*17, 5, 17) == 0\nprint('OK')\n
+\ No newline at end of file

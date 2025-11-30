@@ -1,0 +1,24 @@
+diff --git a/tmpdocs/conf.py b/tmpdocs/conf.py
+new file mode 100644
+index 000000000..33175f3c6
+--- /dev/null
++++ b/tmpdocs/conf.py
+@@ -0,0 +1 @@
++project = 'mypackage'\nauthor = 'me'\nversion = '0.1.0'\nrelease = '0.1.0'\nlanguage = 'en'\nextensions = []\nrst_prolog = """\n.. |psf| replace:: Python Software Foundation\n"""\n
+\ No newline at end of file
+diff --git a/tmpdocs/index.rst b/tmpdocs/index.rst
+new file mode 100644
+index 000000000..4f9ece4d9
+--- /dev/null
++++ b/tmpdocs/index.rst
+@@ -0,0 +1 @@
++Welcome\n=======\n\n.. toctree::\n\n   mypackage\n
+\ No newline at end of file
+diff --git a/tmpdocs/mypackage.rst b/tmpdocs/mypackage.rst
+new file mode 100644
+index 000000000..b702929e8
+--- /dev/null
++++ b/tmpdocs/mypackage.rst
+@@ -0,0 +1 @@
++:mod:\n=================\n\nContent\n\nSubheading\n----------\n
+\ No newline at end of file

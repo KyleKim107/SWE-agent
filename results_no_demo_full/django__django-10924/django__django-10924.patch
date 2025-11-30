@@ -1,0 +1,19 @@
+diff --git a/django/forms/fields.py b/django/forms/fields.py
+index a977256525..913f9e58ab 100644
+--- a/django/forms/fields.py
++++ b/django/forms/fields.py
+@@ -1090,7 +1090,14 @@ class FilePathField(ChoiceField):
+         if self.match is not None:
+             self.match_re = re.compile(self.match)
+ 
++        if callable(self.path): self.path = self.path()
++        path = self.path
++        path = self.path
+         if recursive:
++        path = self.path
++
++
++
+             for root, dirs, files in sorted(os.walk(self.path)):
+                 if self.allow_files:
+                     for f in sorted(files):

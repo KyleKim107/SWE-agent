@@ -1,0 +1,32 @@
+diff --git a/repro/conf.py b/repro/conf.py
+new file mode 100644
+index 000000000..d778e4d00
+--- /dev/null
++++ b/repro/conf.py
+@@ -0,0 +1 @@
++import os, sys\nproject = 'Repro'\nextensions = ['sphinx.ext.autodoc']\nsys.path.insert(0, '/testbed/repro')\nsys.path.insert(0, '/testbed')\n
+\ No newline at end of file
+diff --git a/repro/index.rst b/repro/index.rst
+new file mode 100644
+index 000000000..b62fb09db
+--- /dev/null
++++ b/repro/index.rst
+@@ -0,0 +1 @@
++Repro\n=====\n\n.. automodule:: mymod\n   :members:\n   :inherited-members: list,set\n
+\ No newline at end of file
+diff --git a/repro/mymod.py b/repro/mymod.py
+new file mode 100644
+index 000000000..950c3be4e
+--- /dev/null
++++ b/repro/mymod.py
+@@ -0,0 +1 @@
++class BaseA:\n    def foo(self):\n        "foo"\n\nclass C(list):\n    def bar(self):\n        "bar"\n\nclass D(set):\n    def baz(self):\n        "baz"\n\nclass E(tuple):\n    def qux(self):\n        "qux"\n
+\ No newline at end of file
+diff --git a/repro_build.py b/repro_build.py
+new file mode 100644
+index 000000000..2b9cc5d4e
+--- /dev/null
++++ b/repro_build.py
+@@ -0,0 +1 @@
++import sys\nsys.path.insert(0, '/testbed')\nfrom sphinx.application import Sphinx\napp = Sphinx(srcdir='repro', confdir='repro', outdir='repro/_build', doctreedir='repro/_build/.doctree', buildername='html', status=None, warning=None)\napp.build()\nprint('build finished')\n
+\ No newline at end of file

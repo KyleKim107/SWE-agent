@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..5a2e0ee723
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++from sympy.core.numbers import Float; f = Float((0, '1L', 0, 1)); print(f)
+\ No newline at end of file

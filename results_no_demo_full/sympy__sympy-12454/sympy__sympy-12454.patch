@@ -1,0 +1,8 @@
+diff --git a/reproduce_is_upper.py b/reproduce_is_upper.py
+new file mode 100644
+index 0000000000..e0e65a3e66
+--- /dev/null
++++ b/reproduce_is_upper.py
+@@ -0,0 +1 @@
++import sympy as sp\nA = sp.zeros(4, 2)\nprint("A shape:", A.shape)\nprint("is_upper:", A.is_upper)
+\ No newline at end of file

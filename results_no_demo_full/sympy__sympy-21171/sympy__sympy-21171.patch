@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..6fe9b2439f
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++from sympy import symbols, SingularityFunction\nfrom sympy.physics.continuum_mechanics import Beam\nfrom sympy.printing.latex import latex\nE, L, F, B, H = symbols("E L F B H")\nI = B*H**3/12\nb2 = Beam(L, E, I)\nb2.apply_load(-F, L/2, -1)\nb2.apply_support(0, "fixed")\nR0, M0 = symbols("R_0 M_0")\nb2.solve_for_reaction_loads(R0, M0)\ns = b2.shear_force()\nprint("shear_force:", s)\nprint("latex(shear_force):", latex(s))\nx = symbols("x")\nprint("latex(SingularityFunction^2):", latex(SingularityFunction(x, 4, 5)**2))
+\ No newline at end of file

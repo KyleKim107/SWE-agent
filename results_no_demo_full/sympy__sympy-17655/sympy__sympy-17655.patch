@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..fecb118fc1
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++from sympy import geometry as ge, sympify\np1 = ge.Point(0,0)\np2 = ge.Point(1,1)\nprint('Right-mul add:', p1 + p2 * sympify(2.0))\ntry:\n    print('Left-mul add:', p1 + sympify(2.0) * p2)\nexcept Exception as e:\n    print('Left-mul add raised:', type(e).__name__, e)
+\ No newline at end of file

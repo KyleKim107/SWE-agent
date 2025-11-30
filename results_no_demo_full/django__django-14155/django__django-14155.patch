@@ -1,0 +1,8 @@
+diff --git a/scripts/repro_partial.py b/scripts/repro_partial.py
+new file mode 100644
+index 0000000000..6ea3561cac
+--- /dev/null
++++ b/scripts/repro_partial.py
+@@ -0,0 +1 @@
++import functools\nfrom django.urls.resolvers import ResolverMatch\n\ndef myview(a, b=2, *, c=3, d=4):\n    pass\n\np = functools.partial(myview, 10, c=5)\nm = ResolverMatch(p, ('x',), {'y': 1})\nprint(repr(m))\nprint(m.func.__module__ + '.' + m.func.__name__)\nprint(m.args)\nprint(m.kwargs)\n
+\ No newline at end of file

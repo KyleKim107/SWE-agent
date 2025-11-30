@@ -1,0 +1,16 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..97c98ed674
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,9 @@
++import sympy as sp
++x = sp.symbols("x")
++print(sp.Mod(x**2, x))
++xv = sp.S(1.5)
++print(sp.Mod(xv**2, xv))
++x2 = sp.S(2)
++print(sp.Mod(x2**2, x2))
++y = sp.symbols("y", integer=True)
++print(sp.Mod(y**2, y))
+\ No newline at end of file

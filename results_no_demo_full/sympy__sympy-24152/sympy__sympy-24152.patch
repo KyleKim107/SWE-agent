@@ -1,0 +1,13 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..85c40f16b2
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,7 @@
++from sympy import *
++from sympy.physics.quantum import *
++U = Operator('U')
++V = Operator('V')
++P = TensorProduct(2*U - V, U + V)
++print('P:', P)
++print('Expanded:', P.expand(tensorproduct=True))

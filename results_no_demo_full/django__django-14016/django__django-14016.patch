@@ -1,0 +1,8 @@
+diff --git a/repro_q_dict_keys.py b/repro_q_dict_keys.py
+new file mode 100644
+index 0000000000..0d0a381d9f
+--- /dev/null
++++ b/repro_q_dict_keys.py
+@@ -0,0 +1 @@
++from django.db.models import Q\nprint('Creating Q with dict_keys...')\nq = Q(x__in={}.keys())\nprint('Q:', q)\nprint('Combining empty | non-empty ...')\ntry:\n    r = Q() | q\n    print('OK:', r)\nexcept Exception as e:\n    print('ERROR:', type(e).__name__, e)\nprint('Combining non-empty | empty ...')\ntry:\n    r2 = q | Q()\n    print('OK:', r2)\nexcept Exception as e:\n    print('ERROR:', type(e).__name__, e)\n
+\ No newline at end of file

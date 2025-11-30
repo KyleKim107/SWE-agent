@@ -1,0 +1,18 @@
+diff --git a/repro_itermonomials.py b/repro_itermonomials.py
+index e69de29bb2..a0d7bb99a8 100644
+--- a/repro_itermonomials.py
++++ b/repro_itermonomials.py
+@@ -0,0 +1,12 @@
++import sympy as sp
++from sympy.polys.orderings import monomial_key
++
++x1, x2, x3 = sp.symbols("x1, x2, x3")
++states = [x1, x2, x3]
++max_degrees = 3
++min_degrees = 3
++monoms = list(sp.itermonomials(states, max_degrees, min_degrees=min_degrees))
++monoms_sorted = sorted(monoms, key=monomial_key("grlex", states))
++print("Monomials:", monoms_sorted)
++needed = {x1**2*x2, x1*x2**2, x2**2*x3, x2*x3**2}
++print("Contains needed subset:", needed.issubset(set(monoms)))
+\ No newline at end of file

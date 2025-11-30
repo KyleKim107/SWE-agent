@@ -1,0 +1,9 @@
+diff --git a/repro.py b/repro.py
+index fe42a62e3..f067206be 100644
+--- a/repro.py
++++ b/repro.py
+@@ -1 +1 @@
+-import sympy as sm\nM = sm.eye(6)\nV = 2*sm.ones(6,2)\nprint("Result:")\nprint(M.col_insert(3, V))\n
+\ No newline at end of file
++import sympy as sm; M=sm.eye(6); V=2*sm.ones(6,2); print(M.col_insert(3, V))
+\ No newline at end of file

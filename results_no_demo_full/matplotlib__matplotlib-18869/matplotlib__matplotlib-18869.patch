@@ -1,0 +1,8 @@
+diff --git a/reproduce_version_check.py b/reproduce_version_check.py
+new file mode 100644
+index 0000000000..af6969dc4e
+--- /dev/null
++++ b/reproduce_version_check.py
+@@ -0,0 +1 @@
++import matplotlib\nprint('__version__:', matplotlib.__version__)\nprint('version_info:', matplotlib.version_info)\nprint('is tuple:', isinstance(matplotlib.version_info, tuple))\nprint('>= (3, 0):', matplotlib.version_info >= (3, 0))\nprint('>= (3, 5, 0):', matplotlib.version_info >= (3, 5, 0))\nprint('< (99, 0):', matplotlib.version_info < (99, 0))
+\ No newline at end of file

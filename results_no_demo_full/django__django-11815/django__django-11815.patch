@@ -1,0 +1,44 @@
+diff --git a/django/db/migrations/serializer.py b/django/db/migrations/serializer.py
+index 27b5cbd379..af79b9da45 100644
+--- a/django/db/migrations/serializer.py
++++ b/django/db/migrations/serializer.py
+@@ -120,9 +120,9 @@ class EnumSerializer(BaseSerializer):
+     def serialize(self):
+         enum_class = self.value.__class__
+         module = enum_class.__module__
+-        v_string, v_imports = serializer_factory(self.value.value).serialize()
+-        imports = {'import %s' % module, *v_imports}
+-        return "%s.%s(%s)" % (module, enum_class.__name__, v_string), imports
++        name_repr = repr(self.value.name)
++        imports = {'import %s' % module}
++        return "%s.%s[%s]" % (module, enum_class.__name__, name_repr), imports
+ 
+ 
+ class FloatSerializer(BaseSimpleSerializer):
+diff --git a/scripts/repro_enum_fixed.py b/scripts/repro_enum_fixed.py
+new file mode 100644
+index 0000000000..65293ed3f9
+--- /dev/null
++++ b/scripts/repro_enum_fixed.py
+@@ -0,0 +1,13 @@
++from enum import Enum
++from django.db.migrations.serializer import serializer_factory
++from django.utils.translation import gettext_lazy as _
++
++class Status(Enum):
++    GOOD = _("Good")
++    BAD = _("Bad")
++
++val = Status.GOOD
++serialized, imports = serializer_factory(val).serialize()
++print(serialized)
++for imp in sorted(imports):
++    print(imp)
+diff --git a/scripts/repro_enum_ok.py b/scripts/repro_enum_ok.py
+new file mode 100644
+index 0000000000..76be1c1d5d
+--- /dev/null
++++ b/scripts/repro_enum_ok.py
+@@ -0,0 +1 @@
++from enum import Enum\nfrom django.db.migrations.serializer import serializer_factory\nfrom django.utils.translation import gettext_lazy as _\n\nclass Status(Enum):\n    GOOD = _("Good")\n    BAD = _("Bad")\n\nval = Status.GOOD\nserialized, imports = serializer_factory(val).serialize()\nprint(serialized)\nfor imp in sorted(imports):\n    print(imp)\n
+\ No newline at end of file

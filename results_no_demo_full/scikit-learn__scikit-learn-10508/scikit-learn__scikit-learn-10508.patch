@@ -1,0 +1,18 @@
+diff --git a/repro.py b/repro.py
+index 473e27d5a..234b21c51 100644
+--- a/repro.py
++++ b/repro.py
+@@ -1 +1,11 @@
+-from sklearn.preprocessing import LabelEncoder\n\nprint('Repro: Fit integers then transform empty list')\nle = LabelEncoder()\nle.fit([1,2])\nprint(le.transform([]))\n\nprint('Repro: Fit strings then transform empty list')\nle.fit(['a','b'])\nprint(le.classes_)\nprint(le.transform([]))\n
+\ No newline at end of file
++from sklearn.preprocessing import LabelEncoder
++
++print("Repro: Fit integers then transform empty list")
++le = LabelEncoder()
++le.fit([1, 2])
++print(le.transform([]))
++
++print("Repro: Fit strings then transform empty list")
++le.fit(["a", "b"])
++print(le.classes_)
++print(le.transform([]))

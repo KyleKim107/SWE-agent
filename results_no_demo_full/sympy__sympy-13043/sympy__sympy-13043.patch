@@ -1,0 +1,8 @@
+diff --git a/repro_intpoly.py b/repro_intpoly.py
+new file mode 100644
+index 0000000000..93534417f9
+--- /dev/null
++++ b/repro_intpoly.py
+@@ -0,0 +1 @@
++from sympy.abc import x, y; from sympy.integrals.intpoly import decompose; print(decompose(x, True)); print(decompose(x**2, True)); print(decompose(x*y, True)); print(decompose(x+y, True)); print(decompose(x**2 + y, True)); print(decompose(8*x**2 + 4*y + 7, True)); print(decompose(x**2 + 3*y*x, True)); print(decompose(9*x**2 + y + 4*x + x**3 + y**2*x + 3, True))
+\ No newline at end of file

@@ -1,0 +1,48 @@
+diff --git a/repro_list_hooks.py b/repro_list_hooks.py
+new file mode 100644
+index 00000000..9afde836
+--- /dev/null
++++ b/repro_list_hooks.py
+@@ -0,0 +1 @@
++# Reproduce list hooks handling in Request.register_hook\nfrom requests.models import Request\nfrom requests.hooks import dispatch_hook\nfrom requests.cookies import cookiejar_from_dict\n\ncalls = []\n\ndef hook1(req):\n    calls.append('hook1')\n    return req\n\ndef hook2(req):\n    calls.append('hook2')\n    return req\n\n# Minimal session-like object\nclass S(object):\n    def __init__(self):\n        self.params = {}\n        self.cookies = cookiejar_from_dict({})\n\nr = Request(url='http://example.com', method='GET', hooks={'pre_request': [hook1, hook2]}, session=S())\n\ntry:\n    _ = dispatch_hook('pre_request', r.hooks, r)\n    print('OK:', calls)\nexcept TypeError as e:\n    print('ERROR:', type(e).__name__)\n
+\ No newline at end of file
+diff --git a/repro_list_hooks_fixed.py b/repro_list_hooks_fixed.py
+new file mode 100644
+index 00000000..6e5bd63e
+--- /dev/null
++++ b/repro_list_hooks_fixed.py
+@@ -0,0 +1 @@
++from requests.models import Request
+\ No newline at end of file
+diff --git a/repro_ok.py b/repro_ok.py
+new file mode 100644
+index 00000000..c375ed00
+--- /dev/null
++++ b/repro_ok.py
+@@ -0,0 +1 @@
++from requests.models import Request\nfrom requests.hooks import dispatch_hook\nfrom requests.cookies import cookiejar_from_dict\n\ncalls = []\n\ndef hook1(req):\n    calls.append('hook1')\n    return req\n\ndef hook2(req):\n    calls.append('hook2')\n    return req\n\nclass S(object):\n    def __init__(self):\n        self.params = {}\n        self.cookies = cookiejar_from_dict({})\n\nr = Request(url='http://example.com', method='GET', hooks={'pre_request': [hook1, hook2]}, session=S())\n_ = dispatch_hook('pre_request', r.hooks, r)\nprint('OK:', calls)\n
+\ No newline at end of file
+diff --git a/repro_ok2.py b/repro_ok2.py
+new file mode 100644
+index 00000000..a5ab14f0
+--- /dev/null
++++ b/repro_ok2.py
+@@ -0,0 +1,17 @@
++from requests.models import Request
++from requests.hooks import dispatch_hook
++from requests.cookies import cookiejar_from_dict
++calls = []
++def hook1(req):
++    calls.append('hook1')
++    return req
++def hook2(req):
++    calls.append('hook2')
++    return req
++class S(object):
++    def __init__(self):
++        self.params = {}
++        self.cookies = cookiejar_from_dict({})
++r = Request(url='http://example.com', method='GET', hooks={'pre_request': [hook1, hook2]}, session=S())
++_ = dispatch_hook('pre_request', r.hooks, r)
++print('OK:', calls)
+\ No newline at end of file

@@ -1,0 +1,18 @@
+diff --git a/method_eq.txt b/method_eq.txt
+deleted file mode 100644
+index 20570862f6..0000000000
+--- a/method_eq.txt
++++ /dev/null
+@@ -1,12 +0,0 @@
+-    def __eq__(self, other):
+-        if not isinstance(other, ValidationError):
+-            return NotImplemented
+-        self_has_dict = hasattr(self, 'error_dict')
+-        other_has_dict = hasattr(other, 'error_dict')
+-        if self_has_dict and other_has_dict:
+-            self_map = {k: sorted(v) for k, v in self.message_dict.items()}
+-            other_map = {k: sorted(v) for k, v in other.message_dict.items()}
+-            return self_map == other_map
+-        if not self_has_dict and not other_has_dict:
+-            return sorted(self.messages) == sorted(other.messages)
+-        return False

@@ -1,0 +1,44 @@
+diff --git a/sphinx/ext/autosummary/generate.py b/sphinx/ext/autosummary/generate.py
+index a57c73fb7..a896f79ef 100644
+--- a/sphinx/ext/autosummary/generate.py
++++ b/sphinx/ext/autosummary/generate.py
+@@ -51,6 +51,7 @@ from sphinx.util.inspect import safe_getattr
+ from sphinx.util.osutil import ensuredir
+ from sphinx.util.template import SphinxTemplateLoader
+ 
++from types import ModuleType
+ if False:
+     # For type annotation
+     from typing import Type  # for python3.5.1
+diff --git a/tmpdemo/_templates/autosummary/module.rst b/tmpdemo/_templates/autosummary/module.rst
+new file mode 100644
+index 000000000..c3d46dce8
+--- /dev/null
++++ b/tmpdemo/_templates/autosummary/module.rst
+@@ -0,0 +1 @@
++{{ fullname | escape | underline }}\n\n.. automodule:: {{ fullname }}\n\n   .. autosummary::\n   {% for item in members %}\n      {{ item }}\n   {%- endfor %}\n
+\ No newline at end of file
+diff --git a/tmpdemo/conf.py b/tmpdemo/conf.py
+new file mode 100644
+index 000000000..701f48ceb
+--- /dev/null
++++ b/tmpdemo/conf.py
+@@ -0,0 +1 @@
++import os, sys\nsys.path.insert(0, os.path.abspath("."))\nextensions = ["sphinx.ext.autosummary"]\nautosummary_generate = True\nautosummary_imported_members = False\ntemplates_path = ["_templates"]\nmaster_doc = "index"\n
+\ No newline at end of file
+diff --git a/tmpdemo/example.py b/tmpdemo/example.py
+new file mode 100644
+index 000000000..cc69345e6
+--- /dev/null
++++ b/tmpdemo/example.py
+@@ -0,0 +1 @@
++import os\n
+\ No newline at end of file
+diff --git a/tmpdemo/index.rst b/tmpdemo/index.rst
+new file mode 100644
+index 000000000..c0ab83062
+--- /dev/null
++++ b/tmpdemo/index.rst
+@@ -0,0 +1 @@
++.. autosummary::\n   :toctree: generated\n\n   example\n
+\ No newline at end of file

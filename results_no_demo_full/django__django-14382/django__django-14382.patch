@@ -1,0 +1,22 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..9706fcf4b0
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,15 @@
++import os
++import sys
++sys.path.insert(0, '/testbed')
++from django.core.management import call_command
++import shutil
++
++target = '/testbed/tmpapp/'
++if os.path.exists(target):
++    shutil.rmtree(target)
++os.makedirs(target)
++try:
++    call_command('startapp', 'myapp', target)
++    print('SUCCESS')
++except Exception as e:
++    print('ERROR', type(e).__name__, str(e))
+\ No newline at end of file

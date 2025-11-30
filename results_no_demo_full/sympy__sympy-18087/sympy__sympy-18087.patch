@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..fda1cd3bb4
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++from sympy import symbols, sin, cos, sqrt, trigsimp\nx = symbols('x')\nx_real = symbols('x', real=True)\nexpr_complex = cos(x) + sqrt(sin(x)**2)\nexpr_real = cos(x_real) + sqrt(sin(x_real)**2)\nprint('complex:', trigsimp(expr_complex))\nprint('real:', trigsimp(expr_real))
+\ No newline at end of file

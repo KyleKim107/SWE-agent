@@ -1,0 +1,8 @@
+diff --git a/repro_napoleon_attr.py b/repro_napoleon_attr.py
+new file mode 100644
+index 000000000..1d4c80416
+--- /dev/null
++++ b/repro_napoleon_attr.py
+@@ -0,0 +1 @@
++from sphinx.ext.napoleon import Config\nfrom sphinx.ext.napoleon.docstring import NumpyDocstring\n\ndoc = "Attributes\n----------\nhello_: int\n    hi"\ncfg = Config(napoleon_use_ivar=False)\nnd = NumpyDocstring(doc, cfg)\nfor l in nd.lines():\n    print(l)
+\ No newline at end of file

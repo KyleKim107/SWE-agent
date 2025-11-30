@@ -1,0 +1,25 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..fe28e09b80
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,19 @@
++from sympy import Symbol, S, simplify, N
++x = Symbol('x')
++a = Symbol('a', integer=True, positive=True)
++e1 = (-a)**x * a**(-x)
++f1 = simplify(e1)
++print('symbolic a:')
++print('e1:', e1)
++print('f1:', f1)
++t = -S(10)/3
++print('N(e1):', N(e1.subs(x, t)))
++print('N(f1):', N(f1.subs(x, t)))
++a2 = S(2)
++e2 = (-a2)**x * a2**(-x)
++f2 = simplify(e2)
++print('numeric a=2:')
++print('e2:', e2)
++print('f2:', f2)
++print('N(e2):', N(e2.subs(x, t)))
++print('N(f2):', N(f2.subs(x, t)))

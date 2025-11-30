@@ -1,0 +1,32 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..c6fcdf1f55
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,26 @@
++from sympy import *
++from sympy.vector import CoordSys3D, Del
++
++init_printing()
++
++delop = Del()
++CC_ = CoordSys3D("C")
++x, y, z = CC_.x, CC_.y, CC_.z
++xhat, yhat, zhat = CC_.i, CC_.j, CC_.k
++
++t = symbols("t")
++ten = symbols("10", positive=True)
++eps, mu = 4*pi*ten**(-11), ten**(-5)
++
++Bx = 2 * ten**(-4) * cos(ten**5 * t) * sin(ten**(-3) * y)
++vecB = Bx * xhat
++vecE = (1/eps) * Integral(delop.cross(vecB/mu).doit(), t)
++
++print("Pretty print vecB:")
++pprint(vecB)
++print()
++print("Pretty print vecE:")
++pprint(vecE)
++print()
++print("Pretty print vecE.doit():")
++pprint(vecE.doit())

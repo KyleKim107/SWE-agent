@@ -1,0 +1,7 @@
+diff --git a/repro.py b/repro.py
+index 4608a4b48..e69de29bb 100644
+--- a/repro.py
++++ b/repro.py
+@@ -1 +0,0 @@
+-import numpy as np\nfrom sklearn.linear_model import RidgeClassifierCV\nn = 30\nX = np.random.randn(n, 5)\ny = np.random.choice([0,1], size=n)\nclf = RidgeClassifierCV(alphas=np.linspace(0.1, 1.0, 5), normalize=True, store_cv_values=True, cv=None)\nclf.fit(X, y)\nprint('alpha_', clf.alpha_)\nprint('cv_values_shape', getattr(clf, 'cv_values_', None).shape if hasattr(clf, 'cv_values_') else None)\n
+\ No newline at end of file

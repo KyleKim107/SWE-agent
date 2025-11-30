@@ -1,0 +1,22 @@
+diff --git a/repro_array_empty.py b/repro_array_empty.py
+index 3295c79000..e2c63811b8 100644
+--- a/repro_array_empty.py
++++ b/repro_array_empty.py
+@@ -1 +1,14 @@
+-from sympy import Array\nprint("Creating Array([])")\na = Array([])\nprint("a:", a)\nprint("shape:", a.shape)\nassert a.shape == (0,), f"Expected (0,), got {a.shape}"\nassert len(a) == 0, f"Expected len 0, got {len(a)}"\nprint("Creating Array([[], []])")\nb = Array([[], []])\nprint("b:", b)\nprint("b shape:", b.shape)\nassert b.shape == (2, 0), f"Expected (2,0), got {b.shape}"\nprint("OK")
+\ No newline at end of file
++from sympy import Array\nprint("Creating Array([])")\na = Array([])\nprint("a:", a)\nprint("shape:", a.shape)\nassert a.shape == (0,), f"Expected (0,), got {a.shape}"\nassert len(a) == 0, f"Expected len 0, got {len(a)}"\nprint("Creating Array([[], []])")\nb = Array([[], []])\nprint("b:", b)\nprint("b shape:", b.shape)\nassert b.shape == (2, 0), f"Expected (2,0), got {b.shape}"\nprint("OK")
++from sympy import Array
++print('Creating Array([])')
++a = Array([])
++print('a:', a)
++print('shape:', a.shape)
++assert a.shape == (0,), f'Expected (0,), got {a.shape}'
++assert len(a) == 0, f'Expected len 0, got {len(a)}'
++print('Creating Array([[], []])')
++b = Array([[], []])
++print('b:', b)
++print('b shape:', b.shape)
++assert b.shape == (2, 0), f'Expected (2,0), got {b.shape}'
++print('OK')
+\ No newline at end of file

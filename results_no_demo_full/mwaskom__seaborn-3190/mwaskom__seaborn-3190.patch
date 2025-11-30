@@ -1,0 +1,13 @@
+diff --git a/repro.py b/repro.py
+index 66ee0b87..68f952d5 100644
+--- a/repro.py
++++ b/repro.py
+@@ -1 +1,5 @@
+-import seaborn.objects as so\nimport matplotlib\nmatplotlib.use('Agg')\n# Trigger the scaling path\nso.Plot(['a','b'], [1,2], color=[True, False]).add(so.Bar()).show()
+\ No newline at end of file
++import seaborn.objects as so\nimport matplotlib\nmatplotlib.use('Agg')\n# Trigger the scaling path\nso.Plot(['a','b'], [1,2], color=[True, False]).add(so.Bar()).show()
++import matplotlib
++matplotlib.use("Agg")
++import seaborn.objects as so
++so.Plot(["a","b"], [1,2], color=[True, False]).add(so.Bar()).show()
+\ No newline at end of file

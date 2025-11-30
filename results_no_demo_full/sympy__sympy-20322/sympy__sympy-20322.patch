@@ -1,0 +1,16 @@
+diff --git a/repro_ceiling.py b/repro_ceiling.py
+new file mode 100644
+index 0000000000..fd8abd30d9
+--- /dev/null
++++ b/repro_ceiling.py
+@@ -0,0 +1,9 @@
++
++import sympy as sp
++x = sp.Symbol("x")
++expr_false = sp.sympify("4*ceiling(x/4 - 3/4)", evaluate=False)
++expr_true = sp.sympify("4*ceiling(x/4 - 3/4)", evaluate=True)
++print("expr_false:", expr_false)
++print("expr_true:", expr_true)
++print("evaluate=False simplify:", sp.simplify(expr_false))
++print("evaluate=True simplify:", sp.simplify(expr_true))
+\ No newline at end of file

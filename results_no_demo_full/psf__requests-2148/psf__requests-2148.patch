@@ -1,0 +1,8 @@
+diff --git a/repro_socket_error.py b/repro_socket_error.py
+new file mode 100644
+index 00000000..5adbe403
+--- /dev/null
++++ b/repro_socket_error.py
+@@ -0,0 +1 @@
++import socket\nfrom requests.models import Response\n\ndef main():\n    class DummyRaw(object):\n        def stream(self, chunk_size, decode_content=True):\n            raise socket.error(104, 'Connection reset by peer')\n        def read(self, amt):\n            raise socket.error(104, 'Connection reset by peer')\n    r = Response()\n    r.raw = DummyRaw()\n    r.status_code = 200\n    try:\n        _ = r.text\n    except Exception as e:\n        print('EXC_TYPE:', type(e).__name__)\n        print('EXC:', e)\n\nif __name__ == '__main__':\n    main()\n
+\ No newline at end of file

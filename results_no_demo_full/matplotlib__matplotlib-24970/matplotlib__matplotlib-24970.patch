@@ -1,0 +1,8 @@
+diff --git a/tmp/repro_numpy124.py b/tmp/repro_numpy124.py
+new file mode 100644
+index 0000000000..b8e8f783d7
+--- /dev/null
++++ b/tmp/repro_numpy124.py
+@@ -0,0 +1 @@
++import sys, warnings\nsys.path.insert(0, '/testbed/lib')\nimport numpy as np\nimport matplotlib.pyplot as plt\nwarnings.simplefilter('error', DeprecationWarning)\ncmap = plt.get_cmap()\narr = np.empty((0,), dtype=np.uint8)\n_ = cmap(arr)\nprint('OK')\n
+\ No newline at end of file

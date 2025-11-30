@@ -1,0 +1,8 @@
+diff --git a/repro_sparse_svr.py b/repro_sparse_svr.py
+new file mode 100644
+index 000000000..281a4a508
+--- /dev/null
++++ b/repro_sparse_svr.py
+@@ -0,0 +1 @@
++import numpy as np\nimport scipy.sparse as sp\nfrom sklearn.svm import SVR\n\nx_train = np.array([[0,1,0,0],[0,0,0,1],[0,0,1,0],[0,0,0,1]], dtype=float)\ny_train = np.array([0.04,0.04,0.10,0.16], dtype=float)\n\nmodel = SVR(C=316.227766017, cache_size=200, coef0=0.0, degree=3, epsilon=0.1, gamma=1.0, kernel="linear", max_iter=15000, shrinking=True, tol=0.001, verbose=False)\n\n# Dense fit\nmodel.fit(x_train, y_train)\nprint("Dense fit ok; support_vectors_ shape:", model.support_vectors_.shape)\nprint("Dense dual_coef_ shape:", model.dual_coef_.shape)\n\n# Sparse fit\nx_train_sparse = sp.csr_matrix(x_train)\nmodel.fit(x_train_sparse, y_train)\nprint("Sparse fit ok; support_vectors_ shape:", model.support_vectors_.shape)\nprint("Sparse dual_coef_ shape:", model.dual_coef_.shape)\nprint("Sparse dual_coef_ type:", type(model.dual_coef_))\nprint("Done")
+\ No newline at end of file

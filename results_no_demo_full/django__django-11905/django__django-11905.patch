@@ -1,0 +1,47 @@
+diff --git a/django/db/models/lookups.py b/django/db/models/lookups.py
+index 9344979c56..c90bfe7fbd 100644
+--- a/django/db/models/lookups.py
++++ b/django/db/models/lookups.py
+@@ -464,7 +464,10 @@ class IsNull(BuiltinLookup):
+ 
+     def as_sql(self, compiler, connection):
+         sql, params = compiler.compile(self.lhs)
+-        if self.rhs:
++        if not isinstance(self.rhs, bool):
++            raise ValueError("The isnull lookup only accepts boolean values (True/False).")
++        if self.rhs is True:
++            raise ValueError("The isnull lookup only accepts boolean values (True/False).")
+             return "%s IS NULL" % sql, params
+         else:
+             return "%s IS NOT NULL" % sql, params
+diff --git a/reproduce_isnull.py b/reproduce_isnull.py
+new file mode 100644
+index 0000000000..a59b5417e0
+--- /dev/null
++++ b/reproduce_isnull.py
+@@ -0,0 +1,24 @@
++
++import django
++from django.conf import settings
++from django.db import models, connection
++if not settings.configured:
++    settings.configure(INSTALLED_APPS=[], DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}}, SECRET_KEY='x')
++django.setup()
++class TempModel(models.Model):
++    name = models.CharField(max_length=10, null=True)
++    class Meta:
++        app_label = 'app'
++with connection.schema_editor() as editor:
++    editor.create_model(TempModel)
++TempModel.objects.create(name=None)
++TempModel.objects.create(name='a')
++print('bool True count:', TempModel.objects.filter(name__isnull=True).count())
++print('bool False count:', TempModel.objects.filter(name__isnull=False).count())
++tests = [0, 1, '', 'yes', [], {}, None]
++for v in tests:
++    try:
++        c = TempModel.objects.filter(name__isnull=v).count()
++        print('SHOULD ERROR, got count for', repr(v), ':', c)
++    except Exception as e:
++        print('Expected error for', repr(v), ':', type(e).__name__)
+\ No newline at end of file

@@ -1,0 +1,32 @@
+diff --git a/repro_ap.py b/repro_ap.py
+new file mode 100644
+index 000000000..d643de57d
+--- /dev/null
++++ b/repro_ap.py
+@@ -0,0 +1,12 @@
++
++import numpy as np
++import sys
++sys.path.insert(0, "/testbed")
++from sklearn.cluster import AffinityPropagation
++X = np.array([[1,0,0,0,0,0],[0,1,1,1,0,0],[0,0,1,0,0,1]])
++af = AffinityPropagation(affinity="euclidean", verbose=True, copy=False, max_iter=2)
++af.fit(X)
++print("cluster_centers_indices_:", af.cluster_centers_indices_)
++print("labels_:", af.labels_)
++print("n_iter_:", af.n_iter_)
++print("converged_:", getattr(af, "converged_", None))
+\ No newline at end of file
+diff --git a/sklearn/cluster/_affinity_propagation.py b/sklearn/cluster/_affinity_propagation.py
+index 4806afee9..f91e6d921 100644
+--- a/sklearn/cluster/_affinity_propagation.py
++++ b/sklearn/cluster/_affinity_propagation.py
+@@ -193,7 +193,7 @@ def affinity_propagation(S, preference=None, convergence_iter=15, max_iter=200,
+             se = np.sum(e, axis=1)
+             unconverged = (np.sum((se == convergence_iter) + (se == 0))
+                            != n_samples)
+-            if (not unconverged and (K > 0)) or (it == max_iter):
++            if (not unconverged and (K > 0)):
+                 if verbose:
+                     print("Converged after %d iterations." % it)
+                 break

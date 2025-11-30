@@ -1,0 +1,1 @@
+{"model_name_or_path": "results_no_demo_full", "instance_id": "sympy__sympy-17139", "model_patch": "diff --git a/repro.py b/repro.py\nnew file mode 100644\nindex 000000000..4331c5349\n--- /dev/null\n+++ b/repro.py\n@@ -0,0 +1 @@\n+from sympy import *\\nx = Symbol('x')\\nprint(simplify(cos(x)**I))\\n\n\\ No newline at end of file\n"}

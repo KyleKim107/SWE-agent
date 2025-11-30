@@ -1,0 +1,23 @@
+diff --git a/repro.py b/repro.py
+index 9d5046baa..fcd01f034 100644
+--- a/repro.py
++++ b/repro.py
+@@ -1 +1,16 @@
+-import numpy as np\nfrom sklearn.feature_selection.mutual_info_ import _estimate_mi\n\nX = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])\ny = np.array([0, 1, 0])\n# Using a numpy array for discrete_features triggers the problematic comparison\n# before the fix (numpy array == 'auto' -> boolean array, ambiguous in if)\ndiscrete_features = np.array([True, False])\n\nprint('Running _estimate_mi with numpy array discrete_features...')\nmi = _estimate_mi(X, y, discrete_features=discrete_features, discrete_target=True, n_neighbors=3)\nprint('MI:', mi)\n
+\ No newline at end of file
++import sys
++sys.path.insert(0, "/testbed")
++import numpy as np
++from sklearn.feature_selection.mutual_info_ import _estimate_mi
++
++X = np.array([[1.0, 0.0, 2.0],
++              [0.0, 1.0, 3.0],
++              [0.0, 0.0, 4.0],
++              [1.0, 1.0, 5.0]])
++
++y = np.array([0, 1, 0, 1])
++
++discrete_features = np.array([True, True, False])
++print("Running _estimate_mi with numpy array discrete_features...")
++mi = _estimate_mi(X, y, discrete_features=discrete_features, discrete_target=True, n_neighbors=3)
++print("MI:", mi)

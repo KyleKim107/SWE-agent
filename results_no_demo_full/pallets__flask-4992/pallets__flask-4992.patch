@@ -1,0 +1,16 @@
+diff --git a/config.toml b/config.toml
+new file mode 100644
+index 00000000..c2eef4e9
+--- /dev/null
++++ b/config.toml
+@@ -0,0 +1 @@
++DEBUG = true\nSECRET_KEY = "dev"\n
+\ No newline at end of file
+diff --git a/repro_tomllib.py b/repro_tomllib.py
+new file mode 100644
+index 00000000..4055f70d
+--- /dev/null
++++ b/repro_tomllib.py
+@@ -0,0 +1 @@
++import sys, tomllib\nsys.path.insert(0, "/testbed/src")\nfrom flask.config import Config\ncfg = Config("/testbed")\ncfg.from_file("config.toml", tomllib.load, mode="b")\nprint(cfg["DEBUG"]) \nprint(cfg["SECRET_KEY"]) \n
+\ No newline at end of file

@@ -1,0 +1,16 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..3a8b72c752
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++from sympy.parsing.latex import parse_latex; print(parse_latex("\\frac{\\frac{a^3+b}{c}}{\\frac{1}{c^2}}"))
+\ No newline at end of file
+diff --git a/repro_no_antlr.py b/repro_no_antlr.py
+new file mode 100644
+index 0000000000..023ae231ad
+--- /dev/null
++++ b/repro_no_antlr.py
+@@ -0,0 +1 @@
++from sympy import symbols, Pow, Mul; a,b,c=symbols('a b c'); expr_top=Mul(a**3 + b, Pow(c, -1, evaluate=False), evaluate=False); expr_bot=Pow(c**2, -1, evaluate=False); inverse_denom=Pow(expr_bot, -1, evaluate=False); expr=Mul(expr_top, inverse_denom, evaluate=False); print(expr)
+\ No newline at end of file

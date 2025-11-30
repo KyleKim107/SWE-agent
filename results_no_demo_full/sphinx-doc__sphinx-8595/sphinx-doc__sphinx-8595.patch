@@ -1,0 +1,63 @@
+diff --git a/example.py b/example.py
+index 4d5130fc0..0f11ed510 100644
+--- a/example.py
++++ b/example.py
+@@ -1 +1,11 @@
+-__all__ = []\n\n\ndef foo():\n    "docstring"\n\n\ndef bar():\n    "docstring"\n\n\ndef baz():\n    "docstring"\n
+\ No newline at end of file
++
++__all__ = []
++
++def foo():
++    "docstring"
++
++def bar():
++    "docstring"
++
++def baz():
++    "docstring"
+\ No newline at end of file
+diff --git a/repro/_build/text/.doctrees/environment.pickle b/repro/_build/text/.doctrees/environment.pickle
+new file mode 100644
+index 000000000..c87a28a90
+Binary files /dev/null and b/repro/_build/text/.doctrees/environment.pickle differ
+diff --git a/repro/_build/text/.doctrees/index.doctree b/repro/_build/text/.doctrees/index.doctree
+new file mode 100644
+index 000000000..63f2a2ae3
+Binary files /dev/null and b/repro/_build/text/.doctrees/index.doctree differ
+diff --git a/repro/_build/text/index.txt b/repro/_build/text/index.txt
+new file mode 100644
+index 000000000..541005346
+--- /dev/null
++++ b/repro/_build/text/index.txt
+@@ -0,0 +1,2 @@
++Example Module
++**************
+diff --git a/repro/conf.py b/repro/conf.py
+index cab4a4311..22c180aaa 100644
+--- a/repro/conf.py
++++ b/repro/conf.py
+@@ -1 +1,6 @@
+-import os, sys\nsys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))\nextensions = ["sphinx.ext.autodoc"]\nmaster_doc = "index"\nproject = "repro"\n
+\ No newline at end of file
++
++import os, sys
++sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
++extensions = ["sphinx.ext.autodoc"]
++master_doc = "index"
++project = "repro"
+\ No newline at end of file
+diff --git a/repro/index.rst b/repro/index.rst
+index ac22b206f..1527cb758 100644
+--- a/repro/index.rst
++++ b/repro/index.rst
+@@ -1 +1,6 @@
+-Example Module\n===============\n\n.. automodule:: example\n   :members:\n
+\ No newline at end of file
++
++Example Module
++===============
++
++.. automodule:: example
++   :members:
+\ No newline at end of file

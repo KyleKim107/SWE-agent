@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 000000000..bf5dac518
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++import warnings\nimport pandas as pd\nfrom sklearn.utils.validation import check_array\n\nwarnings.simplefilter('always')\nprint('Creating DataFrame with dtype=object')\ndf = pd.DataFrame([[1, 2, 3], [2, 3, 4]], dtype=object)\nwith warnings.catch_warnings(record=True) as w:\n    warnings.simplefilter('always')\n    checked = check_array(df, warn_on_dtype=True)\n    print('Warnings captured:', len(w))\n    for wi in w:\n        print(type(wi.message).__name__, str(wi.message))\n    print('Result dtype:', getattr(getattr(checked, 'dtype', None), 'name', None))\n
+\ No newline at end of file

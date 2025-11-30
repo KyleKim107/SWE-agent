@@ -1,0 +1,8 @@
+diff --git a/reproduce_subquery.py b/reproduce_subquery.py
+new file mode 100644
+index 0000000000..f7e5833d5e
+--- /dev/null
++++ b/reproduce_subquery.py
+@@ -0,0 +1 @@
++from django.db.models.expressions import Subquery\n\nclass DummyQuery:\n    def as_sql(self, compiler, connection):\n        return 'SELECT "apps_app"."id", "apps_app"."name" FROM "apps_app"', ()\n\n# Create a Subquery with a dummy queryset-like placeholder; we won't use its self.query in this test.\n# We can instantiate with any object since we'll pass query=DummyQuery() to as_sql.\nq = Subquery.__new__(Subquery)\nq.template = '(%(subquery)s)'\n\n# Simulate the buggy behavior by calling as_sql with our DummyQuery.\ntry:\n    sql, params = Subquery.as_sql(q, compiler=None, connection=None, query=DummyQuery())\n    print('Before fix SQL:', sql)\nexcept Exception as e:\n    print('Error before fix:', e)\n
+\ No newline at end of file

@@ -1,0 +1,8 @@
+diff --git a/repro_missing_import.py b/repro_missing_import.py
+new file mode 100644
+index 0000000000..6d38338820
+--- /dev/null
++++ b/repro_missing_import.py
+@@ -0,0 +1 @@
++import sys, os, importlib\nsys.path.insert(0, os.getcwd())\nfrom django.db import models\nfrom django.db.migrations.serializer import serializer_factory\nmod = importlib.import_module('app.models')\nbases = (mod.MyMixin, models.Model)\ns, imports = serializer_factory(bases).serialize()\nprint(s)\nprint(sorted(imports))\n
+\ No newline at end of file

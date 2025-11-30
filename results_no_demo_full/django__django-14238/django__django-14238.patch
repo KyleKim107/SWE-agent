@@ -1,0 +1,30 @@
+diff --git a/example/__init__.py b/example/__init__.py
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/example/core/__init__.py b/example/core/__init__.py
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/example/core/models.py b/example/core/models.py
+new file mode 100644
+index 0000000000..364b5763a1
+--- /dev/null
++++ b/example/core/models.py
+@@ -0,0 +1 @@
++from django.db import models\nclass MyBigAutoField(models.BigAutoField):\n    pass\nclass MyModel(models.Model):\n    pass
+\ No newline at end of file
+diff --git a/example/settings.py b/example/settings.py
+new file mode 100644
+index 0000000000..b861633e39
+--- /dev/null
++++ b/example/settings.py
+@@ -0,0 +1 @@
++SECRET_KEY="x"\nINSTALLED_APPS=["django.contrib.contenttypes","example.core"]\nDATABASES={"default":{"ENGINE":"django.db.backends.sqlite3","NAME":":memory:"}}\nDEFAULT_AUTO_FIELD="example.core.models.MyBigAutoField"
+\ No newline at end of file
+diff --git a/run_repro.py b/run_repro.py
+new file mode 100644
+index 0000000000..90fcfad779
+--- /dev/null
++++ b/run_repro.py
+@@ -0,0 +1 @@
++import os\nos.environ.setdefault("DJANGO_SETTINGS_MODULE","example.settings")\nimport django\ndjango.setup()\nprint("SETUP_OK")
+\ No newline at end of file

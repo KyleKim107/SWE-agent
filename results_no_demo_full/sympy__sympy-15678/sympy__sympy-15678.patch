@@ -1,0 +1,16 @@
+diff --git a/repro_idiff.py b/repro_idiff.py
+index 56deca5740..ff4fd60b10 100644
+--- a/repro_idiff.py
++++ b/repro_idiff.py
+@@ -1 +1,8 @@
+-from sympy import symbols, Eq, exp, Function\nfrom sympy.geometry.util import idiff\n\nx, y = symbols('x y')\nf = Function('f')\n\nprint('Case1 Eq:', idiff(Eq(y*exp(y), x*exp(x)), y, x))\nprint('Case2 func:', idiff(f(x)*exp(f(x)) - x*exp(x), f(x), x))\nprint('Case3 expr:', idiff(y*exp(y) - x*exp(x), y, x))\n
+\ No newline at end of file
++from sympy import symbols, Eq, exp, Function\nfrom sympy.geometry.util import idiff\n\nx, y = symbols('x y')\nf = Function('f')\n\nprint('Case1 Eq:', idiff(Eq(y*exp(y), x*exp(x)), y, x))\nprint('Case2 func:', idiff(f(x)*exp(f(x)) - x*exp(x), f(x), x))\nprint('Case3 expr:', idiff(y*exp(y) - x*exp(x), y, x))\n
++from sympy import symbols, Eq, exp, Function
++from sympy.geometry.util import idiff
++x, y = symbols('x y')
++f = Function('f')
++print('Case1 Eq:', idiff(Eq(y*exp(y), x*exp(x)), y, x))
++print('Case2 func:', idiff(f(x)*exp(f(x)) - x*exp(x), f(x), x))
++print('Case3 expr:', idiff(y*exp(y) - x*exp(x), y, x))
+\ No newline at end of file

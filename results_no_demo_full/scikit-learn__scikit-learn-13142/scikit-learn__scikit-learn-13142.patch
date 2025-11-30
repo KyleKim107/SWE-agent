@@ -1,0 +1,11 @@
+diff --git a/patch_fit_predict.py b/patch_fit_predict.py
+new file mode 100644
+index 000000000..bd78a7ad7
+--- /dev/null
++++ b/patch_fit_predict.py
+@@ -0,0 +1 @@
++import sys\nfrom pathlib import Path\n\np = Path("/testbed/sklearn/mixture/base.py")\nsrc = p.read_text()\nlines = src.splitlines(keepends=True)\n\nidx_e = None\nidx_set = None\nfor i, line in enumerate(lines):\n    if "_, log_resp = self._e_step(X)" in line:\n        idx_e = i\n    if "self._set_parameters(best_params)" in line:\n        idx_set = i\n\nif idx_e is None or idx_set is None:\n    print("Patch failed: could not find target lines", file=sys.stderr)\n    sys.exit(1)\n\n# Move the assignment block (set_parameters + n_iter_ + lower_bound_) before the final e-step\nassign_block = [lines[idx_set], lines[idx_set+1], lines[idx_set+2]]\n\n# Remove original assignment block\ndel lines[idx_set:idx_set+3]\n\n# Insert assignment block just before the final e-step\nlines[idx_e:idx_e] = assign_block\n\np.write_text("".join(lines))\nprint("Patched BaseMixture.fit_predict ordering successfully")\n
+\ No newline at end of file
+diff --git a/reproduce_gmm.py b/reproduce_gmm.py
+new file mode 100644
+index 000000000..e69de29bb

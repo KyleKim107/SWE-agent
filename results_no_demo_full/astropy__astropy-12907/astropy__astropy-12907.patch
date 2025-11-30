@@ -1,0 +1,20 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 000000000..f51671034
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,13 @@
++
++from astropy.modeling import models as m
++from astropy.modeling.separable import separability_matrix
++
++cm = m.Linear1D(10) & m.Linear1D(5)
++print("cm:")
++print(separability_matrix(cm))
++
++print("flat:")
++print(separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5)))
++
++print("nested:")
++print(separability_matrix(m.Pix2Sky_TAN() & cm))
+\ No newline at end of file

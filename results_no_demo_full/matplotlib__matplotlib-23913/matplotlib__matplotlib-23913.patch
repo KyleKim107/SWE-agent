@@ -1,0 +1,18 @@
+diff --git a/tmp/repro_draggable.py b/tmp/repro_draggable.py
+new file mode 100644
+index 0000000000..b3646a58a4
+--- /dev/null
++++ b/tmp/repro_draggable.py
+@@ -0,0 +1,11 @@
++import sys\nsys.path.insert(0, '/testbed/lib')\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nax.plot([0,1],[0,1])\nleg = ax.legend(draggable=True)\nprint('draggable enabled:', hasattr(leg, '_draggable') and leg._draggable is not None)\nprint(type(leg._draggable).__name__)
++import sys
++sys.path.insert(0, '/testbed/lib')
++import matplotlib
++matplotlib.use('Agg')
++import matplotlib.pyplot as plt
++fig, ax = plt.subplots()
++ax.plot([0,1],[0,1])
++leg = ax.legend(draggable=True)
++print('draggable enabled:', hasattr(leg, '_draggable') and leg._draggable is not None)
++print(type(leg._draggable).__name__)
+\ No newline at end of file

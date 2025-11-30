@@ -1,0 +1,30 @@
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index 7c433b3f06..23858b05a5 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -1272,7 +1272,7 @@ class SQLCompiler:
+             def local_setter(final_field, obj, from_obj):
+                 # Set a reverse fk object when relation is non-empty.
+                 if from_obj:
+-                    final_field.remote_field.set_cached_value(from_obj, obj)
++                    final_field.remote_field.set_cached_value(obj, from_obj)
+ 
+             def remote_setter(name, obj, from_obj):
+                 setattr(from_obj, name, obj)
+diff --git a/tests/known_related_objects/tests.py b/tests/known_related_objects/tests.py
+index 6080da3838..ede7a990da 100644
+--- a/tests/known_related_objects/tests.py
++++ b/tests/known_related_objects/tests.py
+@@ -164,3 +164,11 @@ class ExistingRelatedInstancesTests(TestCase):
+             )
+             self.assertIs(ps[0], ps[0].pool_1.poolstyle)
+             self.assertIs(ps[0], ps[0].pool_2.another_style)
++
++    def test_wrong_select_related(self):
++        with self.assertNumQueries(3):
++            p = list(
++                PoolStyle.objects.annotate(
++                    tournament_pool=FilteredRelation('pool__tournament__pool'),
++                ).select_related('tournament_pool'))
++            self.assertEqual(p[0].pool.tournament, p[0].tournament_pool.tournament)
+\ No newline at end of file

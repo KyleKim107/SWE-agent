@@ -1,0 +1,56 @@
+diff --git a/debug_apart_steps.py b/debug_apart_steps.py
+new file mode 100644
+index 0000000000..df02090c1a
+--- /dev/null
++++ b/debug_apart_steps.py
+@@ -0,0 +1,29 @@
++import sys
++sys.path.insert(0, '/testbed')
++from sympy import symbols
++from sympy.polys import Poly
++from sympy.polys.partfrac import apart
++from sympy.polys.polytools import parallel_poly_from_expr
++
++a = symbols('a', real=True)
++t = symbols('t', real=True, negative=False)
++f = a * (-t + (-t + 1) * (2 * t - 1)) / (2 * t - 1)
++P_expr, Q_expr = f.as_numer_denom()
++print('P_expr:', P_expr)
++print('Q_expr:', Q_expr)
++(P, Q), opt = parallel_poly_from_expr((P_expr, Q_expr), t, extension=True)
++print('P:', P)
++print('Q:', Q)
++common, P1, Q1 = P.cancel(Q)
++print('common:', common)
++print('P1:', P1)
++print('Q1:', Q1)
++poly, rem = P1.div(Q1, auto=True)
++print('poly:', poly)
++print('rem:', rem)
++P2, Q2 = rem.rat_clear_denoms(Q1)
++print('P2:', P2)
++print('Q2:', Q2)
++print('deg Q2:', Q2.degree())
++print('partial P2/Q2:', P2.as_expr()/Q2.as_expr())
++print('apart:', apart(f, t))
+\ No newline at end of file
+diff --git a/repro_apart_bug.py b/repro_apart_bug.py
+new file mode 100644
+index 0000000000..3af2e1f918
+--- /dev/null
++++ b/repro_apart_bug.py
+@@ -0,0 +1,13 @@
++import sys
++sys.path.insert(0, '/testbed')
++from sympy import symbols
++from sympy.polys.partfrac import apart
++
++a = symbols('a', real=True)
++t = symbols('t', real=True, negative=False)
++bug = a * (-t + (-t + 1) * (2 * t - 1)) / (2 * t - 1)
++print('bug:', bug)
++print('subs a=1:', bug.subs(a, 1))
++print('subs a=1 apart():', apart(bug.subs(a, 1)))
++print('subs a=1 apart(t):', apart(bug.subs(a, 1), t))
++print('apart(t):', apart(bug, t))
+\ No newline at end of file

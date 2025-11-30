@@ -1,0 +1,12 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..0144860349
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,6 @@
++from sympy import *
++a,b = symbols('a b')
++r = (1/(a+b) + 1/(a-b))/(1/(a+b) - 1/(a-b))
++print('r =', r)
++print('r.subs(b,a) =', r.subs(b,a))
++print('limit b->a:', r.limit(b, a))

@@ -1,0 +1,8 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 0000000000..0ba67be608
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1 @@
++from django.conf import settings\nsettings.configure()\nfrom django.contrib.messages.storage.base import Message\nfrom django.contrib.messages.storage.cookie import MessageEncoder, MessageDecoder\norig = Message(10, "Here is a message", extra_tags="")\nenc = MessageEncoder().encode(orig)\ndec = MessageDecoder().decode(enc)\nprint(enc)\nprint("orig empty?", orig.extra_tags == "")\nprint("decoded is None?", dec.extra_tags is None)\nprint("decoded empty?", dec.extra_tags == "")
+\ No newline at end of file
