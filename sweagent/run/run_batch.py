@@ -33,6 +33,7 @@ import getpass
 import json
 import logging
 import random
+import subprocess
 import sys
 import time
 import traceback
@@ -368,10 +369,338 @@ class RunBatch:
             agent.logger.error(traceback.format_exc())  # type: ignore[attr-defined]
             raise
         finally:
+            container_info = self._get_container_cleanup_info(env)
             env.close()
+            # Wait a moment for container to fully stop (especially if --rm is used)
+            time.sleep(0.5)
+            # Clean up Docker container and image after instance completion
+            self._cleanup_docker_container(container_info)
+            self._cleanup_docker_image(instance, env)
         save_predictions(self.output_dir, instance.problem_statement.id, result)
         self._chooks.on_instance_completed(result=result)
         return result
+
+    def _get_container_cleanup_info(self, env: SWEEnv) -> tuple[str | None, str | None, bool]:
+        """Capture container metadata before teardown."""
+        deployment = getattr(env, "deployment", None)
+        if deployment is None:
+            return (None, None, False)
+        config = getattr(deployment, "_config", None)
+        container_runtime = getattr(config, "container_runtime", None)
+        remove_container = bool(getattr(config, "remove_container", False))
+        container_name = getattr(deployment, "container_name", None)
+        return (container_name, container_runtime, remove_container)
+
+    def _cleanup_docker_container(self, container_info: tuple[str | None, str | None, bool]) -> None:
+        """Remove Docker container after an instance finishes."""
+        container_name, container_runtime, remove_container = container_info
+        if not remove_container or not container_name:
+            return
+
+        runtime = container_runtime or "docker"
+        try:
+            # Check if container exists first
+            inspect_result = subprocess.run(
+                [runtime, "inspect", container_name],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            
+            if inspect_result.returncode != 0:
+                # Container doesn't exist (might have been auto-removed by --rm)
+                self.logger.debug(f"Container {container_name} already removed")
+                return
+            
+            # First, try to stop the container if it's still running
+            stop_result = subprocess.run(
+                [runtime, "stop", container_name],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if stop_result.returncode == 0:
+                self.logger.debug(f"Stopped Docker container: {container_name}")
+            # Container might already be stopped, which is fine
+            
+            # Now remove the container (force removal in case it's still running)
+            result = subprocess.run(
+                [runtime, "rm", "-f", container_name],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode == 0:
+                self.logger.info(f"✅ Removed Docker container: {container_name}")
+            else:
+                # Check if container doesn't exist (might have been auto-removed by --rm)
+                if "No such container" in result.stderr or "no such container" in result.stderr.lower():
+                    self.logger.debug(f"Container {container_name} already removed (likely by --rm flag)")
+                else:
+                    self.logger.warning(
+                        f"Could not remove Docker container {container_name} via {runtime}: {result.stderr.strip()}"
+                    )
+        except subprocess.TimeoutExpired:
+            self.logger.warning(f"Timeout removing Docker container {container_name}")
+        except Exception as e:
+            self.logger.warning(f"Error removing Docker container {container_name}: {e}")
+
+    def _cleanup_docker_image(self, instance: BatchInstance, env: SWEEnv) -> None:
+        """Remove Docker image after instance completion to free up disk space."""
+        try:
+            # Get image name and container runtime from deployment config
+            deployment = getattr(env, "deployment", None)
+            if deployment is None:
+                self.logger.debug("No deployment found for image cleanup")
+                return
+            
+            config = getattr(deployment, "_config", None)
+            if config is None:
+                self.logger.debug("No deployment config found for image cleanup")
+                return
+            
+            image_name = getattr(config, "image", None)
+            container_runtime = getattr(config, "container_runtime", "docker")
+            
+            if not image_name:
+                # Try to get from instance config as fallback
+                instance_deployment = getattr(instance.env, "deployment", None)
+                if instance_deployment:
+                    if hasattr(instance_deployment, "image"):
+                        image_name = instance_deployment.image
+                    elif hasattr(instance_deployment, "_config"):
+                        image_name = getattr(instance_deployment._config, "image", None)
+            
+            if not image_name:
+                self.logger.debug("No image name found for cleanup")
+                return
+            
+            runtime = container_runtime or "docker"
+            
+            # Only remove SWE-bench images (not base images like python:3.11)
+            # This prevents accidentally removing shared base images
+            image_lower = image_name.lower()
+            if "swebench" in image_lower or "sweb.eval" in image_lower:
+                self.logger.info(f"🖼️  Attempting to remove {runtime} image: {image_name}")
+                
+                # First check if image exists
+                inspect_result = subprocess.run(
+                    [runtime, "inspect", image_name],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                
+                if inspect_result.returncode != 0:
+                    # Image doesn't exist, might have been removed already or might be a built image
+                    self.logger.debug(f"Image {image_name} not found, checking for related images")
+                    # Try to find and remove any dangling/built images that might be related
+                    self._cleanup_built_images(runtime, image_name)
+                    # Also try to remove by repository pattern
+                    self._cleanup_images_by_pattern(runtime, image_name)
+                    return
+                
+                # Remove the image (force removal)
+                result = subprocess.run(
+                    [runtime, "rmi", "-f", image_name],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+                if result.returncode == 0:
+                    self.logger.info(f"✅ Removed {runtime} image: {image_name}")
+                    # Also try to clean up any dangling images that might have been built
+                    self._cleanup_built_images(runtime, image_name)
+                    # Clean up any other images matching the pattern
+                    self._cleanup_images_by_pattern(runtime, image_name)
+                else:
+                    # Image might be in use by another container or have dependencies
+                    error_msg = result.stderr.lower()
+                    stderr_full = result.stderr.strip()
+                    if "image is being used" in error_msg or "is being used by" in error_msg:
+                        self.logger.warning(f"⚠️  Image {image_name} is still in use, cannot remove: {stderr_full}")
+                        # Try to remove any containers using this image first
+                        self._remove_containers_using_image(runtime, image_name)
+                        # Try again after removing containers
+                        retry_result = subprocess.run(
+                            [runtime, "rmi", "-f", image_name],
+                            capture_output=True,
+                            text=True,
+                            timeout=30,
+                        )
+                        if retry_result.returncode == 0:
+                            self.logger.info(f"✅ Removed {runtime} image: {image_name} (after removing containers)")
+                            # Clean up related images
+                            self._cleanup_built_images(runtime, image_name)
+                            self._cleanup_images_by_pattern(runtime, image_name)
+                    elif "No such image" in result.stderr or "no such image" in error_msg:
+                        self.logger.debug(f"Image {image_name} already removed")
+                    else:
+                        self.logger.warning(f"⚠️  Could not remove {runtime} image {image_name}: {stderr_full}")
+            else:
+                self.logger.debug(f"Skipping image cleanup for non-SWE-bench image: {image_name}")
+        except Exception as e:
+            # Don't fail the entire run if image cleanup fails
+            self.logger.warning(f"Error cleaning up Docker image: {e}", exc_info=True)
+    
+    def _remove_containers_using_image(self, runtime: str, image_name: str) -> None:
+        """Remove any containers that are using the specified image."""
+        try:
+            # Find containers using this image
+            ps_result = subprocess.run(
+                [runtime, "ps", "-a", "--filter", f"ancestor={image_name}", "--format", "{{.ID}}"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            
+            if ps_result.returncode != 0:
+                return
+            
+            container_ids = [cid.strip() for cid in ps_result.stdout.strip().split("\n") if cid.strip()]
+            
+            for container_id in container_ids:
+                try:
+                    # Force remove the container
+                    rm_result = subprocess.run(
+                        [runtime, "rm", "-f", container_id],
+                        capture_output=True,
+                        text=True,
+                        timeout=10,
+                    )
+                    if rm_result.returncode == 0:
+                        self.logger.debug(f"Removed container {container_id} that was using image {image_name}")
+                except Exception:
+                    pass  # Ignore errors
+        except Exception as e:
+            self.logger.debug(f"Error removing containers using image: {e}")
+    
+    def _cleanup_images_by_pattern(self, runtime: str, base_image_name: str) -> None:
+        """Clean up images matching the SWE-bench pattern, focusing on the current instance's image."""
+        try:
+            # Extract the instance-specific part from the image name
+            # e.g., from "docker.io/swebench/sweb.eval.x86_64.astropy_1776_astropy-6938:latest"
+            # we want to match images with the same instance ID
+            instance_pattern = None
+            if "sweb.eval" in base_image_name.lower():
+                # Extract the instance identifier (e.g., "astropy_1776_astropy-6938")
+                parts = base_image_name.lower().split("sweb.eval.")
+                if len(parts) > 1:
+                    instance_part = parts[1].split(":")[0].split("/")[-1]
+                    instance_pattern = instance_part
+            
+            # List all images
+            list_result = subprocess.run(
+                [runtime, "images", "--format", "{{.Repository}}:{{.Tag}}\t{{.ID}}"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            
+            if list_result.returncode != 0:
+                return
+            
+            # Find and remove images matching the pattern
+            lines = list_result.stdout.strip().split("\n")
+            removed_count = 0
+            for line in lines:
+                if not line.strip():
+                    continue
+                parts = line.split("\t")
+                if len(parts) >= 1:
+                    image_ref = parts[0]  # Repository:Tag
+                    
+                    # Check if this image matches the SWE-bench pattern
+                    if "swebench" in image_ref.lower() or "sweb.eval" in image_ref.lower():
+                        # Skip the base image we're already trying to remove
+                        if image_ref == base_image_name or image_ref == base_image_name.split(":")[0] + ":latest":
+                            continue
+                        
+                        # If we have an instance pattern, only remove images matching that specific instance
+                        # Otherwise, be more conservative and only remove if it's clearly related
+                        if instance_pattern and instance_pattern in image_ref.lower():
+                            # This is the same instance, safe to remove
+                            pass
+                        elif not instance_pattern:
+                            # No specific pattern, skip to avoid removing unrelated images
+                            continue
+                        else:
+                            # Different instance, skip it
+                            continue
+                        
+                        # Check if image is in use by any containers
+                        ps_result = subprocess.run(
+                            [runtime, "ps", "-a", "--filter", f"ancestor={image_ref}", "--format", "{{.ID}}"],
+                            capture_output=True,
+                            text=True,
+                            timeout=5,
+                        )
+                        
+                        # Only remove if no containers are using it
+                        if ps_result.returncode == 0 and not ps_result.stdout.strip():
+                            try:
+                                rm_result = subprocess.run(
+                                    [runtime, "rmi", "-f", image_ref],
+                                    capture_output=True,
+                                    text=True,
+                                    timeout=10,
+                                )
+                                if rm_result.returncode == 0:
+                                    self.logger.debug(f"Removed related image: {image_ref}")
+                                    removed_count += 1
+                            except Exception:
+                                pass  # Ignore errors
+            
+            if removed_count > 0:
+                self.logger.info(f"✅ Removed {removed_count} related SWE-bench image(s)")
+        except Exception as e:
+            self.logger.debug(f"Error cleaning up images by pattern: {e}")
+    
+    def _cleanup_built_images(self, runtime: str, base_image_name: str) -> None:
+        """Clean up any dangling or built images that might have been created."""
+        try:
+            # List all images and find ones that might be related (dangling or built from this base)
+            list_result = subprocess.run(
+                [runtime, "images", "--format", "{{.ID}}\t{{.Repository}}\t{{.Tag}}"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            
+            if list_result.returncode != 0:
+                return
+            
+            # Look for dangling images (those with <none> as repository/tag)
+            # These are often built images that weren't tagged
+            lines = list_result.stdout.strip().split("\n")
+            removed_count = 0
+            for line in lines:
+                if not line.strip():
+                    continue
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    repo = parts[1] if len(parts) > 1 else ""
+                    # Check if it's a dangling image (untagged)
+                    if repo == "<none>" or (len(parts) > 2 and parts[2] == "<none>"):
+                        image_id = parts[0]
+                        # Try to remove dangling images (these are often built images)
+                        try:
+                            rm_result = subprocess.run(
+                                [runtime, "rmi", "-f", image_id],
+                                capture_output=True,
+                                text=True,
+                                timeout=10,
+                            )
+                            if rm_result.returncode == 0:
+                                self.logger.debug(f"Removed dangling image: {image_id}")
+                                removed_count += 1
+                        except Exception:
+                            pass  # Ignore errors when removing dangling images
+            
+            if removed_count > 0:
+                self.logger.info(f"✅ Removed {removed_count} dangling image(s)")
+        except Exception as e:
+            self.logger.debug(f"Error cleaning up built images: {e}")
 
     def should_skip(self, instance: BatchInstance) -> bool | str:
         """Check if we should skip this instance.

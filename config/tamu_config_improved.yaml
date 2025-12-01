@@ -39,6 +39,12 @@ agent:
       3. Use separate simple commands instead of one complex command
       4. If you need to create a Python file, use str_replace_editor create command instead of heredoc
       5. Test your bash syntax mentally before outputting
+      6. SUBMIT WHEN READY: Once you have:
+         - Fixed the issue in the source code
+         - Verified the fix works (tests pass, reproduce script shows correct output)
+         - Committed your changes (if needed)
+         Then IMMEDIATELY run `submit` to finish. Do NOT repeat verification commands multiple times.
+         If you see the same successful results 2-3 times, you're done - submit immediately.
     
     # Improved instance template with examples
     instance_template: |-
@@ -57,6 +63,7 @@ agent:
       2. Create a SIMPLE reproduce script using str_replace_editor
       3. Edit the source code to fix the issue
       4. Verify the fix works
+      5. SUBMIT: Once verification is successful, run `submit` immediately. Do not repeat the same verification steps.
       
       IMPORTANT FORMAT REQUIREMENTS:
       Your response must ALWAYS follow this format:
@@ -80,6 +87,11 @@ agent:
         - Complex multi-line commands with \" escaping
       
       Remember: Keep it simple! Use str_replace_editor for file creation.
+      
+      SUBMISSION GUIDELINES:
+      - Submit as soon as you've verified the fix works correctly
+      - If you've run the same verification command 2-3 times with the same successful result, you're done - submit
+      - Do not waste API calls on repeated verification - submit when ready
     
     next_step_template: |-
       OBSERVATION:

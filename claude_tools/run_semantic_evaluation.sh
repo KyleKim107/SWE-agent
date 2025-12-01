@@ -8,10 +8,11 @@ set -e
 DEMO_POOL="./demonstration_pool"
 K=5
 SEMANTIC_MODEL="all-MiniLM-L6-v2"
-OUTPUT_DIR="./test_results/semantic_k${K}"
+OUTPUT_DIR="../results"  # Changed to ../results to match original SWE-agent behavior
 CONFIG="../config/tamu_config_improved.yaml"
 SWE_AGENT_DIR="../"
 LOG_DIR="./logs"
+AUTO_EVALUATE=true  # Automatically evaluate results after completion
 
 # Parse command line arguments
 INSTANCES=()
@@ -62,6 +63,10 @@ while [[ $# -gt 0 ]]; do
             LOG_DIR="$2"
             shift 2
             ;;
+        --no-auto-evaluate)
+            AUTO_EVALUATE=false
+            shift
+            ;;
         --help)
             echo "Usage: $0 [OPTIONS] (--instances INSTANCE1 [INSTANCE2 ...] | --all)"
             echo ""
@@ -71,11 +76,12 @@ while [[ $# -gt 0 ]]; do
             echo "  --limit N                             Limit to first N instances (only with --all)"
             echo "  --k N                                 Number of demonstrations (default: 5)"
             echo "  --model MODEL_NAME                     Sentence Transformer model (default: all-MiniLM-L6-v2)"
-            echo "  --output_dir DIR                       Output directory (default: ./test_results/semantic_k5)"
+            echo "  --output_dir DIR                       Output directory (default: ../results)"
             echo "  --demo_pool DIR                        Demonstration pool directory (default: ./demonstration_pool)"
             echo "  --config FILE                          Config file (default: ../config/tamu_config_improved.yaml)"
             echo "  --swe_agent_dir DIR                    SWE-agent directory (default: ../)"
             echo "  --log_dir DIR                          Log directory (default: ./logs)"
+            echo "  --no-auto-evaluate                     Don't automatically evaluate results after completion"
             echo ""
             echo "Examples:"
             echo "  # Run on a single instance"
@@ -187,12 +193,51 @@ if [ -n "$LOG_DIR" ]; then
 fi
 
 # Run the evaluation
+set +e  # Temporarily disable exit on error to handle evaluation result
 python3 run_adaptive_evaluation_fixed.py "${CMD_ARGS[@]}"
+EVAL_EXIT_CODE=$?
+set -e  # Re-enable exit on error
 
 echo ""
-echo "✅ Evaluation complete!"
-echo "   Results saved to: $OUTPUT_DIR"
-if [ -n "$LOG_DIR" ]; then
-    echo "   Logs saved to: $LOG_DIR"
+if [ $EVAL_EXIT_CODE -eq 0 ]; then
+    echo "✅ Evaluation complete!"
+    echo "   Results saved to: $OUTPUT_DIR"
+    if [ -n "$LOG_DIR" ]; then
+        echo "   Logs saved to: $LOG_DIR"
+    fi
+    
+    # Automatically evaluate results if enabled
+    if [ "$AUTO_EVALUATE" = true ]; then
+        echo ""
+        echo "="*80
+        echo "Automatically evaluating results with swe-bench..."
+        echo "="*80
+        echo ""
+        
+        # Determine subset and split from the evaluation
+        SUBSET="lite"
+        SPLIT="test"
+        
+        python3 evaluate_swe_bench_results.py \
+            --output_dir "$OUTPUT_DIR" \
+            --subset "$SUBSET" \
+            --split "$SPLIT" \
+            --config "$CONFIG"
+        
+        if [ $? -eq 0 ]; then
+            echo ""
+            echo "✅ Results evaluation complete!"
+            echo "   Check $OUTPUT_DIR/evaluation_stats.json for final statistics"
+            echo "   Check $OUTPUT_DIR/results.json for detailed results"
+        else
+            echo ""
+            echo "⚠️  Warning: Results evaluation failed"
+            echo "   You can manually run:"
+            echo "   python3 evaluate_swe_bench_results.py --output_dir $OUTPUT_DIR"
+        fi
+    fi
+else
+    echo "❌ Evaluation failed with exit code: $EVAL_EXIT_CODE"
+    exit $EVAL_EXIT_CODE
 fi
 
